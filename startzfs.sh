@@ -6,9 +6,9 @@ iscsimapping='/pacedata/iscsimapping';
 runningpools='/pacedata/pools/runningpools';
 enpdev='enp0s8'
 myhost=`hostname -s`
-/sbin/rabbitmqctl add_user rabbmezo HIHIHI 2>/dev/null
-/sbin/rabbitmqctl set_permissions -p / rabbmezo ".*" ".*" ".*" 2>/dev/null
-/sbin/rabbitmqctl set_user_tags rabbmezo administrator
+#/sbin/rabbitmqctl add_user rabbmezo HIHIHI 2>/dev/null
+#/sbin/rabbitmqctl set_permissions -p / rabbmezo ".*" ".*" ".*" 2>/dev/null
+#/sbin/rabbitmqctl set_user_tags rabbmezo administrator
 myip=`/sbin/pcs resource show CC | grep Attributes | awk '{print $2}' | awk -F'=' '{print $2}'`
 ccnic=`/sbin/pcs resource show CC | grep nic\= | awk -F'nic=' '{print $2}' | awk '{print $1}'`
 /sbin/pcs resource delete --force namespaces  2>/dev/null
