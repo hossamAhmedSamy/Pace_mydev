@@ -48,6 +48,7 @@ then
  ./etcddel.py ready --prefix 2>/dev/null 
  ./etcddel.py locked --prefix 2>/dev/null 
  ./etcddel.py cannot --prefix 2>/dev/null 
+ ./etcddel.py request --prefix 2>/dev/null 
  myalias=`ETCDCTL_API=3 /pace/etcdget.py alias/$myhost`
  if [[ $myalias -eq -1 ]];
  then
