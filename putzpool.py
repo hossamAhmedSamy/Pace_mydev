@@ -42,6 +42,9 @@ lraids=[]
 lvolumes=[]
 lsnapshots=[]
 poolsstatus=[]
+cmdline=['/sbin/zfs','list','-t','snapshot,filesystem','-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available','-H']
+result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
 #lists=[lpools,ldisks,ldefdisks,lavaildisks,lfreedisks,lsparedisks,lraids,lvolumes,lsnapshots]
 lists={'pools':lpools,'disks':ldisks,'defdisks':ldefdisks,'inusedisks':linusedisks,'freedisks':lfreedisks,'sparedisks':lsparedisks,'raids':lraids,'volumes':lvolumes,'snapshots':lsnapshots, 'hosts':lhosts, 'phosts':phosts}
 for a in y:
@@ -52,9 +55,8 @@ for a in y:
   zdict={}
   rdict={}
   ddict={}
-  cmdline=['/sbin/zfs','list','-t','snapshot,filesystem',b[0],'-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available','-H']
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-  zfslist=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
+  zfslist=[x for x in zfslistall if b[0] in x ]
+  print('zfslist',b[0],zfslist)
   cmdline=['/sbin/zpool','list',b[0],'-H']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   zlist=str(result.stdout)[2:][:-3].split('\\t')
