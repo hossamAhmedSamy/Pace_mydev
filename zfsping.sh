@@ -33,7 +33,7 @@ echo startzfs run >> /root/zfspingtmp
 leadername=` ./etcdget.py leader --prefix | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
 date=`date `
 myhost=`hostname -s`
-myip=`pcs resource show CC | grep Attribute | awk '{print $2}' | awk -F'=' '{print $2 }'`
+myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
 echo starting in $date >> /root/zfspingtmp
 while true;
 do
@@ -173,7 +173,7 @@ do
      if [ $? -eq 0 ];
      then
       sleep 1 
-      result=` ./nodesearch.py $myip 2>/dev/null`
+      result=`ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
      else
       echo found the new leader run $result >> /root/zfspingtmp
       waiting=0

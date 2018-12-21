@@ -9,14 +9,16 @@ myhost=`hostname -s`
 #/sbin/rabbitmqctl add_user rabbmezo HIHIHI 2>/dev/null
 #/sbin/rabbitmqctl set_permissions -p / rabbmezo ".*" ".*" ".*" 2>/dev/null
 #/sbin/rabbitmqctl set_user_tags rabbmezo administrator
-myip=`/sbin/pcs resource show CC | grep Attributes | awk '{print $2}' | awk -F'=' '{print $2}'`
+myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
 ccnic=`/sbin/pcs resource show CC | grep nic\= | awk -F'nic=' '{print $2}' | awk '{print $1}'`
 /sbin/pcs resource delete --force namespaces  2>/dev/null
 /sbin/pcs resource delete --force dataip  2>/dev/null
 echo starting nodesearch>>/root/tmp2
-result=` ./nodesearch.py $myip 2>/dev/null`
+result=` ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
 echo finish nodesearch>>/root/tmp2
 freshcluster=0
+echo $result > /root/hihi
+echo myip=$myip >> /root/hihi
 echo $result | grep nothing 
 if [ $? -eq 0 ];
 then

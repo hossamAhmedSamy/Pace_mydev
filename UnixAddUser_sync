@@ -14,7 +14,7 @@ userhome=`echo $@ | awk '{print $5}'`;
 userpass=`echo $pas | openssl enc -d -base64 -aes-256-ctr -nopad -nosalt -k '#skMe22'$username`;
 userreq='system';
 myhost=`hostname -s`
-myip=`pcs resource show CC | grep Attribute | awk '{print $2}' | awk -F'=' '{print $2 }'`
+myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
 privilege="Box_Users";
 contrun=`./privthis.sh $privilege $userreq`;
 if [[ $contrun == 'true' ]]

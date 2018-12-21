@@ -9,7 +9,7 @@ username=`echo $@ | awk '{print $1}'`;
 userreq=`echo $@ | awk '{print $2}'`;
 privilege="Box_Users";
 contrun=`./privthis.sh $privilege $userreq`;
-myip=`pcs resource show CC | grep Attribute | awk '{print $2}' | awk -F'=' '{print $2 }'`
+myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
 if [[ $contrun == 'true' ]]
 then
 /TopStor/UnixDelUserlocal $username $userreq
