@@ -18,22 +18,35 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    print('helskdlskdkddlsldssd#######################')
    cmd=cmdline
    spare=disksallowed[0][0]
-   if spare['pool']==defdisk['pool']:
-    cmdline=['/sbin/zpool', 'remove', defdisk['pool'],spare['name']]
-    subprocess.run(cmdline,stdout=subprocess.PIPE)
+   if 'attach' in cmd:
+    print('defdisk',defdisk)
+   else:
+    if spare['pool']==defdisk['pool']:
+     cmdline2=['/sbin/zpool', 'remove', defdisk['pool'],spare['name']]
+     subprocess.run(cmdline2,stdout=subprocess.PIPE)
+   if 'attach' in cmd:
+    logmsg.sendlog('Dist6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
+   else:
+    logmsg.sendlog('Dist2','info','system', defdisk['id'],spare['id'],myhost)
    cmd.append(spare['name'])
-   logmsg.sendlog('Dist2','info','system', defdisk['id'],spare['id'],myhost)
    try: 
     subprocess.check_call(cmd)
-    logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
+    if 'attach' in cmd:
+     logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
+    else:
+     logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
     syncmypools('all')
+    print('hihihi')
     return spare['name'] 
    except subprocess.CalledProcessError:
-    logmsg.sendlog('Difa2','error','system', defdisk['id'],spare['id'],myhost)
+    if 'attach' in cmd:
+     logmsg.sendlog('Difa6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
+    else:
+     logmsg.sendlog('Difa2','info','system', defdisk['id'],spare['id'],myhost)
     disksallowed.pop(0)
     ret=mustattach(cmdline[:-1],disksallowed,defdisk,myhost) 
     return ret
- 
+  
 def norm(val):
  units={'B':1/1024**2,'K':1/1024, 'M': 1, 'G':1024 , 'T': 1024**2 }
  if type(val)==float:
@@ -48,6 +61,7 @@ def norm(val):
 
 
 def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,mindisksize):
+ ret=0
  if len(defdisks) < 1:
   print('no more defective disks checking for non-red host raids')
   if len(raids) < 1 :
@@ -57,14 +71,18 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
   raids.pop(0)
   if raid['name']=='free':
    return
-
+  print('checking raid',raid['name'],'it is non-red')
   myhostpools=[pool['name'] for pool in pools if pool['host']==myhost ]
   disksinraid=[(disk['name'],disk['host'],disk['size']) for disk in alldisks if disk['raid'] == raid['name'] and disk['pool'] == raid['pool'] and disk['pool'] in myhostpools ]
+  print('disksinraid',disksinraid)
   hcount=[]
   for host in hosts:
    hcount.append((host,str(disksinraid).count(host)))
+  print('hcount',hcount)
   maxx=max(hcount,key=lambda x: x[1])
-  nonblanced=[x for x in hcount if maxx[1]-1 > x[1]]
+  print('maxx',maxx)
+  nonblanced=[x for x in hcount if maxx[1] > x[1]]
+  print('nonblanced',nonblanced)
   selectdisk=[]
   if len(nonblanced) > 0:
    selectdisk=[x for x in disksinraid if x[1]==maxx[0]]
@@ -137,7 +155,7 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
   except:
    pass 
  elif 'stripe' in defdisk['raid'] :
-  cmdline=['/sbin/zpool', 'attach','-f', defdisk['pool'],disks[0]['name']]
+  cmdline=['/sbin/zpool', 'attach','-f', defdisk['pool'],defdisk['name']]
   try: 
    ret=mustattach(cmdline,disksvalues,defdisk,myhost)
   except :

@@ -15,7 +15,7 @@ ccnic=`/sbin/pcs resource show CC | grep nic\= | awk -F'nic=' '{print $2}' | awk
 /sbin/pcs resource delete --force dataip  2>/dev/null
 echo starting nodesearch>>/root/tmp2
 result=` ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
-echo finish nodesearch>>/root/tmp2
+echo finish nodesearch with ip=$myip, result=$result >>/root/tmp2
 freshcluster=0
 echo $result > /root/hihi
 echo myip=$myip >> /root/hihi
