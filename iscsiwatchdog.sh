@@ -20,12 +20,12 @@ then
 # systemctl restart target &>/dev/null
 # systemctl restart iscsi &>/dev/null
  echo start >> /root/iscsiwatch
- sh /pace/iscsirefresh.sh
+ if [ -f /pacedata/addiscsitargets ];
+ then
+  sh /pace/iscsirefresh.sh
   echo finished start of iscsirefresh  > /root/iscsiwatch
 # sh /pace/listingtargets.sh
   echo finished listingtargets >> /root/iscsiwatch
- if [ -f /pacedata/addiscsitargets ];
- then
   echo updating iscsitargets >> /root/iscsiwatch
   sh /pace/addtargetdisks.sh
   echo finished updtating iscsitargets >> /root/iscsiwatch

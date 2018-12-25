@@ -27,8 +27,8 @@ if possible != []:
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   
   put('change/'+x[0].replace('possible','')+'/booted',x[1])
-  cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
-  subprocess.run(cmdline,stdout=subprocess.PIPE)
+  #cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
+  #subprocess.run(cmdline,stdout=subprocess.PIPE)
 #  cmdline=['/bin/sleep','5']
 #  subprocess.run(cmdline,stdout=subprocess.PIPE)
 #  cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
