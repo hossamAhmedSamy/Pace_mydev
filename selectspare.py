@@ -106,6 +106,7 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
  else:
   mindisk=mindisksize
  disksvalues=[]
+ print('replacelist',replacelist)
  for  rep in replacelist:
   diskvalue=float(0)
   if norm(rep['size']) == norm(mindisk) :
@@ -122,8 +123,10 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
    diskvalue=diskvalue+100
   disksvalues.append((rep,diskvalue)) 
  disksvalues=sorted(disksvalues,key=lambda x:x[1], reverse=True)
- if disksvalues[0][1] < -10000:
-  return
+ print('diskvalues',disksvalues)
+ if len(disksvalues) > 0:
+  if disksvalues[0][1] < -10000:
+   return
  if 'spare' in defdisk['raid'] :
   logmsg.sendlog('Dist3','info','system', defdisk['id'],defdisk['host'])
   cmdline=['/sbin/zpool', 'remove', defdisk['pool'],defdisk['name']]
@@ -182,6 +185,20 @@ def selectspare(*args):
   return
  #allop=getall(myhost,'old')
  #diffop={k:newop[k] for k in allop if allop[k] != newop[k] and 'disk' in k}
+ print('hosts',newop['pools'])
+ mypools=[x['name'] for x in newop['pools'] if myhost in x['host']]
+ print('mypools',mypools)
+ toonline=[x for x in newop['disks'] if 'OFFLINE' in x['status'] and 'dhcp' in x['host'] and x['pool'] in mypools]
+ for x in toonline:
+  cmdline=['/sbin/zpool','online',x['pool'],x['name']]
+  logmsg.sendlog('Dist7','info','system',x['id'],x['pool'])
+  try:
+   subprocess.check_call(cmdline)
+   logmsg.sendlog('Disu7','info','system',x['id'],x['pool'])
+   print('success')
+  except:
+   logmsg.sendlog('Difa7','info','system',x['id'],x['pool'])
+   print('failed') 
  diskreplace(myhost,newop['defdisks'],newop['hosts'],newop['disks'],newop['freedisks']+newop['sparedisks'],newop['raids'],newop['pools'],'allowall',-1)
  return
  
