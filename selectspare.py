@@ -28,7 +28,11 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     logmsg.sendlog('Dist6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
    else:
     logmsg.sendlog('Dist2','info','system', defdisk['id'],spare['id'],myhost)
+   cmdline3=['/sbin/zpool', 'labelclear', spare['name']]
+   subprocess.run(cmdline3,stdout=subprocess.PIPE)
    cmd.append(spare['name'])
+   print(cmd)
+   dflkjd
    try: 
     subprocess.check_call(cmd)
     if 'attach' in cmd:
