@@ -20,13 +20,13 @@ if possible != []:
   etcddel('possible',x[0])
   put('known/'+x[0].replace('possible',''),x[1])
   put('nextlead',x[0].replace('possible','')+'/'+x[1])
-  broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
   cmdline=['/sbin/rabbitmqctl','add_user','rabb_'+x[0].replace('possible',''),'YousefNadody']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   cmdline=['/sbin/rabbitmqctl','set_permissions','-p','/','rabb_'+x[0].replace('possible',''),'.*','.*','.*']
+  etcddel('losthost/'+x[0].replace('possible',''))
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-  
   put('change/'+x[0].replace('possible','')+'/booted',x[1])
+  broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
   #cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
   #subprocess.run(cmdline,stdout=subprocess.PIPE)
 #  cmdline=['/bin/sleep','5']

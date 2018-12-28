@@ -69,6 +69,7 @@ then
  ./etcddel.py pools --prefix 2>/dev/null
  ./etcddel.py poolsnxt --prefix 2>/dev/null
  ./etcddel.py cann --prefix 2>/dev/null
+ ./etcddel.py prop --prefix 2>/dev/null
  ./etcdput.py leader/$myhost $myip 2>/dev/null
  ./etcdput.py primary/name $myhost 2>/dev/null
  ./etcdput.py primary/address $myip 2>/dev/null
@@ -118,6 +119,7 @@ else
   ./etcddellocal.py $myip localrun --prefix 2>/dev/null
   ./etcddellocal.py $myip run --prefix 2>/dev/null
   ./etcddellocal.py $myip pools --prefix 2>/dev/null
+  ./etcddellocal.py $myip prop --prefix 2>/dev/null
   ./etcddellocal.py $myip poolsnxt --prefix 2>/dev/null
   ./etcdsync.py $myip known known 2>/dev/null
   ./etcdsync.py $myip pools pools 2>/dev/null

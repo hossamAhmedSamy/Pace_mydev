@@ -25,6 +25,7 @@ then
  ETCDCTL_API=3 /TopStor/importlocalpools.py $poolsno
 fi
 ETCDCTL_API=3 /pace/etcddel.py hosts/$thehost  --prefix
+ETCDCTL_API=3 /pace/etcdput.py losthost/$thehost `date +%s` 
 ETCDCTL_API=3 /pace/etcddel.py cannot  --prefix
 ETCDCTL_API=3 /pace/etcddel.py pools $thehost
 ETCDCTL_API=3 /pace/etcddel.py oldhosts/$thehost  --prefix
