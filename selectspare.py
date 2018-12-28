@@ -32,7 +32,6 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    subprocess.run(cmdline3,stdout=subprocess.PIPE)
    cmd.append(spare['name'])
    print(cmd)
-   dflkjd
    try: 
     subprocess.check_call(cmd)
     if 'attach' in cmd:

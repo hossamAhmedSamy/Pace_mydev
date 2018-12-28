@@ -36,12 +36,12 @@ def syncmypools(*args):
   with open('/TopStordata/'+pool['name'],'rb') as f:
    bpoolfile=f.read()
   poolfile=binascii.hexlify(bpoolfile)
-  broadcast('Movecache','/TopStordata/'+pool['name'],poolfile) 
+  broadcast('Movecache','/TopStordata/'+pool['name'],str(poolfile)) 
  logmsg.sendlog('Zpsu03','info','system')
  return 
 
 if __name__=='__main__':
- if thispool in sys.argv[1]:
+ if 'thispool' in sys.argv[1]:
   syncthispool(*sys.arv[2:])
  else:
   syncmypools(*sys.argv[1:])
