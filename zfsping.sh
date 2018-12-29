@@ -64,7 +64,7 @@ do
    #targetcli clearconfig True
    #targetcli saveconfig
    #targetcli restoreconfig /pacedata/targetconfig
-   /pace/etcdput.py ready/$myhost ok
+   /pace/etcdput.py ready/$myhost $myip
    touch /pacedata/addiscsitargets 
    pgrep putzpool 
    if [ $? -ne 0 ];
@@ -222,7 +222,7 @@ do
     fi
     if [[ $isknown -eq 3 ]];
     then
-     /pace/etcdput.py ready/$myhost ok &
+     /pace/etcdput.py ready/$myhost $myip &
      #targetcli clearconfig True
      #targetcli saveconfig
      #targetcli restoreconfig /pacedata/targetconfig

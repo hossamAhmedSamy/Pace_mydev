@@ -6,6 +6,7 @@ from etcdget import etcdget as get
 from etcdput import etcdput as put
 from etcddel import etcddel as dels 
 from poolall import getall as getall
+from sendhost import sendhost
 from syncpools import syncmypools
 import logmsg
 disksvalue=[]
@@ -18,6 +19,17 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    print('helskdlskdkddlsldssd#######################')
    cmd=cmdline
    spare=disksallowed[0][0]
+   spareplsclear=get('clearplsdisk/'+spare['name'])
+   spareiscleared=get('cleareddisk/'+spare['name']) 
+   if 'dhcp' not in str(spareiscleared):
+    if 'dhcp' not in str(spareplsclear):
+     put('clearplsdisk/'+spare['name'],spare['host'])
+     hostip=get('ready/'+spare['host'])
+     z=['/TopStor/pump.sh','Zpoolclrrun',spare['name']]
+     msg={'req': 'Zpool', 'reply':z}
+     sendhost(hostip[0], str(msg),'recvreply',myhost)
+    return spare['name']
+   dels('cleareddisk/'+spare['name']) 
    if 'attach' in cmd:
     print('defdisk',defdisk)
    else:
@@ -45,6 +57,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     if 'attach' in cmd:
      logmsg.sendlog('Difa6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
     else:
+     print('spare',spare)
      logmsg.sendlog('Difa2','info','system', defdisk['id'],spare['id'],myhost)
     disksallowed.pop(0)
     ret=mustattach(cmdline[:-1],disksallowed,defdisk,myhost) 
@@ -103,7 +116,7 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
   dontuse=defdisk['host']
  disksinraid=[disk for disk in alldisks if disk['raid']==defdisk['raid'] and disk['name'] != defdisk['name'] and 'ONLI' in disk['changeop']]
  runninghosts=[disk['host'] for disk in alldisks if disk['raid']==defdisk['raid'] and disk['name'] != defdisk['name'] and 'ONLI' in disk['changeop'] and disk['host'] not in dontuse ]
- if mindisksize < 0:
+ if mindisksize < 0 and len(disksinraid) > 0:
   mindisk=min(disksinraid,key=lambda x:norm(x['size']))
   mindisk=mindisk['size']
  else:
