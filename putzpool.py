@@ -111,7 +111,7 @@ for a in sty:
   rdict={ 'name':b[0], 'changeop':'NA','status':'NA','pool':zdict['name'],'host':myhost,'disklist':disklist }
   raidlist.append(rdict)
   lraids.append(rdict)
- elif 'scsi' in str(b) or 'disk' in str(b):
+ elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b):
    diskid='-1'
    host='-1'
    size='-1' 
