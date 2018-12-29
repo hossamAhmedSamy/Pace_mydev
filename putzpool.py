@@ -42,6 +42,9 @@ lraids=[]
 lvolumes=[]
 lsnapshots=[]
 poolsstatus=[]
+x=list(map(chr,(range(97,123))))
+drives=';sd'.join(x).split(';')
+drives[0]='sd'+drives[0]
 cmdline=['/sbin/zfs','list','-t','snapshot,filesystem','-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available','-H']
 result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
@@ -101,7 +104,7 @@ for a in y:
   rdict={ 'name':b[0], 'changeop':'NA','status':'NA','pool':zdict['name'],'host':myhost,'disklist':disklist }
   raidlist.append(rdict)
   lraids.append(rdict)
- elif 'scsi' in a or 'disk' in a:
+ elif 'scsi' in a or 'disk' in a or any(drive in a for drive in drives):
    diskid='-1'
    host='-1'
    size='-1' 
@@ -112,6 +115,9 @@ for a in y:
     lraids.append(rdict)
     stripecount+=1
    for lss in lsscsi:
+    z=lss.split()
+    if any(drive in a for drive in drives):
+     b[0]='scsi-'+z[6]
     z=lss.split()
     if z[6] in b[0]:
      diskid=lsscsi.index(lss)
