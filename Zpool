@@ -1,6 +1,0 @@
-#!/bin/sh
-export ETCDCTL_API=3
-pool=`echo $@ | awk '{print $3}' | awk -F'/' '{print $3}'`
-/TopStor/Zpool2 $@ &
- sleep 60
-ETCDCTL_API=3 /pace/etcddel.py lockedpools/$pool

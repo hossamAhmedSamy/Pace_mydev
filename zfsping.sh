@@ -299,7 +299,7 @@ do
    pgrep  selectimport 
    if [ $? -ne 0 ];
    then
-    ./selectimport.py $myhost &
+    /TopStor/selectimport.py $myhost &
    fi
  fi 
  echo toimport = $toimport >> /root/zfspingtmp
