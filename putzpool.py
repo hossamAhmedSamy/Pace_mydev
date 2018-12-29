@@ -18,7 +18,7 @@ readyhosts=get('ready','--prefix')
 knownpools=[f for f in listdir('/TopStordata/') if 'pdhcp' in f and 'pree' not in f ]
 cmdline='/sbin/zpool status'
 result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
-y=str(result)[2:][:-3].replace('\\t','').split('\\n')
+sty=str(result)[2:][:-3].replace('\\t','').split('\\n')
 cmdline='/bin/lsscsi -is'
 result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
 lsscsi=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x ]
@@ -50,9 +50,16 @@ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
 #lists=[lpools,ldisks,ldefdisks,lavaildisks,lfreedisks,lsparedisks,lraids,lvolumes,lsnapshots]
 lists={'pools':lpools,'disks':ldisks,'defdisks':ldefdisks,'inusedisks':linusedisks,'freedisks':lfreedisks,'sparedisks':lsparedisks,'raids':lraids,'volumes':lvolumes,'snapshots':lsnapshots, 'hosts':lhosts, 'phosts':phosts}
-for a in y:
+for a in sty:
+ print('aaaaaa',a)
  b=a.split()
- if "pdhc" in a and  'pool' not in a:
+ if len(b) > 0:
+  if any(drive in str(b[0]) for drive in drives):
+   for lss in lsscsi:
+    if any('/dev/'+b[0] in lss for drive in drives):
+     b[0]='scsi-'+lss.split()[6]
+     print(b)
+ if "pdhc" in str(b) and  'pool' not in str(b):
   raidlist=[]
   volumelist=[]
   zdict={}
@@ -92,19 +99,19 @@ for a in y:
     snaplist.append(sdict)
     lsnapshots.append(sdict['snapname'])
     
- elif any(raid in a for raid in raidtypes):
+ elif any(raid in str(b) for raid in raidtypes):
   spaces=len(a.split(a.split()[0])[0])
   disklist=[]
   rdict={ 'name':b[0], 'changeop':b[1],'status':b[1],'pool':zdict['name'],'host':myhost,'disklist':disklist }
   raidlist.append(rdict)
   lraids.append(rdict)
- elif any(raid in a for raid in raid2):
+ elif any(raid in str(b) for raid in raid2):
   spaces=len(a.split(a.split()[0])[0])
   disklist=[]
   rdict={ 'name':b[0], 'changeop':'NA','status':'NA','pool':zdict['name'],'host':myhost,'disklist':disklist }
   raidlist.append(rdict)
   lraids.append(rdict)
- elif 'scsi' in a or 'disk' in a or any(drive in a for drive in drives):
+ elif 'scsi' in str(b) or 'disk' in str(b):
    diskid='-1'
    host='-1'
    size='-1' 
@@ -116,9 +123,7 @@ for a in y:
     stripecount+=1
    for lss in lsscsi:
     z=lss.split()
-    if any(drive in a for drive in drives):
-     b[0]='scsi-'+z[6]
-    z=lss.split()
+    print('z,b',z[6],b[0])
     if z[6] in b[0]:
      diskid=lsscsi.index(lss)
      host=z[3].split('-')[1]
