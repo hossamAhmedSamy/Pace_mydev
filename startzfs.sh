@@ -129,7 +129,7 @@ else
   ./etcdsync.py $myip localrun localrun 2>/dev/null
   ./etcdsync.py $myip leader known 2>/dev/null
   ./etcdsync.py $myip logged logged 2>/dev/null
-  ./etcdsync.py $myip updlogged uplogged 2>/dev/null
+  ./etcdsync.py $myip updlogged updlogged 2>/dev/null
   /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
   ./etcddel.py known/$myhost --prefix 2>/dev/null
   ./etcddel.py oldhosts/$myhost  --prefix 2>/dev/null
