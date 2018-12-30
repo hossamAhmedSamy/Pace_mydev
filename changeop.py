@@ -9,6 +9,8 @@ from poolall import putall as putall
 from poolall import delall as delall
 import logmsg
 def forceoffline(*args):
+ with open('/root/changeop','w') as f:
+  f.write(str(args))
  alls=getall(args[0])
  mypools=[x for x in alls['pools'] if 'pree' not in x['name'] ]  
  for mypool in mypools:
