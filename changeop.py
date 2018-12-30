@@ -29,7 +29,7 @@ def changeop(*args):
  oldlls=getall(args[0],'old')
  if type(oldlls) != dict :
   for disk in alls['defdisks']:
-   logmsg.sendlog('Diwa1','warning','system', disk['id'], disk['changeop'])
+   logmsg.sendlog('Diwa1','warning','system', disk['pool'])
    cmdline='/sbin/zpool offline '+disk['pool']+' '+disk['name']
    subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
   putall(args[0],'old')
