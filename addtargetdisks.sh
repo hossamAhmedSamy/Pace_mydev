@@ -34,12 +34,13 @@ for ddisk in "${disks[@]}"; do
 
  echo $currentdisks | grep $idisk &>/dev/null
  if [ $? -ne 0 ]; then
+  echo Imhere
   pdisk=`ls /dev/disk/by-id/ | grep $idisk | grep -v part`
   targetcli backstores/block create ${devdisk}-${myhost} /dev/disk/by-id/$pdisk
   change=1
   echo currentdisks $currentdisks
   for iqn in "${tpgs[@]}"; do
-   echo iqn= $iqn
+   echo iqn= $iqn devdisk=$devdisk-${myhost}
    targetcli iscsi/iqn${iqn}/tpg1/luns/ create /backstores/block/${devdisk}-${myhost}  
    change=1
   done
