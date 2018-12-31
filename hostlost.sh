@@ -6,10 +6,14 @@ thehost=`echo $@ | awk '{print $1}'`
 declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
 echo "${disks[@]}"
 echo "${disks[@]}" > /root/losthost
-echo "${disks[@]}" | awk '{print $1}' | awk -F'/' '{print $NF}' | while read l;
+echo pdisks=` echo "${disks[@]}" | awk '{print $1}' | awk -F'/' '{print $NF}' `
+echo  "${pdisks[@]}" | while read l;
 do
- echo 1 > /sys/block/$l/device/delete 2>/dev/null
- echo echo 1 \> /sys/block/$l/device/delete >> /root/hostlost
+ if [ ! -z $l ]; 
+ then
+   echo 1 > /sys/block/$l/device/delete 2>/dev/null
+   echo echo 1 \> /sys/block/$l/device/delete >> /root/hostlost
+  fi
 done
 echo disks="${disks[@]}" >> /root/hostlosttmp
 echo "${disks[@]}" | awk '{print $2}'  | while read l;
@@ -21,7 +25,7 @@ echo udpating database >> /root/hostlosttmp
 ETCDCTL_API=3 /pace/etcdget.py pools --prefix | grep "\/$thehost" | grep "\/${myhost}" > /TopStordata/forlocalpools
 ETCDCTL_API=3 /TopStor/importlocalpools.py  &
 ETCDCTL_API=3 /pace/etcddel.py hosts/$thehost  --prefix
-ETCDCTL_API=3 /pace/etcddel.py prop/$thehost  --prefix
+ETCDCTL_API=3 /pace/etcddel.py prop/$thehost
 ETCDCTL_API=3 /pace/etcdput.py losthost/$thehost `date +%s` 
 ETCDCTL_API=3 /pace/etcddel.py cannot  --prefix
 ETCDCTL_API=3 /pace/etcddel.py pools $thehost

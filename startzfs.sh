@@ -1,7 +1,7 @@
 #!/bin/sh
 cd /pace
 export ETCDCTL_API=3
-zpool export -a 2>/dev/null
+/sbin/zpool export -a 2>/dev/null
 echo starting startzfs > /root/tmp2
 iscsimapping='/pacedata/iscsimapping';
 runningpools='/pacedata/pools/runningpools';
