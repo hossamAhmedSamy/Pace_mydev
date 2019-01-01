@@ -138,7 +138,7 @@ else
   /sbin/rabbitmqctl set_permissions -p / rabb_$leader ".*" ".*" ".*" 2>/dev/null
 #  /sbin/rabbitmqctl set_user_tags rabb_ administrator
   ./etcddellocal.py $myip users --prefix 2>/dev/null
-  ./etcdsync.py $myip users users 2>/dev/null
+#  ./etcdsync.py $myip users users 2>/dev/null
   ./usersyncall.py $myip &
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
   if [[ $myalias -ne -1 ]];
