@@ -4,6 +4,7 @@ if [ $x -gt 1 ];
 then
  exit
 fi
+dmesg -n 1
 if [[ "$#" -eq 0 ]];
 then
  islocal=0

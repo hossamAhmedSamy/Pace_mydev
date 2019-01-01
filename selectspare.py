@@ -203,8 +203,10 @@ def selectspare(*args):
  #diffop={k:newop[k] for k in allop if allop[k] != newop[k] and 'disk' in k}
  print('hosts',newop['pools'])
  mypools=[x['name'] for x in newop['pools'] if myhost in x['host']]
+ ready=get('ready','--prefix')
+ possibles=get('possible','--prefix')
  print('mypools',mypools)
- toonline=[x for x in newop['disks'] if 'OFFLINE' in x['status'] and 'dhcp' in x['host'] and x['pool'] in mypools]
+ toonline=[x for x in newop['disks'] if 'OFFLINE' in x['status'] and 'dhcp' in x['host'] and x['pool'] in mypools and (x['host'] in str(ready) or x['host'] in str(possibles))]
  for x in toonline:
   cmdline=['/sbin/zpool','online',x['pool'],x['name']]
   logmsg.sendlog('Dist7','info','system',x['id'],x['pool'])
