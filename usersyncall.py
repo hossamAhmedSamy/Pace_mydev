@@ -31,7 +31,6 @@ def thread_add(*user):
   cmdline=['/TopStor/UnixAddUser_sync',username,userhash,userid,usergd,userhome]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
-
 def thread_del(*user):
  username=user[0].replace('usersinfo/','')
  if username not in str(allusers):
