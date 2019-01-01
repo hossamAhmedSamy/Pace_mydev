@@ -1,6 +1,7 @@
 #!/bin/sh
 cd /pace
 export ETCDCTL_API=3
+zpool export -a 2>/dev/null
 echo starting startzfs > /root/tmp2
 iscsimapping='/pacedata/iscsimapping';
 runningpools='/pacedata/pools/runningpools';
@@ -57,9 +58,6 @@ then
    /pace/etcdput.py alias/$myhost $myhost
  fi
  rm -rf /var/lib/iscsi/nodes/* 2>/dev/null
- echo startiscsiwatchdog >>/root/tmp2
- /pace/iscsiwatchdog.sh 2>/dev/null
- echo finished iscsiwatchdog >>/root/tmp2
  echo creating namespaces >>/root/tmp2
  ./setnamespace.py $enpdev
  ./setdataip.py
@@ -79,9 +77,15 @@ then
  ./etcddel.py to  --prefix 2>/dev/null
  ./etcddel.py hosts  --prefix 2>/dev/null
  ./etcddel.py oldhosts  --prefix 2>/dev/null
+ systemctl start iscsid &
+ systemctl start iscsi &
  systemctl start topstorremote
  systemctl start topstorremoteack
  systemctl start servicewatchdog 
+ echo startiscsiwatchdog >>/root/tmp2
+ /pace/iscsiwatchdog.sh 2>/dev/null
+ echo finished iscsiwatchdog >>/root/tmp2
+
  echo deleted knowns and added leader >>/root/tmp2
 else
  echo found other host as primary.. checking if it shares same host name>>/root/tmp2
@@ -172,11 +176,6 @@ poollist='/pacedata/pools/'${myhost}'poollist';
 lastreboot=`uptime -s`
 seclastreboot=`date --date="$lastreboot" +%s`
 secrunning=`cat $runningpools | grep runningpools | awk '{print $2}'`
-# ./addtargetdisks.sh
-lsblk -Sn | grep LIO &>/dev/null
-if [ $? -ne 0 ]; then
- sleep 2
-fi
 if [ -z $secrunning ]; then
  echo hithere: $lastreboot : $seclastreboot
  secdiff=222;
@@ -190,7 +189,6 @@ echo starting keysend >>/root/tmp2
 # pcs resource create IPinit ocf:heartbeat:IPaddr2 nic="$ccnic" ip="10.11.11.254" cidr_netmask=24 op monitor on-fail=restart 2>/dev/null
 # pcs resource debug-start IPinit 2>/dev/null
  rm -rf /TopStor/key/adminfixed.gpg && cp /TopStor/factory/factoryadmin /TopStor/key/adminfixed.gpg
- zpool export -a 2>/dev/null
 echo i all zpool exported >>/root/tmp2
  echo $freshcluster | grep 1
  if [ $? -eq 0 ];

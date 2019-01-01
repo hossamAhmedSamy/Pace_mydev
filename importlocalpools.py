@@ -11,16 +11,18 @@ def thread_run(*args):
  return
 
 def importpools(*args):
+ print('hihihi')
  threads=[]
  with open('/TopStordata/forlocalpools') as f:
   for line in f:
+   print('===============')
    with open('/root/importlocal','a') as f:
     f.write('poolline: '+line)
    pool=mtuple(line)[0].split('/')[1]
    with open('/root/importlocal','a') as f:
     f.write('poolname: '+str(pool)+'\n')
    print('line', line)
-   cmdline='/TopStor/Zpool2deadhost import -c /TopStordata/'+pool+' -am'
+   cmdline='/TopStor/Zpool2deadhost import '+pool
    x=Thread(target=thread_run,name='importing-'+pool,args=cmdline.split(" "))
    x.start()
    threads.append(x) 
@@ -30,5 +32,6 @@ def importpools(*args):
  return
 
 if __name__ == "__main__":
+ print('starting')
  importpools(*sys.argv[1:])
  
