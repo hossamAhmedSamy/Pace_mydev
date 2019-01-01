@@ -12,6 +12,8 @@ myusers=getlocal(myip,'usersinfo','--prefix')
 
 def thread_add(*user):
  username=user[0].replace('usersinfo/','')
+ with open('/root/usersync2','a') as f:
+  f.write(str(user)+' + '+str(username)+'\n')
  if username in str(myusers):
   userhashlocal=getlocal(myip,'usershash/'+username)[0]
   userhash=get('usershash/'+username)[0]
