@@ -125,10 +125,12 @@ else
   ./etcddellocal.py $myip pools --prefix 2>/dev/null
   ./etcddellocal.py $myip prop --prefix 2>/dev/null
   ./etcddellocal.py $myip poolsnxt --prefix 2>/dev/null
+  ./etcddellocal.py $myip vol --prefix 2>/dev/null
   ./etcdsync.py $myip known known 2>/dev/null
   ./etcdsync.py $myip pools pools 2>/dev/null
   ./etcdsync.py $myip poolsnxt poolsnxt 2>/dev/null
   ./etcdsync.py $myip namespace namespace 2>/dev/null
+  ./etcdsync.py $myip volumes volumes 2>/dev/null
   ./etcdsync.py $myip dataip dataip 2>/dev/null
   ./etcdsync.py $myip localrun localrun 2>/dev/null
   ./etcdsync.py $myip leader known 2>/dev/null
