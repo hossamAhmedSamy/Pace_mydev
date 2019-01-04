@@ -33,7 +33,7 @@ def importpools(*args):
  with open('/root/importlocal','a') as f:
   f.write('poolname: '+str(pool)+'\n')
  print('line', line)
- cmdline='/pace/Zpool2deadhost '+pool
+ cmdline='/pace/Zpool2deadhost '+thehost+' '+pool
  x=Thread(target=thread_run,name='importing-'+pool,args=cmdline.split(" "))
  x.start()
  threads.append(x) 

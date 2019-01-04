@@ -2,7 +2,8 @@
 export ETCDCTL_API=3
 echo $@ > /root/Zpoolparam
 echo starting zpooldeadhost
-pool=`echo $@ | awk '{print $1}'`
+thehost=`echo $@ | awk '{print $1}'`
+pool=`echo $@ | awk '{print $2}'`
 success=0;
 myhost=`hostname`
 echo importing the $pool nicely 
@@ -24,5 +25,5 @@ then
  #ETCDCTL_API=3 /pace/syncpools.py thispool $pool.
  ETCDCTL_API=3 /pace/etcddel.py poolsnxt/$pool
  ETCDCTL_API=3 /pace/etcddel.py cannot $pool
- /TopStor/VolumeActivateCIFS $pool
+ /TopStor/VolumeActivateCIFS pool=$pool host=$thehost user=system
 fi 
