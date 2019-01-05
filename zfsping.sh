@@ -133,7 +133,7 @@ do
     ./runningetcdnodes.py $myip 2>/dev/null
     ./etcddel.py leader 2>/dev/null &
     ./etcdput.py leader/$myhost $myip 2>/dev/null &
-    ETCDCTL_API=3 /pace/hostlostdeadleader.sh $leadername $myip &
+    ETCDCTL_API=3 /pace/hostlost.sh $leadername &
     /TopStor/logmsg.py Partst02 warning system $leaderall &
     echo creating namespaces >>/root/zfspingtmp
     ./setnamespace.py $enpdev &

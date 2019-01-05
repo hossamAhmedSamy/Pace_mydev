@@ -4,6 +4,7 @@ from ast import literal_eval as mtuple
 from etcddel import etcddel as etcddel
 from broadcast import broadcast as broadcast 
 from etcdget import etcdget as get
+from etcdgetlocal import etcdget as getlocal
 from etcdput import etcdput as put 
 import json
 x=subprocess.check_output(['pgrep','addknown'])
@@ -46,11 +47,10 @@ if str(nextone[0]).split('/')[0] not in  str(known):
 if known != []:
  for kno in known:
   kn=kno 
-  cmdline=['/pace/etcdgetlocal.py',kn[1],'local','--prefix']
-  heartres=subprocess.run(cmdline,stdout=subprocess.PIPE)
-  heart=str(heartres.stdout)[2:][:-3].split('\\n')
+  heart=getlocal(kn[1],'--prefix')
   print('heartbeat=',heart)
-  if(heart == ['-1']):
+  print(type(heart),heart)
+  if( '-1' in str(heart)):
    print('the known ',kn[0].replace('known/',''),' is gone, notfound')
    etcddel(kn[0])
    if kn[1] in str(nextone):

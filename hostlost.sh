@@ -7,6 +7,7 @@ declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
 echo "${disks[@]}"
 echo "${disks[@]}" > /root/losthost
 echo pdisks=` echo "${disks[@]}" | awk '{print $1}' | awk -F'/' '{print $NF}' `
+echo pdisks="${pdisks[@]}" >> /root/losthost
 echo  "${pdisks[@]}" | while read l;
 do
  if [ ! -z $l ]; 
