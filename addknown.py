@@ -50,7 +50,7 @@ if known != []:
   heart=getlocal(kn[1],'local','--prefix')
   print('heartbeat=',heart, kn[1])
   print(type(heart),heart)
-  if( '-1' in str(heart)):
+  if( '-1' in str(heart) or len(heart) < 1):
    print('the known ',kn[0].replace('known/',''),' is gone, notfound')
    etcddel(kn[0])
    if kn[1] in str(nextone):
