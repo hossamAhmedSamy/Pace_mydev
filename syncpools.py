@@ -42,7 +42,7 @@ def syncmypools(*args):
 
 if __name__=='__main__':
  if 'thispool' in sys.argv[1]:
-  syncthispool(*sys.arv[2:])
+  syncthispool(*sys.argv[2:])
  else:
   syncmypools(*sys.argv[1:])
 

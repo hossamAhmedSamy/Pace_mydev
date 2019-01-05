@@ -7,7 +7,7 @@ from etcdput import etcdput as put
 from etcddel import etcddel as dels 
 from poolall import getall as getall
 from sendhost import sendhost
-from syncpools import syncmypools
+#from syncpools import syncmypools
 import logmsg
 disksvalue=[]
 
@@ -50,7 +50,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
      logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
     else:
      logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
-    syncmypools('all')
+    #syncmypools('all')
     print('hihihi')
     return spare['name'] 
    except subprocess.CalledProcessError:

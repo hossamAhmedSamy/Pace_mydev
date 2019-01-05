@@ -8,27 +8,33 @@ def etcdget(thehost,key, prefix=''):
  endpoints='http://'+thehost+':2378'
  cmdline=['etcdctl','--endpoints='+endpoints,'get',key,prefix]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
- if(result.stdout==b''):
-   print('-1')
-   z.append('-1')
-   return z 
+ z=[]
  try:
-  if(prefix !=''):
+  if(prefix =='--prefix'):
    mylist=str(result.stdout)[2:][:-3].split('\\n')
    zipped=zip(mylist[0::2],mylist[1::2])
    for x in zipped:
+    z.append(x) 
     print(x)
-    z.append(x)
-  else:
-   if(result==['']):
-    print('-1')
-    z.append('-1')
+  elif(prefix == ''):
+   z.append((str(result.stdout).split(key)[1][2:][:-3]))
    print(str(result.stdout).split(key)[1][2:][:-3])
-   z.append(str(result.stdout).split(key)[1][2:][:-3])
-  
+  else:
+   cmdline=['/bin/etcdctl','--endpoints='+endpoints,'get',key,'--prefix']
+   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+   mylist=str(result.stdout)[2:][:-3].split('\\n')
+   zipped=zip(mylist[0::2],mylist[1::2])
+   for x in zipped:
+    if prefix in str(x):
+     z.append(x)
+     print(x)
+   if(len(z) == 0):
+     z.append(-1)
+     print('-1')
  except:
+  z.append(-1)
   print('-1')
-  z.append('-1')
  return z
+
 if __name__=='__main__':
  etcdget(*sys.argv[1:])

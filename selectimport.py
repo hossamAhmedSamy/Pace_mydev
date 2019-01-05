@@ -28,8 +28,9 @@ def electimport(myhost, allpools,*arg):
 					f.write(' ,host: '+host)
 					f.write(' ,chost:'+chost)
 					f.write(' ,nhost:'+nhost)
-				put('poolsnxt/'+pool,host)
-				broadcasttolocal('poolsnxt/'+pool,host)
+                                if len(host) > 2 and len(pool) > 4:
+				 put('poolsnxt/'+pool,host)
+				 broadcasttolocal('poolsnxt/'+pool,host)
 				break
 	return
 

@@ -1,0 +1,28 @@
+#!/bin/sh
+export ETCDCTL_API=3
+echo $@ > /root/Zpoolparam
+echo starting zpooldeadhost
+pool=`echo $@ | awk '{print $1}'`
+success=0;
+myhost=`hostname`
+echo importing the $pool nicely 
+echo starting to zpool the $pool > /root/Zpooldeadhost
+/sbin/zpool import $pool
+echo ran the import >> /root/Zpooldeadhost
+/sbin/zpool status | grep $pool
+if [ $? -eq 0 ];
+then
+ echo pool $pool is imported  nicely.. waiting for leader >> /root/Zpooldeadhost
+ success=1;
+fi
+if [ $success -eq 1 ]; 
+then
+ ETCDCTL_API=3 /TopStor/logmsg.py Zpsu02 info system $pool
+ ETCDCTL_API=3 /pace/etcdput.py pools/$pool $myhost
+ ETCDCTL_API=3 /pace/broadcasttolocal.py pools/$pool $myhost
+ /pace/putzpool.py
+ #ETCDCTL_API=3 /pace/syncpools.py thispool $pool.
+ ETCDCTL_API=3 /pace/etcddel.py poolsnxt/$pool
+ ETCDCTL_API=3 /pace/etcddel.py cannot $pool
+ /TopStor/VolumeActivateCIFS $pool
+fi 

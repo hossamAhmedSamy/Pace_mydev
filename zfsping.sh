@@ -104,9 +104,6 @@ do
     /TopStor/logmsg.py Partst05 info system $myhost &
     primtostd=0;
    fi
-   ETCDCTL_API=3 /pace/etcdgetlocal.py $myip poolsnxt --prefix | grep ${myhost} > /TopStordata/forlocalpools
-   #ETCDCTL_API=3 /TopStor/importlocalpools.py  &
-   ETCDCTL_API=3 /TopStor/hostlostdeadleader.sh $leadername  &
    nextleadip=`ETCDCTL_API=3 ./etcdgetlocal.py $myip nextlead` 
    echo nextlead is $nextleadip  >> /root/zfspingtmp
    echo $nextleadip | grep $myip
@@ -136,6 +133,7 @@ do
     ./runningetcdnodes.py $myip 2>/dev/null
     ./etcddel.py leader 2>/dev/null &
     ./etcdput.py leader/$myhost $myip 2>/dev/null &
+    ETCDCTL_API=3 /pace/hostlostdeadleader.sh $leadername $myip &
     /TopStor/logmsg.py Partst02 warning system $leaderall &
     echo creating namespaces >>/root/zfspingtmp
     ./setnamespace.py $enpdev &
