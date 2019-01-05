@@ -16,6 +16,7 @@ then
  echo pool $pool is imported  nicely.. waiting for leader >> /root/Zpooldeadhost
  success=1;
 fi
+echo success=$success >> /root/Zpoolparam
 if [ $success -eq 1 ]; 
 then
  ETCDCTL_API=3 /TopStor/logmsg.py Zpsu02 info system $pool

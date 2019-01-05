@@ -5,6 +5,7 @@ thehost=`echo $@ | awk '{print $1}'`
 #declare -a disks=(`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`);
 declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
 echo "${disks[@]}"
+echo $@ > /root/losthostparam
 echo "${disks[@]}" > /root/losthost
 echo pdisks=` echo "${disks[@]}" | awk '{print $1}' | awk -F'/' '{print $NF}' `
 echo pdisks="${pdisks[@]}" >> /root/losthost
@@ -24,7 +25,6 @@ echo udpating database >> /root/hostlosttmp
 #ETCDCTL_API=3 /pace/etcdget.py pools --prefix | grep "\/$thehost" | grep "\/${myhost}" > /TopStordata/forlocalpools
 ETCDCTL_API=3 /pace/etcddel.py known/$thehost  --prefix
 ETCDCTL_API=3 /pace/importlocalpools.py $myhost $thehost 
-exit
 ETCDCTL_API=3 /pace/etcddel.py hosts/$thehost  --prefix
 ETCDCTL_API=3 /pace/etcddel.py prop/$thehost
 ETCDCTL_API=3 /pace/etcdput.py losthost/$thehost `date +%s` 
