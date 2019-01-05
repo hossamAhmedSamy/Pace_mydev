@@ -47,8 +47,8 @@ if str(nextone[0]).split('/')[0] not in  str(known):
 if known != []:
  for kno in known:
   kn=kno 
-  heart=getlocal(kn[1],'--prefix')
-  print('heartbeat=',heart)
+  heart=getlocal(kn[1],'local','--prefix')
+  print('heartbeat=',heart, kn[1])
   print(type(heart),heart)
   if( '-1' in str(heart)):
    print('the known ',kn[0].replace('known/',''),' is gone, notfound')
@@ -62,7 +62,7 @@ if known != []:
    subprocess.run(cmdline,stdout=subprocess.PIPE)
    etcddel('localrun/'+str(kn[0]))
    broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
-  elif (mtuple(heart[0])[1] not in kn[1]):
+  elif (heart[0][1] not in kn[1]):
    if kn[1] in str(nextone):
     etcddel('nextlead')
    etcddel(kn[0])
