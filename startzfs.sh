@@ -63,7 +63,6 @@ then
  ./setnamespace.py $enpdev
  ./setdataip.py
  echo created namespaces >>/root/tmp2
- systemctl start smb
  ./etcddel.py leader --prefix 2>/dev/null
  ./etcddel.py pools --prefix 2>/dev/null
  ./etcddel.py poolsnxt --prefix 2>/dev/null

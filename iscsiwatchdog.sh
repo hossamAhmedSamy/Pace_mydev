@@ -9,15 +9,24 @@ else
  myhost=`echo $@ | awk '{print $2}'`
  leader=`echo $@ | awk '{print $3}'`
 fi
+pgrep iscsid -a
+while [ $? -ne 0 ];
+do
+ sleep 1
+ pgrep iscsid -a
+done
 
-systemctl status etcd &>/dev/null
-if [ $? -eq 0 ];
-then
+pgrep etcd -a
+while [ $? -ne 0 ];
+do
+ sleep 1
+ pgrep etcd -a
+done
 # systemctl restart target &>/dev/null
 # systemctl restart iscsi &>/dev/null
- echo start >> /root/iscsiwatch
- if [ -f /pacedata/addiscsitargets ];
- then
+echo start >> /root/iscsiwatch
+# if [ -f /pacedata/addiscsitargets ];
+# then
   sh /pace/iscsirefresh.sh
   echo finished start of iscsirefresh  > /root/iscsiwatch
 # sh /pace/listingtargets.sh
@@ -25,9 +34,6 @@ then
   echo updating iscsitargets >> /root/iscsiwatch
   sh /pace/addtargetdisks.sh
   echo finished updtating iscsitargets >> /root/iscsiwatch
- else
-  echo cannot add new iscsi targets at the moment >> /root/iscsiwatch
- fi
  if [[ $islocal -eq 0 ]];
  then
   echo putzpool to leader >> /root/zfspingtmp
@@ -39,4 +45,4 @@ then
   echo putzpool local $myip $myhost $islocal >> /root/iscsiwatch
 #  ETCDCTL_API=3 /pace/putzpoollocal.py $myip $myhost $leader
  fi
-fi
+#fi
