@@ -12,7 +12,7 @@ echo pdisks="${pdisks[@]}" >> /root/losthost
 echo  "${disks[@]}" | while read l;
 do
    dis=`echo $l | awk '{print $1}'  | awk -F'/' '{print $3}'`
-   echo 1 > /sys/block/$dis/device/delete 2>/dev/null
+#   echo 1 > /sys/block/$dis/device/delete 2>/dev/null
    echo echo 1 \> /sys/block/$dis/device/delete >> /root/hostlost
 done
 echo disks="${disks[@]}" >> /root/hostlosttmp

@@ -160,6 +160,8 @@ else
   fi
   ./etcddellocal.py $myip alias --prefix 2>/dev/null
   ./etcdsync.py $myip alias alias 2>/dev/null
+  systemctl start iscsid &
+  systemctl start iscsi &
   systemctl start topstorremote
   systemctl start topstorremoteack
   systemctl start servicewatchdog 
