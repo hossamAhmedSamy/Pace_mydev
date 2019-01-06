@@ -2,7 +2,7 @@
 cd /pace
 export ETCDCTL_API=3
 /sbin/zpool export -a 2>/dev/null
-cp /TopStor/smb.conf /etc/samba/
+yes | cp /TopStor/smb.conf /etc/samba/
 echo starting startzfs > /root/tmp2
 iscsimapping='/pacedata/iscsimapping';
 runningpools='/pacedata/pools/runningpools';
