@@ -1,9 +1,4 @@
 #!/bin/sh
-x=`pgrep iscsiwatchdog | grep -v $$ |  wc -l`
-if [ $x -gt 1 ];
-then
- exit
-fi
 dmesg -n 1
 if [[ "$#" -eq 0 ]];
 then

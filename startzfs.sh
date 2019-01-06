@@ -2,6 +2,7 @@
 cd /pace
 export ETCDCTL_API=3
 /sbin/zpool export -a 2>/dev/null
+cp /TopStor/smb.conf /etc/samba/
 echo starting startzfs > /root/tmp2
 iscsimapping='/pacedata/iscsimapping';
 runningpools='/pacedata/pools/runningpools';
@@ -82,6 +83,7 @@ then
  systemctl start topstorremote
  systemctl start topstorremoteack
  systemctl start servicewatchdog 
+ /sbin/zpool export -a 2>/dev/null
  echo startiscsiwatchdog >>/root/tmp2
  /pace/iscsiwatchdog.sh 2>/dev/null
  echo finished iscsiwatchdog >>/root/tmp2
@@ -165,6 +167,7 @@ else
   echo etcd started as local >>/root/tmp2
   rm -rf /var/lib/iscsi/nodes/* 2>/dev/null
   echo starting iscsiwaatchdog >>/root/tmp2
+  /sbin/zpool export -a
   /pace/iscsiwatchdog.sh $myip $myhost $leader 2>/dev/null
   echo started iscsiwaatchdog >>/root/tmp2
  fi
