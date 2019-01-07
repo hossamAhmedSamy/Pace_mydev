@@ -27,4 +27,5 @@ then
  ETCDCTL_API=3 /pace/etcddel.py poolsnxt/$pool
  ETCDCTL_API=3 /pace/etcddel.py cannot $pool
  /TopStor/VolumeActivateCIFS pool=$pool host=$thehost user=system
+ /TopStor/VolumeActivateNFS pool=$pool host=$thehost user=system
 fi 
