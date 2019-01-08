@@ -210,7 +210,7 @@ do
      /pace/etcdsync.py $myip pools pools 2>/dev/null
      /pace/etcdsync.py $myip poolsnxt poolsnxt 2>/dev/null
      /pace/etcdsync.py $myip nextlead nextlead 2>/dev/null
-     /pace/sendhost.py $leaderip 'cifs' 'recvreq' $myhost &
+     #/pace/sendhost.py $leaderip 'cifs' 'recvreq' $myhost &
      /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost &
      isknown=$((isknown+1))
     fi
