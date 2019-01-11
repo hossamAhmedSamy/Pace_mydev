@@ -145,8 +145,8 @@ else
   ./etcdsync.py $myip updlogged updlogged 2>/dev/null
   /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
   /bin/crontab /TopStor/plaincron
-  ./etcdsync.py $myip Snappreriod Snapperiod 2>/dev/null
-  /TopStor/etcdtocron.py
+  ./etcdsync.py $myip Snapperiod Snapperiod 2>/dev/null
+  /TopStor/etctocron.py
   ./etcddel.py known/$myhost --prefix 2>/dev/null
   ./etcddel.py oldhosts/$myhost  --prefix 2>/dev/null
   ./etcddel.py hosts/$myhost  --prefix 2>/dev/null
