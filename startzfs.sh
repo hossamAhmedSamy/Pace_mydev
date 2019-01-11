@@ -71,6 +71,7 @@ then
  ./etcddel.py poolsnxt --prefix 2>/dev/null
  ./etcddel.py cann --prefix 2>/dev/null
  ./etcddel.py prop --prefix 2>/dev/null
+ ./etcddel.py Snapperiod --prefix 2>/dev/null
  ./etcdput.py leader/$myhost $myip 2>/dev/null
  ./etcdput.py primary/name $myhost 2>/dev/null
  ./etcdput.py primary/address $myip 2>/dev/null
@@ -87,6 +88,7 @@ then
  systemctl start servicewatchdog 
  /sbin/zpool export -a 2>/dev/null
  rm -rf /pdhcp*
+ /TopStor/crontoetcd.py all &
  echo startiscsiwatchdog >>/root/tmp2
  /pace/iscsiwatchdog.sh 2>/dev/null
  echo finished iscsiwatchdog >>/root/tmp2
@@ -142,6 +144,9 @@ else
   ./etcdsync.py $myip logged logged 2>/dev/null
   ./etcdsync.py $myip updlogged updlogged 2>/dev/null
   /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
+  /bin/crontab /TopStor/plaincron
+  ./etcdsync.py $myip Snappreriod Snapperiod 2>/dev/null
+  /TopStor/etcdtocron.py
   ./etcddel.py known/$myhost --prefix 2>/dev/null
   ./etcddel.py oldhosts/$myhost  --prefix 2>/dev/null
   ./etcddel.py hosts/$myhost  --prefix 2>/dev/null
