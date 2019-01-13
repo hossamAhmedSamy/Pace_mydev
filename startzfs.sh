@@ -88,7 +88,7 @@ then
  systemctl start servicewatchdog 
  /sbin/zpool export -a 2>/dev/null
  rm -rf /pdhcp*
- /TopStor/crontoetcd.py all &
+ /TopStor/crontoetc.py all &
  echo startiscsiwatchdog >>/root/tmp2
  /pace/iscsiwatchdog.sh 2>/dev/null
  echo finished iscsiwatchdog >>/root/tmp2
