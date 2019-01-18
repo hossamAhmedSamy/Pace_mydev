@@ -21,14 +21,15 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    spare=disksallowed[0][0]
    spareplsclear=get('clearplsdisk/'+spare['name'])
    spareiscleared=get('cleareddisk/'+spare['name']) 
-   if 'dhcp' not in str(spareiscleared):
-    if 'dhcp' not in str(spareplsclear):
-     put('clearplsdisk/'+spare['name'],spare['host'])
-     hostip=get('ready/'+spare['host'])
-     z=['/TopStor/pump.sh','Zpoolclrrun',spare['name']]
-     msg={'req': 'Zpool', 'reply':z}
-     sendhost(hostip[0], str(msg),'recvreply',myhost)
+   if spareiscleared[0] != spareplsclear[0]:
+    put('clearplsdisk/'+spare['name'],spare['host'])
+    dels('cleareddisk/'+spare['name']) 
+    hostip=get('ready/'+spare['host'])
+    z=['/TopStor/pump.sh','Zpoolclrrun',spare['name']]
+    msg={'req': 'Zpool', 'reply':z}
+    sendhost(hostip[0], str(msg),'recvreply',myhost)
     return spare['name']
+   dels('clearplsdisk/'+spare['name']) 
    dels('cleareddisk/'+spare['name']) 
    if 'attach' in cmd:
     print('defdisk',defdisk)
@@ -103,6 +104,7 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
   if len(nonblanced) > 0:
    selectdisk=[x for x in disksinraid if x[1]==maxx[0]]
    diskinfo=[x for x in alldisks if x['name']==selectdisk[0][0]]
+   print('diskinfo',diskinfo)
    mindisksize=min(disksinraid,key=lambda x:norm(x[2]))
    mindisksize=mindisksize[2]
    mindisksize=norm(mindisksize)
@@ -139,7 +141,6 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
    diskvalue=diskvalue+100
   disksvalues.append((rep,diskvalue)) 
  disksvalues=sorted(disksvalues,key=lambda x:x[1], reverse=True)
- print('diskvalues',disksvalues)
  if len(disksvalues) > 0:
   if disksvalues[0][1] < -10000:
    return
@@ -179,7 +180,7 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
    ret=mustattach(cmdline,disksvalues,defdisk,myhost)
   except :
     pass
- elif 'mirror' in defdisk['name']:
+ elif 'mirror' in defdisk['raid']:
   cmdline=['/sbin/zpool', 'detach', defdisk['pool'],defdisk['name']]
   subprocess.run(cmdline,stdout=subprocess.PIPE)
   ret=replacelist
