@@ -156,6 +156,7 @@ else
   ./etcddellocal.py $myip users --prefix 2>/dev/null
 #  ./etcdsync.py $myip users users 2>/dev/null
   ./usersyncall.py $myip &
+  ./groupsyncall.py $myip &
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
   if [[ $myalias -ne -1 ]];
   then
