@@ -6,6 +6,7 @@ from etcdget import etcdget as get
 from etcddel import etcddel as dels 
 from os.path import getmtime
 
+
 x=subprocess.check_output(['pgrep','-c','putzpool'])
 x=str(x).replace("b'","").replace("'","").split('\\n')
 if(x[0]!= '1' ):
