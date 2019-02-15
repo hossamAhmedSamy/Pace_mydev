@@ -32,7 +32,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    dels('clearplsdisk/'+spare['name']) 
    dels('cleareddisk/'+spare['name']) 
    if 'attach' in cmd:
-    print('defdisk',defdisk)
+    print('hi')
    else:
     if spare['pool']==defdisk['pool']:
      cmdline2=['/sbin/zpool', 'remove', defdisk['pool'],spare['name']]
@@ -44,7 +44,6 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    cmdline3=['/sbin/zpool', 'labelclear', spare['name']]
    subprocess.run(cmdline3,stdout=subprocess.PIPE)
    cmd.append(spare['name'])
-   print(cmd)
    try: 
     subprocess.check_call(cmd)
     if 'attach' in cmd:
@@ -58,7 +57,6 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     if 'attach' in cmd:
      logmsg.sendlog('Difa6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
     else:
-     print('spare',spare)
      logmsg.sendlog('Difa2','info','system', defdisk['id'],spare['id'],myhost)
     disksallowed.pop(0)
     ret=mustattach(cmdline[:-1],disksallowed,defdisk,myhost) 
@@ -79,6 +77,7 @@ def norm(val):
 
 def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,mindisksize):
  ret=0
+ print('start replacing')
  if len(defdisks) < 1:
   print('no more defective disks checking for non-red host raids')
   if len(raids) < 1 :
@@ -88,23 +87,17 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
   raids.pop(0)
   if raid['name']=='free':
    return
-  print('checking raid',raid['name'],'it is non-red')
   myhostpools=[pool['name'] for pool in pools if pool['host']==myhost ]
   disksinraid=[(disk['name'],disk['host'],disk['size']) for disk in alldisks if disk['raid'] == raid['name'] and disk['pool'] == raid['pool'] and disk['pool'] in myhostpools ]
-  print('disksinraid',disksinraid)
   hcount=[]
   for host in hosts:
    hcount.append((host,str(disksinraid).count(host)))
-  print('hcount',hcount)
   maxx=max(hcount,key=lambda x: x[1])
-  print('maxx',maxx)
-  nonblanced=[x for x in hcount if maxx[1] > x[1]]
-  print('nonblanced',nonblanced)
+  nonblanced=[x for x in hcount if maxx[1] >= x[1]]
   selectdisk=[]
   if len(nonblanced) > 0:
    selectdisk=[x for x in disksinraid if x[1]==maxx[0]]
    diskinfo=[x for x in alldisks if x['name']==selectdisk[0][0]]
-   print('diskinfo',diskinfo)
    mindisksize=min(disksinraid,key=lambda x:norm(x[2]))
    mindisksize=mindisksize[2]
    mindisksize=norm(mindisksize)
@@ -114,8 +107,9 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
   return
  defdisk=defdisks[0]
  dontuse=exclude
- if 'limithost' in exclude:
+ if 'limithost' in exclude and len(hosts) > 1:
   dontuse=defdisk['host']
+  print('mezo',len(hosts))
  disksinraid=[disk for disk in alldisks if disk['raid']==defdisk['raid'] and disk['name'] != defdisk['name'] and 'ONLI' in disk['changeop']]
  runninghosts=[disk['host'] for disk in alldisks if disk['raid']==defdisk['raid'] and disk['name'] != defdisk['name'] and 'ONLI' in disk['changeop'] and disk['host'] not in dontuse ]
  if mindisksize < 0 and len(disksinraid) > 0:
@@ -124,7 +118,6 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
  else:
   mindisk=mindisksize
  disksvalues=[]
- print('replacelist',replacelist)
  for  rep in replacelist:
   diskvalue=float(0)
   if norm(rep['size']) == norm(mindisk) :
@@ -202,11 +195,9 @@ def selectspare(*args):
   return
  #allop=getall(myhost,'old')
  #diffop={k:newop[k] for k in allop if allop[k] != newop[k] and 'disk' in k}
- print('hosts',newop['pools'])
  mypools=[x['name'] for x in newop['pools'] if myhost in x['host']]
  ready=get('ready','--prefix')
  possibles=get('possible','--prefix')
- print('mypools',mypools)
  toonline=[x for x in newop['disks'] if 'OFFLINE' in x['status'] and 'dhcp' in x['host'] and x['pool'] in mypools and (x['host'] in str(ready) or x['host'] in str(possibles))]
  for x in toonline:
   cmdline=['/sbin/zpool','online',x['pool'],x['name']]
