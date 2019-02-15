@@ -9,6 +9,7 @@ from poolall import getall as getall
 from sendhost import sendhost
 #from syncpools import syncmypools
 import logmsg
+newop=[]
 disksvalue=[]
 
 
@@ -18,7 +19,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     return 'na'
    print('helskdlskdkddlsldssd#######################')
    cmd=cmdline
-   spare=disksallowed[0][0]
+   spare=disksallowed
    spareplsclear=get('clearplsdisk/'+spare['name'])
    spareiscleared=get('cleareddisk/'+spare['name']) 
    if spareiscleared[0] != spareplsclear[0]:
@@ -55,11 +56,9 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     return spare['name'] 
    except subprocess.CalledProcessError:
     if 'attach' in cmd:
-     logmsg.sendlog('Difa6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
+     logmsg.sendlog('Difa6','warning','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
     else:
-     logmsg.sendlog('Difa2','info','system', defdisk['id'],spare['id'],myhost)
-    disksallowed.pop(0)
-    ret=mustattach(cmdline[:-1],disksallowed,defdisk,myhost) 
+     logmsg.sendlog('Difa2','warning','system', defdisk['id'],spare['id'],myhost)
     return ret
   
 def norm(val):
@@ -93,7 +92,7 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
   for host in hosts:
    hcount.append((host,str(disksinraid).count(host)))
   maxx=max(hcount,key=lambda x: x[1])
-  nonblanced=[x for x in hcount if maxx[1] >= x[1]]
+  nonblanced=[x for x in hcount if maxx[1] > x[1]]
   selectdisk=[]
   if len(nonblanced) > 0 and len(replacelist) > 0:
    selectdisk=[x for x in disksinraid if x[1]==maxx[0]]
@@ -185,15 +184,91 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
  replacelist=[x for x in replacelist if x['name']!=ret]
  defdisks.pop(0)
  diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,mindisksize)
- 
+
+
+
+def getbalance(diskA,diskB,balancetype):
+ global newop
+ w=0
+ if diskB['size'] > diskA['size']:
+  w=1000000
+  return w
+ if diskB['pool'] in diskA['pool'] and 'ree' not in diskA['pool']:
+  w=1000001
+  return w
+ if 'free' in diskA['changeop']:
+  w=1
+ if 'stripe' in diskB['raid']: # if stripe calcualte the 
+  if 'useable' in balancetype:
+   sizediff=10*(norm(diskA['size'])-norm(diskB['size'])) # tendency to same size
+   w+=sizediff+int(diskA['host'] in diskB['host'])
+  else:
+   sizediff=(norm(diskA['size'])-norm(diskB['size']))
+   w+=sizediff+10*int(diskA['host'] in diskB['host'])    # tendency to otherhost
+ return w 
   
-def selectspare(*args):
+  
+def selectthedisk(freedisks,raid,allraids,myhost):
+ weights=[]
+ finalw=[]
+ balancetype=get('balancetype/'+raid['pool'])
+ if 'stripe' not in raid['name']:
+  for diskA in raid['disklist']:
+   continue
+ else:
+   for diskA in raid['disklist']:
+    for diskB in raid['disklist']:
+     if diskA['name'] not in diskB['name']:
+      finalw.append({'newd':diskA,'oldd':diskB,'w':0})
+ for diskA in freedisks:
+  for diskB in raid['disklist']: 
+   w=getbalance(diskA,diskB,balancetype)
+   finalw.append({'newd':diskA,'oldd':diskB,'w':w})
+ finalw=sorted(finalw,key=lambda x:x['w'],reverse=True)
+ return finalw[0] 
+ 
+def solvestripepools(striperaids,freedisks,allraids,myhost):
+ sparefit={}
+ for disk in freedisks:
+  sparefit[disk['name']]=[]
+ for raid in striperaids:
+  sparelist=selectthedisk(freedisks,raid,allraids,myhost)
+  if len(sparelist) > 0:
+   sparefit[sparelist['newd']['name']].append(sparelist)
+ for k in sparefit:
+  sparefit[k]=sorted(sparefit[k],key=lambda x:x['w'],reverse=True)
+ for k in sparefit:
+  oldd=sparefit[k][0]['oldd'] 
+  newd=sparefit[k][0]['newd'] 
+  olddpool=sparefit[k][0]['oldd']['pool'] 
+ cmdline=['/sbin/zpool', 'attach','-f', olddpool,oldd['name']]
+ try: 
+  ret=mustattach(cmdline,newd,oldd,myhost)
+ except:
+  pass
+ return
+  
+   
+  
+def spare2(*args):
+ global newop
+ allraids=[]
  myhost=args[0]
  newop=getall(myhost)
+ striperaids=[]
  if newop==[-1]:
   return
- #allop=getall(myhost,'old')
- #diffop={k:newop[k] for k in allop if allop[k] != newop[k] and 'disk' in k}
+ degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['changeop']]
+ #strippools=[x for x in newop['pools'] if myhost in x['host']  and 'stripe' in str(x[raidlist])]
+ for spool in newop['pools']:
+  for sraid in spool['raidlist']:
+   if 'ree' not in sraid['name']:
+    allraids.append(sraid)
+ striperaids=[x for x in allraids if 'stripe' in x['name']]
+ freedisks=[ x for x in newop['disks']  if 'free' in x['raid']]  
+ if len(freedisks) > 0 and len(striperaids) > 0 : 
+  solvestripepools(striperaids, freedisks,allraids,myhost)
+ exit()
  mypools=[x['name'] for x in newop['pools'] if myhost in x['host']]
  ready=get('ready','--prefix')
  possibles=get('possible','--prefix')
@@ -213,4 +288,4 @@ def selectspare(*args):
  
  
 if __name__=='__main__':
- selectspare(*sys.argv[1:])
+ spare2(*sys.argv[1:])
