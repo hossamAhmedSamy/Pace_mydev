@@ -95,7 +95,7 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
   maxx=max(hcount,key=lambda x: x[1])
   nonblanced=[x for x in hcount if maxx[1] >= x[1]]
   selectdisk=[]
-  if len(nonblanced) > 0:
+  if len(nonblanced) > 0 and len(replacelist) > 0:
    selectdisk=[x for x in disksinraid if x[1]==maxx[0]]
    diskinfo=[x for x in alldisks if x['name']==selectdisk[0][0]]
    mindisksize=min(disksinraid,key=lambda x:norm(x[2]))
@@ -109,7 +109,6 @@ def diskreplace(myhost,defdisks,hosts,alldisks,replacelist,raids,pools,exclude,m
  dontuse=exclude
  if 'limithost' in exclude and len(hosts) > 1:
   dontuse=defdisk['host']
-  print('mezo',len(hosts))
  disksinraid=[disk for disk in alldisks if disk['raid']==defdisk['raid'] and disk['name'] != defdisk['name'] and 'ONLI' in disk['changeop']]
  runninghosts=[disk['host'] for disk in alldisks if disk['raid']==defdisk['raid'] and disk['name'] != defdisk['name'] and 'ONLI' in disk['changeop'] and disk['host'] not in dontuse ]
  if mindisksize < 0 and len(disksinraid) > 0:
