@@ -191,6 +191,7 @@ def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
  sparefit={}
  for disk in freedisks:
   sparefit[disk['name']]=[]
+  sparefit[disk['name']].append({'newd':disk['name'],'oldd':disk['name'],'w':100000000})
  for raid in degradedraids:
   sparelist=selectthedisk(freedisks,raid,allraids,allhosts,myhost)
   if len(sparelist) > 0:
@@ -198,6 +199,8 @@ def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
  for k in sparefit:
   sparefit[k]=sorted(sparefit[k],key=lambda x:x['w'])
  for k in sparefit:
+  if sparefit[k][0]['w'] > 100000:
+   continue 
   oldd=sparefit[k][0]['oldd'] 
   newd=sparefit[k][0]['newd'] 
   olddpool=sparefit[k][0]['oldd']['pool'] 
@@ -285,7 +288,7 @@ def spare2(*args):
     allraids.append(sraid)
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
- degradedraids=[x for x in allraids if 'DEGRADE' in x['changeop']]
+ degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
  freedisks=[ x for x in newop['disks']  if 'free' in x['raid']]  
  disksfree=[x for x in freedisks if x['name'] not in str(usedfree)]
  if len(disksfree) > 0 and len(degradedraids) > 0 : 
