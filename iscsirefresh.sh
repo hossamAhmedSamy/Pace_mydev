@@ -38,7 +38,7 @@ do
   needrescan=1;
    echo firsthost=$host
    echo /sbin/iscsiadm -m discovery --portal $host --type sendtargets -o delete -o new 
-   hostiqn=`/sbin/iscsiadm -m discovery --portal $host --type sendtargets 2>&1| awk '{print $2}'`
+   hostiqn=`/sbin/iscsiadm -m discovery --portal $host --type sendtargets 2>/root/iscsirefresh | awk '{print $2}'`
    echo hostiqn=$hostiqn
    echo /sbin/iscsiadm --mode node --targetname $hostiqn --portal $host:3260 -u 2>/dev/null
    echo /sbin/iscsiadm --mode node --targetname $hostiqn --portal $host:3260 --login
