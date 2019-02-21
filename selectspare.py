@@ -78,19 +78,21 @@ def norm(val):
 
 def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
  global newop
- raidhosts=hostcounts
+ raidhosts=hostcounts.copy()
  w=0
- if diskB['size'] > diskA['size']:
-  w=1000000
-  return w
  if 'free' in diskA['changeop']:
   w=1
-########## Stripe ###################################
+########## Stripe  DiskA free policy: Any###################################
  if 'stripe' in diskB['raid']: # if stripe calcualte the 
+  if norm(diskB['size']) > norm(diskA['size']):
+   w=1000000
+   return w
+########## Stripe  DiskA free policy: Useability###############################
   if 'useable' in balancetype:
    sizediff=10*(norm(diskA['size'])-norm(diskB['size'])) # tendency to same size
    w+=sizediff+int(diskA['host'] in diskB['host'])
    return w
+########## Stripe  DiskA free policy: Availability##############################
   else:
    sizediff=(norm(diskA['size'])-norm(diskB['size']))
    w+=sizediff+10*int(diskA['host'] in diskB['host'])    # tendency to otherhost
@@ -104,26 +106,58 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
     if norm(diskA['size']) > norm(diskB['size']):
      w=100002
      return w
+    w+=sizediff+10*int(diskA['host'] in diskB['host'])
+    return w
+ ########### RAID and DiskB online diskA free policy: Availability #########
+  else:
+   if 'raidz2' in diskB['raid']:
+    minB=min(onlinedisks,key=lambda x:norm(x['size']))
+    if norm(minB['size']) > norm(diskA['size']):
+     w=1000000
+     return w
+    if diskA['host']==diskB['host']:
+     w=2200000
+     return w
+    sizediff=norm(diskA['size'])-norm(diskB['size']) 
+    print('mez',sizediff,diskA['size'],minB['size'],diskB['size'])
     raidhosts[diskA['host']]+=1
     raidhosts[diskB['host']]-=1
-    w+=sizediff+10*int(diskA['host'] in diskB['host'])
-    return w
-  else:
-   sizediff=(norm(diskA['size'])-norm(diskB['size']))
+    if raidhosts[diskA['host']] > 2:
+     w=2000000
+     return w
+    elif raidhosts[diskA['host']]==2 and raidhosts[diskB['host']]<2 and norm(diskA['size']) < norm(diskB['size']):
+     w=2100000
+     return w
+    elif raidhosts[diskA['host']]==2 and raidhosts[diskB['host']]<2:
+     w=2100000
+     return w
+    elif raidhosts[diskA['host']]==1 and raidhosts[diskB['host']]==0:
+     w=2200000
+     return w
+    elif raidhosts[diskA['host']]<=2 and raidhosts[diskB['host']] >=raidhosts[diskA['host']]:
+     w+=sizediff+10*int(raidhosts[diskA['host']]-raidhosts[diskB['host']])
+     return w
+    else:
+      print('Error',raidhosts)
+    
  ########### Mirror and DiskB online diskA free policy: Availability #########
-   if 'mirror' in diskB['raid']:
+   elif 'mirror' in diskB['raid']:
     w+=sizediff+10*int(diskA['host'] in diskB['host'])
     return w
-########### RAID and DiskB online diskA in Raid policy: useability #########
+########### RAID and DiskB online diskA in Raid policy: Any #########
  elif diskB['raid'] in diskA['raid'] and 'ONLINE' in diskB['status']:  
   sizediff=norm(diskA['size'])-norm(diskB['size']) 
-  if 'useable' in balancetype:  # tendency not to take the large size
  ########### Mirror and DiskB online diskA in Raid policy: Useability #########
+  if 'useable' in balancetype:  # tendency not to take the large size
    if 'mirror' in diskB['raid']:
     w+=10*sizediff+int(diskA['host'] in diskB['host'])
     return w
  ########### RAID and DiskB online diskA in Raid policy: Availability ########
-  elif 'mirror' in diskB['raid']:
+  else:
+   if 'raidz2' in diskB['raid']:
+     w=3000000
+     return w
+   elif 'mirror' in diskB['raid']:
     w+=sizediff+10*int(diskA['host'] in diskB['host'])
     return w 
 ########### RAID DiskB Failed diskA free policy: Any ########
@@ -138,8 +172,6 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
      w=100002
      return w
    else:
-    raidhosts[diskA['host']]+=1
-    raidhosts[diskB['host']]-=1
     w+=sizediff+10*int(diskA['host'] in diskB['host'])
     return w
  ########### RAID DiskB Failed diskA free policy: Availability ########
@@ -151,6 +183,7 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
    if 'mirror' in diskB['raid']:
     w+=sizediff+10*int(raidhosts[diskA['host']] > 1)
     return w
+   raidhosts=hostcounts
   
 def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
  weights=[]
@@ -164,12 +197,12 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
   for diskA in raid['disklist']:
    for diskB in raid['disklist']:
     if diskA['name'] not in diskB['name']:
-     w=getbalance(diskA,diskB,balancetype,hostcounts)
+     w=getbalance(diskA,diskB,balancetype,hostcounts,raid['disklist'])
      finalw.append({'newd':diskA,'oldd':diskB,'w':w})
   for diskA in freedisks:
    for diskB in raid['disklist']:
     if diskA['name'] not in diskB['name']:
-     w=getbalance(diskA,diskB,balancetype,hostcounts)
+     w=getbalance(diskA,diskB,balancetype,hostcounts,raid['disklist'])
      finalw.append({'newd':diskA,'oldd':diskB,'w':w})
  elif 'stripe' in raid['name']:
   for diskA in freedisks:
@@ -204,7 +237,10 @@ def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
   oldd=sparefit[k][0]['oldd'] 
   newd=sparefit[k][0]['newd'] 
   olddpool=sparefit[k][0]['oldd']['pool'] 
-  if 'mirror' in oldd['raid']:
+  if 'raid' in oldd['raid']:
+   cmdline=['/sbin/zpool', 'replace', '-f',olddpool,oldd['name']]
+   ret=mustattach(cmdline,newd,oldd,myhost)
+  elif 'mirror' in oldd['raid']:
    cmdline=['/sbin/zpool', 'attach','-f', olddpool,oldd['name']]
    ret=mustattach(cmdline,newd,oldd,myhost)
    if 'fault' not in ret:
@@ -229,10 +265,15 @@ def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
  for k in sparefit:
   if len(sparefit[k]) < 1:
    continue 
+  if sparefit[k][0]['w'] > 100000:
+   continue 
   oldd=sparefit[k][0]['oldd'] 
   newd=sparefit[k][0]['newd'] 
   olddpool=sparefit[k][0]['oldd']['pool'] 
-  if 'mirror' in oldd['raid']:
+  if 'raid' in oldd['raid']:
+   cmdline=['/sbin/zpool', 'replace', '-f',olddpool,oldd['name']]
+   ret=mustattach(cmdline,newd,oldd,myhost)
+  elif 'mirror' in oldd['raid']:
    cmdline=['/sbin/zpool', 'attach','-f', olddpool,oldd['name']]
    ret=mustattach(cmdline,newd,oldd,myhost)
    if 'fault' not in ret:
