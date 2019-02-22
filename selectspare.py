@@ -110,17 +110,18 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
     return w
  ########### RAID and DiskB online diskA free policy: Availability #########
   else:
+   minB=min(onlinedisks,key=lambda x:norm(x['size']))
+   if norm(minB['size']) > norm(diskA['size']):
+    w=1000000
+    return w
+   print('mezooo',raidhosts)
+   raidhosts[diskA['host']]+=1
+   raidhosts[diskB['host']]-=1
    if 'raidz' in diskB['raid']:
-    minB=min(onlinedisks,key=lambda x:norm(x['size']))
-    if norm(minB['size']) > norm(diskA['size']):
-     w=1000000
-     return w
+    sizediff=norm(diskA['size'])-norm(diskB['size']) 
     if diskA['host']==diskB['host'] and norm(diskA['size']) >= norm(diskB['size']) :
      w=2200000
      return w
-    sizediff=norm(diskA['size'])-norm(diskB['size']) 
-    raidhosts[diskA['host']]+=1
-    raidhosts[diskB['host']]-=1
    if 'raidz1' in diskB['raid']:
     if raidhosts[diskA['host']] > 1:
      w=2000000
@@ -152,6 +153,14 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
     
  ########### Mirror and DiskB online diskA free policy: Availability #########
    elif 'mirror' in diskB['raid']:
+    print('mezo',raidhosts,diskA['name'],diskB['name'])
+    if raidhosts[diskA['host']]==2:
+     w=3100000
+     return w
+    sizediff=norm(diskA['size'])-norm(diskB['size']) 
+    if sizediff >= 0:
+     w=3200000
+     return w
     w+=sizediff+10*int(diskA['host'] in diskB['host'])
     return w
 ########### RAID and DiskB online diskA in Raid policy: Any #########
@@ -165,10 +174,11 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
  ########### RAID and DiskB online diskA in Raid policy: Availability ########
   else:
    if 'raidz' in diskB['raid']:
-     w=3000000
-     return w
+    w=3000000
+    return w
    elif 'mirror' in diskB['raid']:
-    w+=sizediff+10*int(diskA['host'] in diskB['host'])
+    w=3000000
+    #w+=sizediff+10*int(diskA['host'] in diskB['host'])
     return w 
 ########### RAID DiskB Failed diskA free policy: Any ########
  elif 'free' in diskA['changeop'] and 'ONLINE' not in diskB['status']:
@@ -248,6 +258,8 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
     w=getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks)
     finalw.append({'newd':diskA,'oldd':diskB,'w':w})
  finalw=sorted(finalw,key=lambda x:x['w'])
+ print('mez',finalw)
+ exit()
  return finalw[0] 
 
 def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
@@ -285,7 +297,7 @@ def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
  for disk in freedisks:
   sparefit[disk['name']]=[]
  for raid in onlineraids:
-  sparelist=selectthedisk(freedisks,raid,allraids,allhosts,myhost)
+  sparelist=selectthedisk(freedisks.copy(),raid.copy(),allraids.copy(),allhosts.copy(),myhost)
   if len(sparelist) > 0:
    if sparelist['newd']['name'] not in sparefit.keys():
     continue 
