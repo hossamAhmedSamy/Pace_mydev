@@ -114,7 +114,6 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
    if norm(minB['size']) > norm(diskA['size']):
     w=1000000
     return w
-   print('mezooo',raidhosts)
    raidhosts[diskA['host']]+=1
    raidhosts[diskB['host']]-=1
    if 'raidz' in diskB['raid']:
@@ -153,12 +152,11 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
     
  ########### Mirror and DiskB online diskA free policy: Availability #########
    elif 'mirror' in diskB['raid']:
-    print('mezo',raidhosts,diskA['name'],diskB['name'])
     if raidhosts[diskA['host']]==2:
      w=3100000
      return w
     sizediff=norm(diskA['size'])-norm(diskB['size']) 
-    if sizediff >= 0:
+    if sizediff >= 0 and hostcounts[diskB['host']]==1:
      w=3200000
      return w
     w+=sizediff+10*int(diskA['host'] in diskB['host'])
@@ -258,8 +256,6 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
     w=getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks)
     finalw.append({'newd':diskA,'oldd':diskB,'w':w})
  finalw=sorted(finalw,key=lambda x:x['w'])
- print('mez',finalw)
- exit()
  return finalw[0] 
 
 def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
