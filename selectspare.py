@@ -119,7 +119,6 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
      w=2200000
      return w
     sizediff=norm(diskA['size'])-norm(diskB['size']) 
-    print('mez',sizediff,diskA['size'],minB['size'],diskB['size'])
     raidhosts[diskA['host']]+=1
     raidhosts[diskB['host']]-=1
     if raidhosts[diskA['host']] > 2:
@@ -166,8 +165,38 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
   sizediff=norm(diskA['size'])-norm(minB['size']) 
  ########### RAID DiskB Failed diskA free policy: Any ########
   if 'useable' in balancetype:
+ ########### RAID DiskB Failed diskA free policy: Useability ########
+   if 'raidz2' in diskB['raid']:
+    minB=min(onlinedisks,key=lambda x:norm(x['size']))
+    if norm(minB['size']) > norm(diskA['size']):
+     w=1000000
+     return w
+    if diskA['host']==diskB['host']:
+     w=2200000
+     return w
+    sizediff=norm(diskA['size'])-norm(diskB['size']) 
+    raidhosts[diskA['host']]+=1
+    raidhosts[diskB['host']]-=1
+    if raidhosts[diskA['host']] > 2:
+     w=2000000
+     return w
+    elif raidhosts[diskA['host']]==2 and raidhosts[diskB['host']]<2 and norm(diskA['size']) < norm(diskB['size']):
+     w=2100000
+     return w
+    elif raidhosts[diskA['host']]==2 and raidhosts[diskB['host']]<2:
+     w=2100000
+     return w
+    elif raidhosts[diskA['host']]==1 and raidhosts[diskB['host']]==0:
+     w=2200000
+     return w
+    elif raidhosts[diskA['host']]<=2 and raidhosts[diskB['host']] >=raidhosts[diskA['host']]:
+     w+=sizediff+10*int(raidhosts[diskA['host']]-raidhosts[diskB['host']])
+     return w
+    else:
+      print('Error',raidhosts)
+ 
  ########### Mirror DiskB Failed diskA free policy: Useability ########
-   if 'mirror' in diskB['raid']:    # useable type not to mirror large disks
+   elif 'mirror' in diskB['raid']:    # useable type not to mirror large disks
     if norm(diskA['size']) > norm(minB['size']):
      w=100002
      return w
@@ -176,12 +205,22 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
     return w
  ########### RAID DiskB Failed diskA free policy: Availability ########
   else:
- ########### Mirror and DiskB online diskA free policy: Availability #########
-   raidhosts[diskA['host']]+=1
-   if diskB['host'] in raidhosts.keys():
-    raidhosts[diskB['host']]-=1
-   if 'mirror' in diskB['raid']:
-    w+=sizediff+10*int(raidhosts[diskA['host']] > 1)
+   try:
+    raidhosts[diskA['host']]+=1
+   except:
+    raidhosts[diskA['host']]=1
+ ########### Raidz and DiskB Failed diskA free policy: Availability #########
+   if 'raidz2' in diskB['raid']:
+    minB=min(onlinedisks,key=lambda x:norm(x['size']))
+    if norm(minB['size']) > norm(diskA['size']):
+     w=1000000
+     return w
+    sizediff=norm(diskA['size'])-norm(minB['size']) 
+    w=sizediff+10*int(raidhosts[diskA['host']]-1)
+    return w
+ ########### Mirror and DiskB Failed diskA free policy: Availability #########
+   elif 'mirror' in diskB['raid']:
+    w+=sizediff+10*int(raidhosts[diskA['host']] -1)
     return w
    raidhosts=hostcounts
   
