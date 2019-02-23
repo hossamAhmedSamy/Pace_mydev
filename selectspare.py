@@ -19,7 +19,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    if len(disksallowed) < 1 : 
     return 'na'
    print('helskdlskdkddlsldssd#######################')
-   cmd=cmdline
+   cmd=cmdline.copy()
    spare=disksallowed
    spareplsclear=get('clearplsdisk/'+spare['name'])
    spareiscleared=get('cleareddisk/'+spare['name']) 
@@ -45,6 +45,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     logmsg.sendlog('Dist2','info','system', defdisk['id'],spare['id'],myhost)
    cmdline3=['/sbin/zpool', 'labelclear', spare['name']]
    subprocess.run(cmdline3,stdout=subprocess.PIPE)
+   cmd.append(defdisk['name'])
    cmd.append(spare['name'])
    try: 
     subprocess.check_call(cmd)
@@ -56,11 +57,24 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     print('hihihi')
     return spare['name'] 
    except subprocess.CalledProcessError:
-    if 'attach' in cmd:
-     logmsg.sendlog('Difa6','warning','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
-    else:
-     logmsg.sendlog('Difa2','warning','system', defdisk['id'],spare['id'],myhost)
-    return 'fault' 
+    cmd=cmdline.copy()
+    cmd.append('/dev/'+defdisk['devname'])
+    cmd.append(spare['name'])
+    try: 
+     subprocess.check_call(cmd)
+     if 'attach' in cmd:
+      logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
+     else:
+      logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
+    #syncmypools('all')
+      print('hihihi')
+     return spare['name'] 
+    except subprocess.CalledProcessError:
+     if 'attach' in cmd:
+      logmsg.sendlog('Difa6','warning','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
+     else:
+      logmsg.sendlog('Difa2','warning','system', defdisk['id'],spare['id'],myhost)
+     return 'fault' 
   
 def norm(val):
  units={'B':1/1024**2,'K':1/1024, 'M': 1, 'G':1024 , 'T': 1024**2 }
@@ -277,14 +291,15 @@ def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
   newd=sparefit[k][0]['newd'] 
   olddpool=sparefit[k][0]['oldd']['pool'] 
   if 'raid' in oldd['raid']:
-   cmdline=['/sbin/zpool', 'replace', '-f',olddpool,oldd['name']]
+   cmdline=['/sbin/zpool', 'replace', '-f',olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
   elif 'mirror' in oldd['raid']:
-   cmdline=['/sbin/zpool', 'attach','-f', olddpool,oldd['name']]
+   cmdline=['/sbin/zpool', 'attach','-f', olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
    if 'fault' not in ret:
     usedfree.append(ret)
     cmdline=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+    cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
     subprocess.run(cmdline,stdout=subprocess.PIPE)
  
 def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
@@ -310,14 +325,15 @@ def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
   newd=sparefit[k][0]['newd'] 
   olddpool=sparefit[k][0]['oldd']['pool'] 
   if 'raid' in oldd['raid']:
-   cmdline=['/sbin/zpool', 'replace', '-f',olddpool,oldd['name']]
+   cmdline=['/sbin/zpool', 'replace', '-f',olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
   elif 'mirror' in oldd['raid']:
-   cmdline=['/sbin/zpool', 'attach','-f', olddpool,oldd['name']]
+   cmdline=['/sbin/zpool', 'attach','-f', olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
    if 'fault' not in ret:
     usedfree.append(ret)
     cmdline=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+    cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
     subprocess.run(cmdline,stdout=subprocess.PIPE)
     
  
@@ -338,7 +354,7 @@ def solvestriperaids(striperaids,freedisks,allraids,myhost):
   oldd=sparefit[k][0]['oldd'] 
   newd=sparefit[k][0]['newd'] 
   olddpool=sparefit[k][0]['oldd']['pool'] 
- cmdline=['/sbin/zpool', 'attach','-f', olddpool,oldd['name']]
+ cmdline=['/sbin/zpool', 'attach','-f', olddpool]
  ret=mustattach(cmdline,newd,oldd,myhost)
  if 'fault' not in ret:
   usedfree.append(ret)

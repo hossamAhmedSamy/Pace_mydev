@@ -119,6 +119,7 @@ for a in sty:
    diskid='-1'
    host='-1'
    size='-1' 
+   devname='-1'
    if  len(a.split('scsi')[0]) < (spaces+2) or (len(raidlist) < 1 and len(zpool)> 0):
     disklist=[]
     rdict={ 'name':'stripe-'+str(stripecount), 'pool':zdict['name'],'changeop':'NA','status':'NA','host':myhost,'disklist':disklist }
@@ -133,6 +134,7 @@ for a in sty:
      lhosts.add(host)
      phosts.add(host)
      size=z[7]
+     devname=z[5].replace('/dev/','')
      freepool.remove(lss)
      break
     #else:
@@ -144,7 +146,7 @@ for a in sty:
     zpool[len(zpool)-1]['changeop']='Warning'
     changeop='Removed'
     sitechange=1
-   ddict={'name':b[0], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size}
+   ddict={'name':b[0], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
    disklist.append(ddict)
    ldisks.append(ddict)
 if len(freepool) > 0:
@@ -165,7 +167,8 @@ if len(freepool) > 0:
 ##### commented for not adding free disks of freepool
   lhosts.add(host)
   size=z[7]
-  ddict={'name':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size}
+  devname=z[5].replace('/dev/','')
+  ddict={'name':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname}
   disklist.append(ddict)
   ldisks.append(ddict)
 if len(lhosts)==0:
