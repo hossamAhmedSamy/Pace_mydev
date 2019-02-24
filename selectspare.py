@@ -59,6 +59,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     print('hihihi')
     return spare['name'] 
    except subprocess.CalledProcessError:
+    return 'fault'
     cmd=cmdline.copy()
     cmd.append('/dev/'+defdisk['devname'])
     cmd.append(spare['name'])
@@ -307,8 +308,9 @@ def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
    try: 
     subprocess.check_call(cmd)
    except:
-    cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
-    subprocess.run(cmdline,stdout=subprocess.PIPE)
+    #cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
+    #subprocess.run(cmdline,stdout=subprocess.PIPE)
+     pass
  
 def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
  global usedfree
@@ -344,9 +346,9 @@ def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
    try: 
     subprocess.check_call(cmd)
    except:
-    cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
-    subprocess.run(cmdline,stdout=subprocess.PIPE)
-    
+    #cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
+    # subprocess.run(cmdline,stdout=subprocess.PIPE)
+    pass 
  
 def solvestriperaids(striperaids,freedisks,allraids,myhost):
  global usedfree
