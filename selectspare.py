@@ -23,18 +23,20 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    spare=disksallowed
    spareplsclear=get('clearplsdisk/'+spare['name'])
    spareiscleared=get('cleareddisk/'+spare['name']) 
-   if spareiscleared[0] != spareplsclear[0]:
+   if spareiscleared[0] != spareplsclear[0] or spareiscleared[0] == -1:
+    print('asking to clear')
     put('clearplsdisk/'+spare['name'],spare['host'])
     dels('cleareddisk/'+spare['name']) 
     hostip=get('ready/'+spare['host'])
     z=['/TopStor/pump.sh','Zpoolclrrun',spare['name']]
     msg={'req': 'Zpool', 'reply':z}
     sendhost(hostip[0], str(msg),'recvreply',myhost)
-    return spare['name']
+    print('returning')
+    return 'wait' 
    dels('clearplsdisk/'+spare['name']) 
    dels('cleareddisk/'+spare['name']) 
    if 'attach' in cmd:
-    print('hi')
+    print('attach in command')
    else:
     if spare['pool']==defdisk['pool']:
      cmdline2=['/sbin/zpool', 'remove', defdisk['pool'],spare['name']]
@@ -245,7 +247,10 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
  balancetype=get('balancetype/'+raid['pool'])
  for disk in raid['disklist']:
   if 'ONLINE' in disk['status']:
-   hostcounts[disk['host']]+=1
+   if disk['host'] in hostcounts.keys():
+    hostcounts[disk['host']]+=1
+   else:
+    hostcounts[disk['host']]=1
  if 'stripe' not in raid['name'] and 'ONLINE' in raid['status']:
   for diskA in raid['disklist']:
    for diskB in raid['disklist']:
@@ -296,9 +301,12 @@ def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
   elif 'mirror' in oldd['raid']:
    cmdline=['/sbin/zpool', 'attach','-f', olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
-   if 'fault' not in ret:
+   if 'fault' not in ret and 'wait' not in ret:
     usedfree.append(ret)
-    cmdline=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+    cmd=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+   try: 
+    subprocess.check_call(cmd)
+   except:
     cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
     subprocess.run(cmdline,stdout=subprocess.PIPE)
  
@@ -330,9 +338,12 @@ def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
   elif 'mirror' in oldd['raid']:
    cmdline=['/sbin/zpool', 'attach','-f', olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
-   if 'fault' not in ret:
+   if 'fault' not in ret and 'wait' not in ret:
     usedfree.append(ret)
-    cmdline=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+    cmd=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+   try: 
+    subprocess.check_call(cmd)
+   except:
     cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
     subprocess.run(cmdline,stdout=subprocess.PIPE)
     
