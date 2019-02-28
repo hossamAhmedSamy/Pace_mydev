@@ -175,6 +175,7 @@ do
      else
       echo found the new leader run $result >> /root/zfspingtmp
       waiting=0
+      /pace/etcdput.py ready/$myhost $myip
      fi
     done 
     leadername=`./etcdget.py leader --prefix | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
