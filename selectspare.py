@@ -380,6 +380,7 @@ def spare2(*args):
  global usedfree 
  freedisks=[]
  allraids=[]
+ freeraids=[]
  myhost=args[0]
  hosts=get('ready','--prefix')
  allhosts={}

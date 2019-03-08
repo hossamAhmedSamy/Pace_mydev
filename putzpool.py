@@ -128,7 +128,7 @@ for a in sty:
     stripecount+=1
    for lss in lsscsi:
     z=lss.split()
-    if z[6] in b[0] and len(z[6]) > 3:
+    if z[6] in b[0] and len(z[6]) > 3 and 'OFF' not in b[1] :
      diskid=lsscsi.index(lss)
      host=z[3].split('-')[1]
      lhosts.add(host)
