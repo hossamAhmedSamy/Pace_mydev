@@ -130,6 +130,9 @@ do
    #./etcdput.py clusterip $clusterip 2>/dev/null
    #pcs resource create clusterip ocf:heartbeat:IPaddr nic="$enpdev" ip=$clusterip cidr_netmask=24 2>/dev/null
     echo adding me as a leader >> /root/zfspingtmp
+    rm -rf /etc/chrony.conf
+    cp /TopStor/chrony.conf /etc/
+    sed -i '/MASTERSERVER/,+1 d' /etc/chrony.conf
     ./runningetcdnodes.py $myip 2>/dev/null
     ./etcddel.py leader 2>/dev/null &
     ./etcdput.py leader/$myhost $myip 2>/dev/null &
@@ -176,6 +179,13 @@ do
       echo found the new leader run $result >> /root/zfspingtmp
       waiting=0
       /pace/etcdput.py ready/$myhost $myip
+      leaderall=` ./etcdget.py leader --prefix `
+      leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
+      leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
+      rm -rf /etc/chrony.conf
+      cp /TopStor/chrony.conf /etc/
+      sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
+      systemctl restart chronyd
      fi
     done 
     leadername=`./etcdget.py leader --prefix | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
