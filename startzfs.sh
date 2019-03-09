@@ -48,6 +48,10 @@ then
  done
  echo started etcd as primary>>/root/tmp2
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
+  rm -rf /etc/chrony.conf
+  cp /TopStor/chrony.conf /etc/
+  sed -i '/MASTERSERVER/,+1 d' /etc/chrony.conf
+  systemctl restart chronyd
  /TopStor/logmsg2.sh $datenow $timenow $myhost Partst03 info system $myhost $myip
  ./runningetcdnodes.py $myip 2>/dev/null
  ./etcddel.py known --prefix 2>/dev/null 
