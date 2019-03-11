@@ -65,6 +65,7 @@ do
    #targetcli saveconfig
    #targetcli restoreconfig /pacedata/targetconfig
    /pace/etcdput.py ready/$myhost $myip
+   /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
    touch /pacedata/addiscsitargets 
    pgrep putzpool 
    if [ $? -ne 0 ];
@@ -179,6 +180,7 @@ do
       echo found the new leader run $result >> /root/zfspingtmp
       waiting=0
       /pace/etcdput.py ready/$myhost $myip
+      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
       leaderall=` ./etcdget.py leader --prefix `
       leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
       leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
@@ -232,6 +234,7 @@ do
     if [[ $isknown -eq 3 ]];
     then
      /pace/etcdput.py ready/$myhost $myip &
+     /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
      #targetcli clearconfig True
      #targetcli saveconfig
      #targetcli restoreconfig /pacedata/targetconfig

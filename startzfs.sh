@@ -131,7 +131,7 @@ else
   echo sync leader with local database >>/root/tmp2
   rm -rf /etc/chrony.conf
   cp /TopStor/chrony.conf /etc/
-  sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
+  sed -i "s/MASTERSERVER/$leader/g" /etc/chrony.conf
   systemctl restart chronyd
   ./etcdsync.py $myip primary primary 2>/dev/null
   ./etcddellocal.py $myip known --prefix 2>/dev/null
