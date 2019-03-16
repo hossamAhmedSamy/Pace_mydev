@@ -300,17 +300,12 @@ def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
    cmdline=['/sbin/zpool', 'replace', '-f',olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
   elif 'mirror' in oldd['raid']:
+   cmd=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+   subprocess.check_call(cmd)
    cmdline=['/sbin/zpool', 'attach','-f', olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
    if 'fault' not in ret and 'wait' not in ret:
     usedfree.append(ret)
-    cmd=['/sbin/zpool', 'detach', olddpool,oldd['name']]
-   try: 
-    subprocess.check_call(cmd)
-   except:
-    #cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
-    #subprocess.run(cmdline,stdout=subprocess.PIPE)
-     pass
  
 def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
  global usedfree
@@ -338,17 +333,12 @@ def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
    cmdline=['/sbin/zpool', 'replace', '-f',olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
   elif 'mirror' in oldd['raid']:
+   cmd=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+   subprocess.check_call(cmd)
    cmdline=['/sbin/zpool', 'attach','-f', olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
    if 'fault' not in ret and 'wait' not in ret:
     usedfree.append(ret)
-    cmd=['/sbin/zpool', 'detach', olddpool,oldd['name']]
-   try: 
-    subprocess.check_call(cmd)
-   except:
-    #cmdline=['/sbin/zpool', 'detach', olddpool,oldd['devname']]
-    # subprocess.run(cmdline,stdout=subprocess.PIPE)
-    pass 
  
 def solvestriperaids(striperaids,freedisks,allraids,myhost):
  global usedfree
