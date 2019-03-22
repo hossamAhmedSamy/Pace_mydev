@@ -18,9 +18,25 @@ myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | 
 ccnic=`/sbin/pcs resource show CC | grep nic\= | awk -F'nic=' '{print $2}' | awk '{print $1}'`
 /sbin/pcs resource delete --force namespaces  2>/dev/null
 /sbin/pcs resource delete --force dataip  2>/dev/null
-echo starting nodesearch>>/root/tmp2
-result=` ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
-echo finish nodesearch with ip=$myip, result=$result >>/root/tmp2
+echo starting etcd as local >>/root/tmp2
+./etccluster.py 'local' $myip 2>/dev/null
+chmod +r /etc/etcd/etcd.conf.yml 2>/dev/null
+systemctl daemon-reload 2>/dev/null
+systemctl stop etcd 2>/dev/null
+systemctl start etcd 2>/dev/null
+knownsearch=0
+result=` ETCDCTL_API=3 ./knownsearch.py $myip 2>/dev/null`
+echo $result | grep nothing 
+if [ $? -ne 0 ];
+then
+ echo found cluster with leader $reuslt.. no need for node search >>/root/tmp2
+ knownsearch=1
+else
+ systemctl stop etcd & 
+ echo starting nodesearch>>/root/tmp2
+ result=` ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
+ echo finish nodesearch with ip=$myip, result=$result >>/root/tmp2
+fi
 freshcluster=0
 echo $result > /root/hihi
 echo myip=$myip >> /root/hihi
@@ -109,29 +125,33 @@ else
    /TopStor/logmsg.py Partst04 info system $myhost $myip
   ./clearnamespace.py $enpdev
   ./cleardataip.py $enpdev
-  echo starting etcd as local >>/root/tmp2
-   ./etccluster.py 'local' $myip 2>/dev/null
-  chmod +r /etc/etcd/etcd.conf.yml 2>/dev/null
-  rm -rf /var/lib/etcd/*
-  systemctl daemon-reload 2>/dev/null
-  systemctl stop etcd 2>/dev/null
-  systemctl start etcd 2>/dev/null
-  while true;
-  do
-   echo starting etcd=$?
-   systemctl status etcd
-   if [ $? -eq 0 ];
-   then
-    break
-   else
-    sleep 1
-   fi
-  done
+  if [ $knownsearch -eq 0 ];
+  then
+   echo starting etcd as local >>/root/tmp2
+    ./etccluster.py 'local' $myip 2>/dev/null
+   chmod +r /etc/etcd/etcd.conf.yml 2>/dev/null
+   rm -rf /var/lib/etcd/*
+   systemctl daemon-reload 2>/dev/null
+   systemctl stop etcd 2>/dev/null
+   systemctl start etcd 2>/dev/null
+   while true;
+   do
+    echo starting etcd=$?
+    systemctl status etcd
+    if [ $? -eq 0 ];
+    then
+     break
+    else
+     sleep 1
+    fi
+   done
+  fi
   ./etcdputlocal.py $myip 'local/'$myhost $myip
   echo sync leader with local database >>/root/tmp2
   rm -rf /etc/chrony.conf
   cp /TopStor/chrony.conf /etc/
-  sed -i "s/MASTERSERVER/$leader/g" /etc/chrony.conf
+  leaderip=` ./etcdget.py leader/$leader `
+  sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
   systemctl restart chronyd
   ./etcdsync.py $myip primary primary 2>/dev/null
   ./etcddellocal.py $myip known --prefix 2>/dev/null

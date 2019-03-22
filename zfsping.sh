@@ -183,7 +183,7 @@ do
       /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
       leaderall=` ./etcdget.py leader --prefix `
       leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
-      leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
+      leaderip=` ./etcdget.py leader/$leader `
       rm -rf /etc/chrony.conf
       cp /TopStor/chrony.conf /etc/
       sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
