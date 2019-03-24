@@ -29,7 +29,7 @@ result=` ETCDCTL_API=3 ./knownsearch.py $myip 2>/dev/null`
 echo $result | grep nothing 
 if [ $? -ne 0 ];
 then
- echo found cluster with leader $reuslt.. no need for node search >>/root/tmp2
+ echo found cluster with leader $result.. no need for node search >>/root/tmp2
  knownsearch=1
 else
  systemctl stop etcd & 
