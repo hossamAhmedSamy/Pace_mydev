@@ -40,6 +40,8 @@ do
  sleep 5
  needlocal=0
  runningcluster=0
+ touch /var/www/html/des20/Data/TopStorqueue.log
+ chown apache /var/www/html/des20/Data/TopStorqueue.log
  /TopStor/queuethis.sh AmIprimary start system &
  echo check if I primary etcd >> /root/zfspingtmp
  netstat -ant | grep 2379 | grep LISTEN &>/dev/null
