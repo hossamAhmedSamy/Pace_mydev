@@ -2,6 +2,7 @@
 import subprocess,sys, datetime
 from etcdget import etcdget as get
 from etcdput import etcdput as put
+from broadcasttolocal import broadcasttolocal 
 from ast import literal_eval as mtuple
 import logmsg
 def config(*bargs):
@@ -39,6 +40,7 @@ def config(*bargs):
  if 'name' in change:
   logmsg.sendlog('HostManual1st5','info',arg[-1],change['oldname'],change['name'])
   put('alias/'+owner,change['name'])
+  broadcasttolocal('alias/'+owner,change['name'])
   logmsg.sendlog('HostManual1su5','info',arg[-1],change['oldname'],change['name'])
 ######### changing cluster address ###############
  if 'mgmtip' in change:
@@ -57,6 +59,7 @@ def config(*bargs):
   cmdline=['/TopStor/HostManualconfigNameSpace',change['mgmtip'],change['oldmgmtip'],subnet,oldsubnet]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   put('namespace/mgmtip',change['mgmtip']+'/'+subnet)
+  broadcasttolocal('namespace/mgmtip',change['mgmtip']+'/'+subnet)
   logmsg.sendlog('HostManual1su7','info',arg[-1],change['oldmgmtip']+'/'+oldsubnet,change['mgmtip']+'/'+subnet)
 ######### changing box address ###############
  if 'addr' in change:
