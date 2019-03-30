@@ -7,6 +7,8 @@ from etcddel import etcddel as dels
 from os.path import getmtime
 
 
+cmdline=['/TopStor/queuethis.sh','putzpool.py','start','system']
+result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 x=subprocess.check_output(['pgrep','-c','putzpool'])
 x=str(x).replace("b'","").replace("'","").split('\\n')
 if(x[0]!= '1' ):
@@ -195,3 +197,5 @@ for y in xnotfound:
   dels(y[0])
 for y in xnew:
  put(y[0],y[1])
+cmdline=['/TopStor/queuethis.sh','putzpool.py','stop','system']
+result=subprocess.run(cmdline,stdout=subprocess.PIPE)

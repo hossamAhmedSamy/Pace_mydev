@@ -1,4 +1,5 @@
 cd /pace
+/TopStor/queuethis.sh Iscsirefresh start system &
 iscsimapping='/pacedata/iscsimapping';
 iscsitargets='/pacedata/iscsitargets';
 declare -a iscsitargets=(`ETCDCTL_API=3 ./iscsiclients.py`);
@@ -45,3 +46,4 @@ do
    /sbin/iscsiadm --mode node --targetname $hostiqn --portal $host --login
  fi
 done
+/TopStor/queuethis.sh Iscsirefresh stop system &
