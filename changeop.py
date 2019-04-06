@@ -42,11 +42,15 @@ def changeop(*args):
 
 
 if __name__=='__main__':
- cmdline=['/TopStor/queuethis.sh','changeop.py','start','system']
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ cmdline=['cat /pacedata/perfmon']
+ perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
+ if '1' in perfmon:
+  cmdline=['/TopStor/queuethis.sh','changeop.py','start','system']
+  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  if len(sys.argv) > 2 and 'scsi' in sys.argv[2]:
    forceoffline(*sys.argv[1:])
  else: 
    changeop(*sys.argv[1:])
- cmdline=['/TopStor/queuethis.sh','changeop.py','stop','system']
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ if '1' in perfmon:
+  cmdline=['/TopStor/queuethis.sh','changeop.py','stop','system']
+  result=subprocess.run(cmdline,stdout=subprocess.PIPE)

@@ -8,7 +8,7 @@ from os.path import getmtime
 
 
 cmdline=['cat /pacedata/perfmon']
-perfmon=subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
+perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
 if '1' in perfmon:
  cmdline=['/TopStor/queuethis.sh','putzpool.py','start','system']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
