@@ -63,6 +63,8 @@ for a in sty:
     if any('/dev/'+b[0] in lss for drive in drives):
      b.append(b[0])
      b[0]='scsi-'+lss.split()[6]
+    else:
+     b.append(b[0])
      print(b)
  if "pdhc" in str(b) and  'pool' not in str(b):
   raidlist=[]
