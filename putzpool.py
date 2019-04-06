@@ -58,14 +58,11 @@ for a in sty:
  print('aaaaaa',a)
  b=a.split()
  if len(b) > 0:
+  b.append(b[0])
   if any(drive in str(b[0]) for drive in drives):
    for lss in lsscsi:
     if any('/dev/'+b[0] in lss for drive in drives):
-     b.append(b[0])
      b[0]='scsi-'+lss.split()[6]
-    else:
-     b.append(b[0])
-     print(b)
  if "pdhc" in str(b) and  'pool' not in str(b):
   raidlist=[]
   volumelist=[]
