@@ -21,34 +21,34 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    print('helskdlskdkddlsldssd#######################')
    cmd=cmdline.copy()
    spare=disksallowed
-   spareplsclear=get('clearplsdisk/'+spare['name'])
-   spareiscleared=get('cleareddisk/'+spare['name']) 
+   spareplsclear=get('clearplsdisk/'+spare['actualdisk'])
+   spareiscleared=get('cleareddisk/'+spare['actualdisk']) 
    if spareiscleared[0] != spareplsclear[0] or spareiscleared[0] == -1:
     print('asking to clear')
-    put('clearplsdisk/'+spare['name'],spare['host'])
-    dels('cleareddisk/'+spare['name']) 
+    put('clearplsdisk/'+spare['actualdisk'],spare['host'])
+    dels('cleareddisk/'+spare['actualdisk']) 
     hostip=get('ready/'+spare['host'])
-    z=['/TopStor/pump.sh','Zpoolclrrun',spare['name']]
+    z=['/TopStor/pump.sh','Zpoolclrrun',spare['actualdisk']]
     msg={'req': 'Zpool', 'reply':z}
     sendhost(hostip[0], str(msg),'recvreply',myhost)
     print('returning')
     return 'wait' 
-   dels('clearplsdisk/'+spare['name']) 
-   dels('cleareddisk/'+spare['name']) 
+   dels('clearplsdisk/'+spare['actualdisk']) 
+   dels('cleareddisk/'+spare['actualdisk']) 
    if 'attach' in cmd:
     print('attach in command')
    else:
     if spare['pool']==defdisk['pool']:
-     cmdline2=['/sbin/zpool', 'remove', defdisk['pool'],spare['name']]
+     cmdline2=['/sbin/zpool', 'remove', defdisk['pool'],spare['actualdisk']]
      subprocess.run(cmdline2,stdout=subprocess.PIPE)
    if 'attach' in cmd:
     logmsg.sendlog('Dist6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
    else:
     logmsg.sendlog('Dist2','info','system', defdisk['id'],spare['id'],myhost)
-   cmdline3=['/sbin/zpool', 'labelclear', spare['name']]
+   cmdline3=['/sbin/zpool', 'labelclear', spare['actualdisk']]
    subprocess.run(cmdline3,stdout=subprocess.PIPE)
-   cmd.append(defdisk['name'])
-   cmd.append(spare['name'])
+   cmd.append(defdisk['actualdisk'])
+   cmd.append(spare['actualdisk'])
    try: 
     subprocess.check_call(cmd)
     if 'attach' in cmd:
@@ -57,12 +57,12 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
      logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
     #syncmypools('all')
     print('hihihi')
-    return spare['name'] 
+    return spare['actualdisk'] 
    except subprocess.CalledProcessError:
     return 'fault'
     cmd=cmdline.copy()
     cmd.append('/dev/'+defdisk['devname'])
-    cmd.append(spare['name'])
+    cmd.append(spare['actualdisk'])
     try: 
      subprocess.check_call(cmd)
      if 'attach' in cmd:
@@ -71,7 +71,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
       logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
     #syncmypools('all')
       print('hihihi')
-     return spare['name'] 
+     return spare['actualdisk'] 
     except subprocess.CalledProcessError:
      if 'attach' in cmd:
       logmsg.sendlog('Difa6','warning','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
@@ -255,12 +255,12 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
  if 'stripe' not in raid['name'] and 'ONLINE' in raid['status']:
   for diskA in raid['disklist']:
    for diskB in raid['disklist']:
-    if diskA['name'] not in diskB['name']:
+    if diskA['actualdisk'] not in diskB['actualdisk']:
      w=getbalance(diskA.copy(),diskB.copy(),balancetype,hostcounts.copy(),raid['disklist'].copy())
      finalw.append({'newd':diskA,'oldd':diskB,'w':w})
   for diskA in freedisks:
    for diskB in raid['disklist']:
-    if diskA['name'] not in diskB['name']:
+    if diskA['actualdisk'] not in diskB['actualdisk']:
      w=getbalance(diskA,diskB,balancetype,hostcounts,raid['disklist'])
      finalw.append({'newd':diskA,'oldd':diskB,'w':w})
  elif 'stripe' in raid['name']:
@@ -282,12 +282,12 @@ def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
  global usedfree
  sparefit={}
  for disk in freedisks:
-  sparefit[disk['name']]=[]
-  sparefit[disk['name']].append({'newd':disk['name'],'oldd':disk['name'],'w':100000000})
+  sparefit[disk['actualdisk']]=[]
+  sparefit[disk['actualdisk']].append({'newd':disk['actualdisk'],'oldd':disk['actualdisk'],'w':100000000})
  for raid in degradedraids:
   sparelist=selectthedisk(freedisks,raid,allraids,allhosts,myhost)
   if len(sparelist) > 0:
-   sparefit[sparelist['newd']['name']].append(sparelist)
+   sparefit[sparelist['newd']['actualdisk']].append(sparelist)
  for k in sparefit:
   sparefit[k]=sorted(sparefit[k],key=lambda x:x['w'])
  for k in sparefit:
@@ -300,7 +300,7 @@ def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
    cmdline=['/sbin/zpool', 'replace', '-f',olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
   elif 'mirror' in oldd['raid']:
-   cmd=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+   cmd=['/sbin/zpool', 'detach', olddpool,oldd['actualdisk']]
    subprocess.check_call(cmd)
    cmdline=['/sbin/zpool', 'attach','-f', olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
@@ -311,14 +311,14 @@ def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
  global usedfree
  sparefit={}
  for disk in freedisks:
-  sparefit[disk['name']]=[]
+  sparefit[disk['actualdisk']]=[]
  for raid in onlineraids:
   sparelist=selectthedisk(freedisks.copy(),raid.copy(),allraids.copy(),allhosts.copy(),myhost)
   if len(sparelist) > 0:
-   if sparelist['newd']['name'] not in sparefit.keys():
+   if sparelist['newd']['actualdisk'] not in sparefit.keys():
     continue 
    else:
-    sparefit[sparelist['newd']['name']].append(sparelist)
+    sparefit[sparelist['newd']['actualdisk']].append(sparelist)
  for k in sparefit:
   sparefit[k]=sorted(sparefit[k],key=lambda x:x['w'])
  for k in sparefit:
@@ -333,7 +333,7 @@ def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
    cmdline=['/sbin/zpool', 'replace', '-f',olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
   elif 'mirror' in oldd['raid']:
-   cmd=['/sbin/zpool', 'detach', olddpool,oldd['name']]
+   cmd=['/sbin/zpool', 'detach', olddpool,oldd['actualdisk']]
    subprocess.check_call(cmd)
    cmdline=['/sbin/zpool', 'attach','-f', olddpool]
    ret=mustattach(cmdline,newd,oldd,myhost)
@@ -347,10 +347,10 @@ def solvestriperaids(striperaids,freedisks,allraids,myhost):
   sparelist=selectthedisk(freedisks,raid,allraids,{},myhost)
   if len(sparelist) > 0:
    try:
-    sparefit[sparelist['newd']['name']].append(sparelist)
+    sparefit[sparelist['newd']['actualdisk']].append(sparelist)
    except:
-    sparefit[sparelist['newd']['name']]=[]
-    sparefit[sparelist['newd']['name']].append(sparelist)
+    sparefit[sparelist['newd']['actualdisk']]=[]
+    sparefit[sparelist['newd']['actualdisk']].append(sparelist)
  for k in sparefit:
   sparefit[k]=sorted(sparefit[k],key=lambda x:x['w'])
  for k in sparefit:
@@ -390,12 +390,12 @@ def spare2(*args):
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
  freedisks=[ x for x in newop['disks']  if 'free' in x['raid']]  
- disksfree=[x for x in freedisks if x['name'] not in str(usedfree)]
+ disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  if len(disksfree) > 0 and len(degradedraids) > 0 : 
   solvedegradedraids(degradedraids, disksfree,allraids,allhosts,myhost)
  if len(disksfree) > 0 and len(striperaids) > 0 : 
   solvestriperaids(striperaids, disksfree,allraids,myhost)
- disksfree=[x for x in freedisks if x['name'] not in str(usedfree)]
+ disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  if len(disksfree) > 0 and len(onlineraids) > 0 : 
   solveonlineraids(onlineraids, disksfree,allraids,allhosts,myhost)
  return

@@ -61,6 +61,7 @@ for a in sty:
   if any(drive in str(b[0]) for drive in drives):
    for lss in lsscsi:
     if any('/dev/'+b[0] in lss for drive in drives):
+     b.append(b[0])
      b[0]='scsi-'+lss.split()[6]
      print(b)
  if "pdhc" in str(b) and  'pool' not in str(b):
@@ -148,7 +149,7 @@ for a in sty:
     zpool[len(zpool)-1]['changeop']='Warning'
     changeop='Removed'
     sitechange=1
-   ddict={'name':b[0], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
+   ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
    disklist.append(ddict)
    ldisks.append(ddict)
 if len(freepool) > 0:
@@ -170,7 +171,7 @@ if len(freepool) > 0:
   lhosts.add(host)
   size=z[7]
   devname=z[5].replace('/dev/','')
-  ddict={'name':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname}
+  ddict={'name':'scsi-'+z[6],'actualdisk':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname}
   disklist.append(ddict)
   ldisks.append(ddict)
 if len(lhosts)==0:
