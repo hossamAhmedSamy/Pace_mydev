@@ -1,5 +1,8 @@
 cd /pace
+perfmon=`cat /pacedata/perfmon`
+if [ $perfmon -eq 1 ];then
 /TopStor/queuethis.sh Iscsirefresh start system &
+fi
 iscsimapping='/pacedata/iscsimapping';
 iscsitargets='/pacedata/iscsitargets';
 declare -a iscsitargets=(`ETCDCTL_API=3 ./iscsiclients.py`);
@@ -46,4 +49,6 @@ do
    /sbin/iscsiadm --mode node --targetname $hostiqn --portal $host --login
  fi
 done
+if [ $perfmon -eq 1 ];then
 /TopStor/queuethis.sh Iscsirefresh stop system &
+fi
