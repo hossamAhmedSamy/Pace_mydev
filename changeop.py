@@ -42,7 +42,7 @@ def changeop(*args):
 
 
 if __name__=='__main__':
- cmdline=['cat /pacedata/perfmon']
+ cmdline='cat /pacedata/perfmon'
  perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
  if '1' in perfmon:
   cmdline=['/TopStor/queuethis.sh','changeop.py','start','system']

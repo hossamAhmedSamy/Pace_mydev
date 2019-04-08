@@ -7,7 +7,7 @@ from etcddel import etcddel as dels
 from os.path import getmtime
 
 
-cmdline=['cat /pacedata/perfmon']
+cmdline='cat /pacedata/perfmon'
 perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
 if '1' in perfmon:
  cmdline=['/TopStor/queuethis.sh','putzpool.py','start','system']

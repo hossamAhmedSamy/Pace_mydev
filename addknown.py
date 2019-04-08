@@ -13,8 +13,11 @@ x=[y for y in x if y != '']
 if(len(x) > 1 ):
  print('process still running',len(x))
  exit()
-cmdline=['/TopStor/queuethis.sh','addknown.py','start','system']
-result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+cmdline='cat /pacedata/perfmon'
+perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
+ if '1' in perfmon:
+ cmdline=['/TopStor/queuethis.sh','addknown.py','start','system']
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 possible=get('possible','--prefix')
 print('possible=',possible)
 if possible != []:
@@ -80,5 +83,6 @@ if known != []:
    if nextone == []:
     put('nextlead',kn[0].replace('known/','')+'/'+kn[1])
     broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
-cmdline=['/TopStor/queuethis.sh','addknown.py','stop','system']
-result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+if '1' in perfmon:
+ cmdline=['/TopStor/queuethis.sh','addknown.py','stop','system']
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
