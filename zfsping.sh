@@ -37,6 +37,11 @@ myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | 
 echo starting in $date >> /root/zfspingtmp
 while true;
 do
+ pgrep fixpool 
+ if [ $? -ne 0 ];
+ then
+  /TopStor/fixpool.py  &
+ fi
  perfmon=`cat /pacedata/perfmon`
  sleep 5
  needlocal=0

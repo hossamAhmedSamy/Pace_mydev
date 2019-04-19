@@ -53,6 +53,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     subprocess.check_call(cmd)
     if 'attach' in cmd:
      logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
+     put('fixpool/'+defdisk['pool'],'1')
     else:
      logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
     #syncmypools('all')
@@ -67,6 +68,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
      subprocess.check_call(cmd)
      if 'attach' in cmd:
       logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
+      put('fixpool/'+defdisk['pool'],'1')
      else:
       logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
     #syncmypools('all')
