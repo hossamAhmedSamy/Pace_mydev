@@ -15,11 +15,12 @@ def thread_run(*args):
 
 
 def importpools(*args):
- myhost=args[0]
- thehost=args[1]
+ myip=args[0]
+ myhost=args[1]
+ thehost=args[2]
  threads=[]
  pool=""
- mypools=get('poolsnxt',myhost)
+ mypools=get(myip,'poolsnxt',myhost)
 # with open('/TopStordata/forlocalpools') as f:
 #  for line in f:
  print('mypools',myhost,thehost,mypools)

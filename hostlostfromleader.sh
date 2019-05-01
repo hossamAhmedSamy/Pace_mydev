@@ -1,6 +1,9 @@
 #!/bin/sh
+cd /pace
+echo $@>/root/hostlostfromleader
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/root
 myhost=`hostname -s `
+myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
 thehost=`echo $@ | awk '{print $1}'`
 #declare -a disks=(`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`);
 declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
@@ -23,7 +26,7 @@ do
 done
 echo udpating database >> /root/hostlosttmp
 #ETCDCTL_API=3 /pace/etcdget.py pools --prefix | grep "\/$thehost" | grep "\/${myhost}" > /TopStordata/forlocalpools
-ETCDCTL_API=3 /pace/etcddellocal.py known/$thehost  --prefix
-ETCDCTL_API=3 /pace/importnxtlocalpools.py $myhost $thehost 
-ETCDCTL_API=3 /pace/etcddellocal.py hosts/$thehost  --prefix
-ETCDCTL_API=3 /pace/etcddellocal.py prop/$thehost
+ETCDCTL_API=3 /pace/etcddellocal.py $myip known/$thehost  --prefix
+ETCDCTL_API=3 /pace/importnxtlocalpools.py $myip $myhost $thehost 
+ETCDCTL_API=3 /pace/etcddellocal.py $myip hosts/$thehost  --prefix
+ETCDCTL_API=3 /pace/etcddellocal.py $myip  prop/$thehost

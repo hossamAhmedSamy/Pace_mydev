@@ -80,6 +80,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
      else:
       logmsg.sendlog('Difa2','warning','system', defdisk['id'],spare['id'],myhost)
      return 'fault' 
+ put('fixpool/'+defdisk['pool'],'1')
   
 def norm(val):
  units={'B':1/1024**2,'K':1/1024, 'M': 1, 'G':1024 , 'T': 1024**2 }
