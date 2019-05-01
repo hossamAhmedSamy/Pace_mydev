@@ -117,25 +117,25 @@ do
     /TopStor/queuethis.sh addingknown stop system &
  fi 
    fi
- readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
- ActivePartners=`ETCDCTL_API=3 /pace/etcdget.py ActivePartners --prefix | wc -l` 
- if [ $readycount -ne $ActivePartners ];
+ echo checking if there are partners to sync >> /root/zfspingtmp
+ tosync=`ETCDCTL_API=3 /pace/etcdget.py tosync --prefix | wc -l `
+ if [ $tosync -gt 0 ];
  then
-  echo checking if there are partners to sync >> /root/zfspingtmp
-  tosync=`ETCDCTL_API=3 /pace/etcdget.py tosync --prefix | wc -l `
-  if [ $tosync -gt 0 ];
-  then
-   ETCDCTL_API=3 /pace/etcddel.py tosync --prefix
-   echo syncthing with the ready to sync partners >> /root/zfspingtmp
-   ./syncthis.py ready --prefix &
-   ./syncthis.py pools/ --prefix &
-   ./syncthis.py volumes/ --prefix &
-   ./syncthis.py ActivePartners --prefix &
-  else
-   echo some partners are not ready to sync yet >> /root/zfspingtmp
-  fi
+  ETCDCTL_API=3 /pace/etcddel.py tosync --prefix
+  echo syncthing with the ready to sync partners >> /root/zfspingtmp
+  ./syncthis.py ready --prefix &
+  ./syncthis.py pools/ --prefix &
+  ./syncthis.py volumes/ --prefix &
+  ./syncthis.py ActivePartners --prefix &
  else
-  echo all partners are synthed >> /root/zfspingtmp
+  readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
+  ActivePartners=`ETCDCTL_API=3 /pace/etcdget.py ActivePartners --prefix | wc -l` 
+  if [ $readycount -eq $ActivePartners ];
+  then  
+   echo All running partners are ready and in sync >> /root/zfspingtmp
+  else
+   echo some partners are not in sync >> /root/zfspingtmp
+  fi
  fi
  else
   echo I am not a primary etcd.. heartbeating leader >> /root/zfspingtmp
