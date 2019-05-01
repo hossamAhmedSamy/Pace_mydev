@@ -10,6 +10,9 @@ targetcli saveconfig
 failddisks=''
 isknown=0
 leaderfail=0
+ActivePartners=1
+partnersync=0
+readycount=1
 isprimary=0
 primtostd=4
 toimport=-1
@@ -73,10 +76,9 @@ do
   if [ $isprimary -eq 3 ];
   then
    echo for $isprimary sending info Partsu03 booted with ip >> /root/zfspingtmp
-   #targetcli clearconfig True
-   #targetcli saveconfig
-   #targetcli restoreconfig /pacedata/targetconfig
    /pace/etcdput.py ready/$myhost $myip
+   /pace/etcdput.py ActivePartners/$myhost $myip
+   partnersync=0
    /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
    touch /pacedata/addiscsitargets 
    pgrep putzpool 
@@ -115,6 +117,27 @@ do
     /TopStor/queuethis.sh addingknown stop system &
  fi 
    fi
+ readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
+ ActivePartners=`ETCDCTL_API=3 /pace/etcdget.py ActivePartners --prefix | wc -l` 
+ if [ $readycount -ne $ActivePartners ];
+ then
+  partnersync=0
+ fi
+ if [ $partnersync -eq 0 ];
+ then
+  echo checking readycount=$readycount against ActivePartners=$ActivePartners >> /root/zfspingtmp
+  if [ $ActivePartners -eq $readycount ]; 
+  then
+   partnersync=1
+   echo syncthing ready and pools >> /root/zfspingtmp
+   ./syncthis.py ready --prefix &
+   ./syncthis.py pools/ --prefix &
+   ./syncthis.py volumes/ --prefix &
+   ./syncthis.py ActivePartners --prefix &
+  else
+   echo partners are not ready to sync yet >> /root/zfspingtmp
+  fi
+ fi
  else
   echo I am not a primary etcd.. heartbeating leader >> /root/zfspingtmp
   leaderall=` ./etcdget.py leader --prefix 2>&1`
@@ -135,8 +158,9 @@ do
    if [ $? -eq 0 ];
    then
  if [ $perfmon -eq 1 ]; then
-    /TopStor/queuethis.sh AddinMePrimary start system &
+    /TopStor/queuethis.sh AddingMePrimary start system &
  fi
+    ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername &
     systemctl stop etcd 2>/dev/null
     clusterip=`cat /pacedata/clusterip`
     echo starting primary etcd with namespace >> /root/zfspingtmp
@@ -164,8 +188,11 @@ do
     ./runningetcdnodes.py $myip 2>/dev/null
     ./etcddel.py leader 2>/dev/null &
     ./etcdput.py leader/$myhost $myip 2>/dev/null &
-    ETCDCTL_API=3 /pace/hostlost.sh $leadername &
+    ./etcddel.py ready --prefix 2>/dev/null &
+    ./etcdput.py ready/$myhost $myip 2>/dev/null &
+#    ETCDCTL_API=3 /pace/hostlost.sh $leadername &
     /TopStor/logmsg.py Partst02 warning system $leaderall &
+    
     echo creating namespaces >>/root/zfspingtmp
     ./setnamespace.py $enpdev &
     ./setdataip.py &
@@ -194,6 +221,7 @@ do
     /TopStor/queuethis.sh AddinMePrimary stop system &
  fi
    else
+    ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername &
     systemctl stop etcd 2>/dev/null 
     echo starting waiting for new leader run >> /root/zfspingtmp
     waiting=1
@@ -212,6 +240,8 @@ do
  fi
       echo found the new leader run $result >> /root/zfspingtmp
       waiting=0
+      /pace/syncthtistoleader.py $myip pools/ $myhost
+      /pace/syncthtistoleader.py $myip volumes/ $myhost
       /pace/etcdput.py ready/$myhost $myip
       /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
       leaderall=` ./etcdget.py leader --prefix `
@@ -273,6 +303,7 @@ do
     if [[ $isknown -eq 3 ]];
     then
      /pace/etcdput.py ready/$myhost $myip &
+     /pace/etcdput.py ActivePartners/$myhost $myip &
      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
      #targetcli clearconfig True
      #targetcli saveconfig
@@ -421,7 +452,7 @@ do
   clockdiff=$((clocker-oldclocker))
  fi
  echo Clockdiff = $clockdiff >> /root/zfspingtmp
- if [ $clockdiff -ge 50 ];
+ if [ $clockdiff -ge 500 ];
  then
   ./etcddel.py toimport/$myhost &
   /TopStor/logmsg.py Partst06 info system  &

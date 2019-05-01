@@ -23,13 +23,7 @@ do
 done
 echo udpating database >> /root/hostlosttmp
 #ETCDCTL_API=3 /pace/etcdget.py pools --prefix | grep "\/$thehost" | grep "\/${myhost}" > /TopStordata/forlocalpools
-ETCDCTL_API=3 /pace/etcddel.py known/$thehost  --prefix
-ETCDCTL_API=3 /pace/importlocalpools.py $myhost $thehost 
-ETCDCTL_API=3 /pace/etcddel.py hosts/$thehost  --prefix
-ETCDCTL_API=3 /pace/etcddel.py prop/$thehost
-ETCDCTL_API=3 /pace/etcdput.py losthost/$thehost `date +%s` 
-ETCDCTL_API=3 /pace/etcddel.py cannot  --prefix
-#ETCDCTL_API=3 /pace/etcddel.py pools $thehost
-ETCDCTL_API=3 /pace/etcddel.py oldhosts/$thehost  --prefix
-ETCDCTL_API=3 /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
-ETCDCTL_API=3 /pace/putzpool.py 
+ETCDCTL_API=3 /pace/etcddellocal.py known/$thehost  --prefix
+ETCDCTL_API=3 /pace/importnxtlocalpools.py $myhost $thehost 
+ETCDCTL_API=3 /pace/etcddellocal.py hosts/$thehost  --prefix
+ETCDCTL_API=3 /pace/etcddellocal.py prop/$thehost
