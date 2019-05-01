@@ -3,15 +3,13 @@ import subprocess,sys, logmsg
 from ast import literal_eval as mtuple
 from etcddel import etcddel as etcddel
 from broadcast import broadcast as broadcast 
+from broadcasttolocal import broadcasttolocal as broadcasttolocal
 from etcdget import etcdget as get
 from etcdgetlocal import etcdget as getlocal
 from etcdput import etcdput as put 
 import json
-x=subprocess.check_output(['pgrep','addknown'])
-x=str(x).replace("b'","").replace("'","").split('\\n')
-x=[y for y in x if y != '']
-if(len(x) > 1 ):
- print('process still running',len(x))
+allow=get('allowedPartners')
+if 'notallowed' in str(allow):
  exit()
 cmdline='cat /pacedata/perfmon'
 perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
@@ -23,8 +21,13 @@ print('possible=',possible)
 if possible != []:
  for x in possible:
   print('x=',x[0], x[1])
+  if 'allow' not in str(allow):
+   if x[0].replace('possible','') not in str(allow):
+    exit()
   etcddel('possible',x[0])
   put('known/'+x[0].replace('possible',''),x[1])
+  put('ActiveParnter/'+x[0].replace('possible',''),x[1])
+  broadcasttolocal('ActiveParnter/'+x[0].replace('possible',''),x[1])
   put('nextlead',x[0].replace('possible','')+'/'+x[1])
   cmdline=['/sbin/rabbitmqctl','add_user','rabb_'+x[0].replace('possible',''),'YousefNadody']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)

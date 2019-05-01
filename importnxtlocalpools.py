@@ -1,9 +1,9 @@
 #!/bin/python3.6
 import sys,subprocess
 from threading import Thread
-from etcdget import etcdget as get
-from etcdput import etcdput as put
-from etcddel import etcddel as dels
+from etcdgetlocal import etcdget as get
+from etcdputlocal import etcdput as put
+from etcddellocal import etcddel as dels
 from ast import literal_eval as mtuple
 
 def thread_run(*args):
@@ -11,7 +11,6 @@ def thread_run(*args):
   f.write('\nargs1: '+str(args))
  print('local2:',args[1])
  subprocess.run(args,stdout=subprocess.PIPE)
- 
  return
 
 
@@ -33,7 +32,7 @@ def importpools(*args):
   with open('/root/importlocal','a') as f:
    f.write('poolname: '+str(pool)+'\n')
   print('line', line)
-  cmdline='/pace/Zpool2deadhost '+thehost+' '+pool
+  cmdline='/pace/Zpool2deadhostlocal '+thehost+' '+pool
   x=Thread(target=thread_run,name='importing-'+pool,args=cmdline.split(" "))
   x.start()
   threads.append(x) 
