@@ -7,6 +7,7 @@ hostdns=` echo $@ | awk '{ print $4 }'`
 domcontip=` host $domcont | awk '{print $NF}'`
 
 rm txt/err; 
+
 echo changing Domain to $domain.... > $web;
 echo $pass > txt/pass;
 sed -e "N;s/hostname.*/hostname="hostn"
