@@ -303,6 +303,7 @@ do
     if [[ $isknown -eq 3 ]];
     then
      /pace/etcdput.py ready/$myhost $myip &
+     /pace/etcdput.py ActivePartners/$myhost $myip &
      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
      #targetcli clearconfig True
      #targetcli saveconfig
@@ -451,7 +452,7 @@ do
   clockdiff=$((clocker-oldclocker))
  fi
  echo Clockdiff = $clockdiff >> /root/zfspingtmp
- if [ $clockdiff -ge 50 ];
+ if [ $clockdiff -ge 500 ];
  then
   ./etcddel.py toimport/$myhost &
   /TopStor/logmsg.py Partst06 info system  &
