@@ -242,6 +242,7 @@ do
       /pace/syncthtistoleader.py $myip pools/ $myhost
       /pace/syncthtistoleader.py $myip volumes/ $myhost
       /pace/etcdput.py ready/$myhost $myip
+      /pace/etcdput.py tosync/$myhost $myip
       /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
       leaderall=` ./etcdget.py leader --prefix `
       leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
