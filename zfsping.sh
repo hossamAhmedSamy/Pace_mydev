@@ -119,26 +119,23 @@ do
    fi
  readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
  ActivePartners=`ETCDCTL_API=3 /pace/etcdget.py ActivePartners --prefix | wc -l` 
- if [ $ActivePartners -gt 1 ];
+ if [ $readycount -ne $ActivePartners ];
  then
-  if [ $readycount -ne $ActivePartners ];
+  partnersync=0
+ fi
+ if [ $partnersync -eq 0 ];
+ then
+  echo checking readycount=$readycount against ActivePartners=$ActivePartners >> /root/zfspingtmp
+  if [ $ActivePartners -eq $readycount ]; 
   then
-   partnersync=0
-  fi
-  if [ $partnersync -eq 0 ];
-  then
-   echo checking readycount=$readycount against ActivePartners=$ActivePartners >> /root/zfspingtmp
-   if [ $ActivePartners -eq $readycount ]; 
-   then
-    partnersync=1
-    echo syncthing ready and pools >> /root/zfspingtmp
-    ./syncthis.py ready --prefix &
-    ./syncthis.py pools/ --prefix &
-    ./syncthis.py volumes/ --prefix &
-    ./syncthis.py ActivePartners --prefix &
-   else
-    echo partners are not ready to sync yet >> /root/zfspingtmp
-   fi
+   partnersync=1
+   echo syncthing ready and pools >> /root/zfspingtmp
+   ./syncthis.py ready --prefix &
+   ./syncthis.py pools/ --prefix &
+   ./syncthis.py volumes/ --prefix &
+   ./syncthis.py ActivePartners --prefix &
+  else
+   echo partners are not ready to sync yet >> /root/zfspingtmp
   fi
  fi
  else
