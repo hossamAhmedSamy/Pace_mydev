@@ -121,22 +121,21 @@ do
  ActivePartners=`ETCDCTL_API=3 /pace/etcdget.py ActivePartners --prefix | wc -l` 
  if [ $readycount -ne $ActivePartners ];
  then
-  partnersync=0
- fi
- if [ $partnersync -eq 0 ];
- then
-  echo checking readycount=$readycount against ActivePartners=$ActivePartners >> /root/zfspingtmp
-  if [ $ActivePartners -eq $readycount ]; 
+  echo checking if there are partners to sync >> /root/zfspingtmp
+  tosync=`ETCDCTL_API=3 /pace/etcdget.py tosync --prefix | wc -l `
+  if [ $tosync -gt 0 ];
   then
-   partnersync=1
-   echo syncthing ready and pools >> /root/zfspingtmp
+   ETCDCTL_API=3 /pace/etcddel.py tosync --prefix
+   echo syncthing with the ready to sync partners >> /root/zfspingtmp
    ./syncthis.py ready --prefix &
    ./syncthis.py pools/ --prefix &
    ./syncthis.py volumes/ --prefix &
    ./syncthis.py ActivePartners --prefix &
   else
-   echo partners are not ready to sync yet >> /root/zfspingtmp
+   echo some partners are not ready to sync yet >> /root/zfspingtmp
   fi
+ else
+  echo all partners are synthed >> /root/zfspingtmp
  fi
  else
   echo I am not a primary etcd.. heartbeating leader >> /root/zfspingtmp
