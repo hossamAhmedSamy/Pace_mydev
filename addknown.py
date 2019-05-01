@@ -26,8 +26,8 @@ if possible != []:
     exit()
   etcddel('possible',x[0])
   put('known/'+x[0].replace('possible',''),x[1])
-  put('ActiveParnter/'+x[0].replace('possible',''),x[1])
-  broadcasttolocal('ActiveParnter/'+x[0].replace('possible',''),x[1])
+  put('ActiveParters/'+x[0].replace('possible',''),x[1])
+  broadcasttolocal('ActiveParters/'+x[0].replace('possible',''),x[1])
   put('nextlead',x[0].replace('possible','')+'/'+x[1])
   cmdline=['/sbin/rabbitmqctl','add_user','rabb_'+x[0].replace('possible',''),'YousefNadody']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
