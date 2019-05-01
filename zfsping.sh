@@ -386,6 +386,11 @@ do
  if [[ $runningcluster -eq 1 ]];
  then
   echo Yes I am primary so will check for known hosts >> /root/zfspingtmp
+   pgrep  remknown 
+   if [ $? -ne 0 ];
+   then
+    ./remknown.py $myhost 2>/dev/null & 
+   fi
    pgrep  addknown 
    if [ $? -ne 0 ];
    then
