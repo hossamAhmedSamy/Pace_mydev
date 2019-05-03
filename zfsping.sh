@@ -189,6 +189,7 @@ do
     ./etcdput.py leader/$myhost $myip 2>/dev/null &
     ./etcddel.py ready --prefix 2>/dev/null &
     ./etcdput.py ready/$myhost $myip 2>/dev/null &
+    ./etcdput.py tosync/$myhost $myip 2>/dev/null &
 #    ETCDCTL_API=3 /pace/hostlost.sh $leadername &
     /TopStor/logmsg.py Partst02 warning system $leaderall &
     
