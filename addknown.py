@@ -23,7 +23,9 @@ if possible != []:
   print('x=',x[0], x[1])
   if 'allow' not in str(allow):
    if x[0].replace('possible','') not in str(allow):
-    exit()
+    Active=get('AcivePartners','--prefix')
+    if x[0].replace('possible','') not in str(Active):
+     exit()
   etcddel('possible',x[0])
   put('known/'+x[0].replace('possible',''),x[1])
   put('ActivePartners/'+x[0].replace('possible',''),x[1])
