@@ -66,6 +66,7 @@ for a in sty:
    for lss in lsscsi:
     if any('/dev/'+b[0] in lss for drive in drives):
      b[0]='scsi-'+lss.split()[6]
+ print('strb',str(b))
  if "pdhc" in str(b) and  'pool' not in str(b):
   raidlist=[]
   volumelist=[]
@@ -120,7 +121,7 @@ for a in sty:
   rdict={ 'name':b[0], 'changeop':'NA','status':'NA','pool':zdict['name'],'host':myhost,'disklist':disklist }
   raidlist.append(rdict)
   lraids.append(rdict)
- elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b):
+ elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5):
    diskid='-1'
    host='-1'
    size='-1' 
@@ -131,6 +132,7 @@ for a in sty:
     raidlist.append(rdict)
     lraids.append(rdict)
     stripecount+=1
+    disknotfound=1
    for lss in lsscsi:
     z=lss.split()
     if z[6] in b[0] and len(z[6]) > 3 and 'OFF' not in b[1] :
@@ -141,7 +143,14 @@ for a in sty:
      size=z[7]
      devname=z[5].replace('/dev/','')
      freepool.remove(lss)
+     disknotfound=0
      break
+   if disknotfound == 1:
+     diskid=0
+     host='-1'
+     size='-1'
+     devname=b[0]
+     
     #else:
     # cmdline='/pace/hostlost.sh '+z[6]
     # subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
