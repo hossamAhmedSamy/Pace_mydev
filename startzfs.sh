@@ -17,6 +17,7 @@ myhost=`hostname -s`
 myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
 ccnic=`/sbin/pcs resource show CC | grep nic\= | awk -F'nic=' '{print $2}' | awk '{print $1}'`
 /sbin/pcs resource delete --force namespaces  2>/dev/null
+/sbin/pcs resource delete --force ip-all  2>/dev/null
 /sbin/pcs resource delete --force dataip  2>/dev/null
 echo starting etcd as local >>/root/tmp2
 ./etccluster.py 'local' $myip 2>/dev/null

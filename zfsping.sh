@@ -208,11 +208,11 @@ do
     then
      /pace/putzpool.py 2 $isprimary $primtostd  &
     fi
-    systemctl status nfs 
-    if [ $? -ne 0 ];
-    then
-     systemctl start nfs 2>/dev/null
-    fi
+#    systemctl status nfs 
+#    if [ $? -ne 0 ];
+#    then
+#     systemctl start nfs 2>/dev/null
+#    fi
     chgrp apache /var/www/html/des20/Data/* 2>/dev/null
     chmod g+r /var/www/html/des20/Data/* 2>/dev/null
     runningcluster=1
