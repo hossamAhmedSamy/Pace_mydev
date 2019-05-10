@@ -126,6 +126,7 @@ for a in sty:
    host='-1'
    size='-1' 
    devname='-1'
+   disknotfound=1
    if  len(a.split('scsi')[0]) < (spaces+2) or (len(raidlist) < 1 and len(zpool)> 0):
     disklist=[]
     rdict={ 'name':'stripe-'+str(stripecount), 'pool':zdict['name'],'changeop':'NA','status':'NA','host':myhost,'disklist':disklist }
