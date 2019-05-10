@@ -163,7 +163,6 @@ else
   systemctl restart chronyd
   ./etcdsync.py $myip primary primary 2>/dev/null
   ./etcddellocal.py $myip known --prefix 2>/dev/null
-  ./etcddellocal.py $myip allowedPartners --prefix 2>/dev/null
   ./etcddellocal.py $myip activepool --prefix 2>/dev/null
   ./etcddellocal.py $myip localrun --prefix 2>/dev/null
   ./etcddellocal.py $myip run --prefix 2>/dev/null
@@ -172,6 +171,7 @@ else
   ./etcddellocal.py $myip poolsnxt --prefix 2>/dev/null
   ./etcddellocal.py $myip vol --prefix 2>/dev/null
   ./etcdsync.py $myip known known 2>/dev/null
+  ./etcdsync.py $myip allowedPartners allowedPartners 2>/dev/null
   ./etcdsync.py $myip activepool activepool 2>/dev/null
   ./etcdsync.py $myip pools pools 2>/dev/null
   ./etcdsync.py $myip poolsnxt poolsnxt 2>/dev/null
