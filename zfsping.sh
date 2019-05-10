@@ -34,6 +34,7 @@ done
 echo startzfs run >> /root/zfspingtmp
 /pace/startzfs.sh
 leadername=` ./etcdget.py leader --prefix | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
+leaderip=` ./etcdget.py leader/$leadername `
 date=`date `
 myhost=`hostname -s`
 myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
@@ -159,7 +160,8 @@ do
  if [ $perfmon -eq 1 ]; then
     /TopStor/queuethis.sh AddingMePrimary start system &
  fi
-    ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername &
+    echo hostlostlocal getting all my pools from $leadername >> /root/zfspingtmp
+    ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername $myip $leaderip
     systemctl stop etcd 2>/dev/null
     clusterip=`cat /pacedata/clusterip`
     echo starting primary etcd with namespace >> /root/zfspingtmp
@@ -221,7 +223,7 @@ do
     /TopStor/queuethis.sh AddinMePrimary stop system &
  fi
    else
-    ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername &
+    ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername $myip $leaderip
     systemctl stop etcd 2>/dev/null 
     echo starting waiting for new leader run >> /root/zfspingtmp
     waiting=1

@@ -2,11 +2,11 @@
 export ETCDCTL_API=3
 echo $@ > /root/Zpoolparamlocal
 echo starting zpooldeadhost
-thehost=`echo $@ | awk '{print $1}'`
-pool=`echo $@ | awk '{print $2}'`
+myip=`echo $@ | awk '{print $1}'`
+thehost=`echo $@ | awk '{print $2}'`
+pool=`echo $@ | awk '{print $3}'`
 success=0;
 myhost=`hostname`
-myip=`/sbin/pcs resource show $CC | grep Attrib | awk -F'ip=' '{print $2}' | awk '{print $1}'`
 echo importing the $pool nicely 
 echo starting to zpool the $pool > /root/Zpooldeadhostlocal
 /sbin/zpool import $pool
@@ -20,13 +20,14 @@ fi
 echo success=$success >> /root/Zpoolparamlocal
 if [ $success -eq 1 ]; 
 then
+ echo success importing $pool >> /root/Zpooldeadhostlocal
  ETCDCTL_API=3 /TopStor/logmsg.py Zpsu02 info system $pool &
  ETCDCTL_API=3 /pace/etcdputlocal.py $myip pools/$pool $myhost 
  ETCDCTL_API=3 /pace/etcddellocal.py $myip poolsnxt/$pool
  ETCDCTL_API=3 /pace/etcddellocal.py $myip cannot $pool
- /TopStor/VolumeActivateCIFSlocal pool=$pool host=$thehost user=system 
- /TopStor/VolumeActivateHomelocal pool=$pool host=$thehost user=system 
- /TopStor/VolumeActivateNFSlocal pool=$pool host=$thehost user=system 
+ /TopStor/VolumeActivateCIFSlocal $myip pool=$pool host=$thehost user=system 
+ /TopStor/VolumeActivateHomelocal $myip pool=$pool host=$thehost user=system 
+ /TopStor/VolumeActivateNFSlocal $myip pool=$pool host=$thehost user=system 
  /pace/syncthtistoleader.py $myip pools/ $myhost &
  /pace/syncthtistoleader.py $myip volumes/ $myhost &
 fi 
