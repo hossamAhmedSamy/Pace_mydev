@@ -71,6 +71,7 @@ then
  /TopStor/logmsg2.sh $datenow $timenow $myhost Partst03 info system $myhost $myip
  ./runningetcdnodes.py $myip 2>/dev/null
  ./etcddel.py known --prefix 2>/dev/null 
+ ./etcddel.py ipaddr --prefix 2>/dev/null 
  ./etcddel.py possbile --prefix 2>/dev/null 
  ./etcddel.py ready --prefix 2>/dev/null 
  ./etcddel.py locked --prefix 2>/dev/null 
@@ -164,6 +165,7 @@ else
   ./etcdsync.py $myip primary primary 2>/dev/null
   ./etcddellocal.py $myip known --prefix 2>/dev/null
   ./etcddellocal.py $myip activepool --prefix 2>/dev/null
+  ./etcddellocal.py $myip ipaddr --prefix 2>/dev/null
   ./etcddellocal.py $myip localrun --prefix 2>/dev/null
   ./etcddellocal.py $myip run --prefix 2>/dev/null
   ./etcddellocal.py $myip pools --prefix 2>/dev/null
@@ -173,6 +175,7 @@ else
   ./etcdsync.py $myip known known 2>/dev/null
   ./etcdsync.py $myip allowedPartners allowedPartners 2>/dev/null
   ./etcdsync.py $myip activepool activepool 2>/dev/null
+  ./etcdsync.py $myip ipaddr ipaddr 2>/dev/null
   ./etcdsync.py $myip pools pools 2>/dev/null
   ./etcdsync.py $myip poolsnxt poolsnxt 2>/dev/null
   ./etcdsync.py $myip namespace namespace 2>/dev/null
