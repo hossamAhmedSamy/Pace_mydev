@@ -47,7 +47,6 @@ do
   /TopStor/fixpool.py  &
  fi
  perfmon=`cat /pacedata/perfmon`
- sleep 5
  needlocal=0
  runningcluster=0
  touch /var/www/html/des20/Data/TopStorqueue.log
