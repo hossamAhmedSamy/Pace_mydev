@@ -1,4 +1,5 @@
 #!/bin/sh
+export ETCDCTL_API=3
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/root
 myhost=`hostname -s `
 thehost=`echo $@ | awk '{print $1}'`

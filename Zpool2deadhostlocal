@@ -21,7 +21,7 @@ echo success=$success >> /root/Zpoolparamlocal
 if [ $success -eq 1 ]; 
 then
  echo success importing $pool >> /root/Zpooldeadhostlocal
- ETCDCTL_API=3 /TopStor/logmsg.py Zpsu02 info system $pool &
+# ETCDCTL_API=3 /TopStor/logmsg.py Zpsu02 info system $pool &
  ETCDCTL_API=3 /pace/etcdputlocal.py $myip pools/$pool $myhost 
  ETCDCTL_API=3 /pace/etcddellocal.py $myip poolsnxt/$pool
  ETCDCTL_API=3 /pace/etcddellocal.py $myip cannot $pool
