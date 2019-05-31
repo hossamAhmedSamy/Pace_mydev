@@ -260,3 +260,4 @@ echo i all zpool exported >>/root/tmp2
 fi
 #zpool export -a
 rm -rf /pacedata/forzfsping 2>/dev/null
+echo fisniehd startzfs >>/root/tmp2
