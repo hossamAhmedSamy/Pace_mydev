@@ -185,6 +185,7 @@ else
   ./etcdsync.py $myip leader known 2>/dev/null
   ./etcdsync.py $myip logged logged 2>/dev/null
   ./etcdsync.py $myip updlogged updlogged 2>/dev/null
+  ./etcdsync.py $myip ActivePartners ActivePartners 2>/dev/null
   /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
   /bin/crontab /TopStor/plaincron
   ./etcdsync.py $myip Snapperiod Snapperiod 2>/dev/null
