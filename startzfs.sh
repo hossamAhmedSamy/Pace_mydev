@@ -71,7 +71,6 @@ then
  /TopStor/logmsg2.sh $datenow $timenow $myhost Partst03 info system $myhost $myip
  ./runningetcdnodes.py $myip 2>/dev/null
  ./etcddel.py known --prefix 2>/dev/null 
- ./etcddel.py ipaddr --prefix 2>/dev/null 
  ./etcddel.py possbile --prefix 2>/dev/null 
  ./etcddel.py ready --prefix 2>/dev/null 
  ./etcddel.py locked --prefix 2>/dev/null 
