@@ -114,6 +114,16 @@ then
  systemctl start topstorremote
  systemctl start topstorremoteack
  systemctl start servicewatchdog 
+ cat /etc/passwd | grep NoUser 
+ if [ $? -ne 0 ];
+ then
+  /TopStor/UnixAddUser NoUser NoHome groupsnull 1234567890YosuefNadody NoHome 1G admin
+ fi
+ cat /etc/passwd | grep Everyone
+ if [ $? -ne 0 ];
+ then
+  /TopStor/UnixAddGroup Everyone usersNoUser admin
+ fi
  /sbin/zpool export -a 2>/dev/null
  rm -rf /pdhcp*
  /TopStor/crontoetc.py all &
