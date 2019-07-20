@@ -5,8 +5,11 @@ export ETCDCTL_API=3
 /sbin/pcs resource disable  ip-all  2>/dev/null
 /sbin/pcs resource disable  dataip  2>/dev/null
 /sbin/zpool export -a 2>/dev/null
-yes | cp /TopStor/smb.conf /etc/samba/
-yes | cp /TopStor/exports /etc/
+#yes | cp /TopStor/smb.conf /etc/samba/
+#yes | cp /TopStor/exports /etc/
+ln -f /etc/passwd  /opt/passwds/passwd
+ln -f /etc/group  /opt/passwds/group
+ln -f /etc/shadow  /opt/passwds/shadow
 echo starting startzfs > /root/tmp2
 #systemctl start smb &
 iscsimapping='/pacedata/iscsimapping';
