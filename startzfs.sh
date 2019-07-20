@@ -1,6 +1,9 @@
 #!/bin/sh
 cd /pace
 export ETCDCTL_API=3
+/sbin/pcs resource disable namespaces  2>/dev/null
+/sbin/pcs resource disable  ip-all  2>/dev/null
+/sbin/pcs resource disable  dataip  2>/dev/null
 /sbin/zpool export -a 2>/dev/null
 yes | cp /TopStor/smb.conf /etc/samba/
 yes | cp /TopStor/exports /etc/
