@@ -1,6 +1,7 @@
 cd /pace
 perfmon=`cat /pacedata/perfmon`
-if [ $perfmon -eq 1 ];then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
 /TopStor/queuethis.sh Iscsirefresh start system &
 fi
 iscsimapping='/pacedata/iscsimapping';
@@ -49,6 +50,7 @@ do
    /sbin/iscsiadm --mode node --targetname $hostiqn --portal $host --login
  fi
 done
-if [ $perfmon -eq 1 ];then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
 /TopStor/queuethis.sh Iscsirefresh stop system &
 fi

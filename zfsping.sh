@@ -51,7 +51,8 @@ do
  runningcluster=0
  touch /var/www/html/des20/Data/TopStorqueue.log
  chown apache /var/www/html/des20/Data/TopStorqueue.log
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
  /TopStor/queuethis.sh AmIprimary start system &
  fi
   
@@ -94,14 +95,16 @@ do
   leaderall=` ./etcdget.py leader --prefix 2>/dev/null`
   if [[ -z $leaderall ]]; 
   then
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
    /TopStor/queuethis.sh FixIamleader start system &
  fi
    echo no leader although I am primary node >> /root/zfspingtmp
    ./runningetcdnodes.py $myip 2>/dev/null
    ./etcddel.py leader --prefix 2>/dev/null &
    ./etcdput.py leader/$myhost $myip 2>/dev/null &
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
    /TopStor/queuethis.sh FixIamleader stop system &
  fi
   fi
@@ -109,11 +112,13 @@ do
    pgrep  addknown 
    if [ $? -ne 0 ];
    then
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
     /TopStor/queuethis.sh addingknown start system &
  fi
     ./addknown.py 2>/dev/null & 
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
     /TopStor/queuethis.sh addingknown stop system &
  fi 
    fi
@@ -156,7 +161,8 @@ do
    echo $nextleadip | grep $myip
    if [ $? -eq 0 ];
    then
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
     /TopStor/queuethis.sh AddingMePrimary start system &
  fi
     echo hostlostlocal getting all my pools from $leadername >> /root/zfspingtmp
@@ -218,7 +224,8 @@ do
     chmod g+r /var/www/html/des20/Data/* 2>/dev/null
     runningcluster=1
     leadername=$myhost
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
     /TopStor/queuethis.sh AddinMePrimary stop system &
  fi
    else
@@ -236,7 +243,8 @@ do
       sleep 1 
       result=`ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
      else
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
       /TopStor/queuethis.sh AddingtoOtherleader start system &
  fi
       echo found the new leader run $result >> /root/zfspingtmp
@@ -253,7 +261,8 @@ do
       cp /TopStor/chrony.conf /etc/
       sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
       systemctl restart chronyd
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
       /TopStor/queuethis.sh AddingtoOtherleader start system &
  fi
      fi
@@ -280,7 +289,8 @@ do
     echo I am not a known adding me as possible >> /root/zfspingtmp
     ./etcdput.py possible$myhost $myip 2>/dev/null &
    else
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
     /TopStor/queuethis.sh iamkknown start system &
  fi
     echo I am known so running all needed etcd task:boradcast,isknown:$isknown >> /root/zfspingtmp
@@ -315,13 +325,15 @@ do
      toimport=1
     fi
     echo finish running tasks task:boradcast, log..etc >> /root/zfspingtmp
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
     /TopStor/queuethis.sh iamkknown stop system &
  fi
    fi
   fi 
  fi
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
  /TopStor/queuethis.sh AmIprimary stop system &
  fi
  pgrep putzpool 
@@ -332,7 +344,8 @@ do
  echo checking if I need to run local etcd >> /root/zfspingtmp
  if [[ $needlocal -eq 1 ]];
  then
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
   /TopStor/queuethis.sh IamLocal start system &
  fi
   echo start the local etcd >> /root/zfspingtmp
@@ -365,7 +378,8 @@ do
 #   ./etcddellocal.py $myip known/$myhost --prefix 2>/dev/null
   echo done and exit >> /root/zfspingtmp
   continue 
- if [ $perfmon -eq 1 ]; then
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
   /TopStor/queuethis.sh IamLocal stop system &
  fi
  fi
