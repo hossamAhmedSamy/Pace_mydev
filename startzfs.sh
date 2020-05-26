@@ -115,6 +115,9 @@ then
  ./etcddel.py to  --prefix 2>/dev/null
  ./etcddel.py hosts  --prefix 2>/dev/null
  ./etcddel.py oldhosts  --prefix 2>/dev/null
+ ./etcddel.py vol  --prefix 2>/dev/null
+ ./etcddel.py ipaddr  --prefix 2>/dev/null
+ ./etcddel.py active --prefix 2>/dev/null
  systemctl start iscsid &
  systemctl start iscsi &
  systemctl start topstorremote
