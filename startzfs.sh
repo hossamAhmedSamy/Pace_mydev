@@ -15,7 +15,7 @@ echo starting startzfs > /root/tmp2
 #systemctl start smb &
 iscsimapping='/pacedata/iscsimapping';
 runningpools='/pacedata/pools/runningpools';
-enpdev='eno1'
+enpdev='enp0s8'
 myhost=`hostname -s`
 #/sbin/rabbitmqctl add_user rabbmezo HIHIHI 2>/dev/null
 #/sbin/rabbitmqctl set_permissions -p / rabbmezo ".*" ".*" ".*" 2>/dev/null
@@ -71,12 +71,21 @@ then
  done
  echo started etcd as primary>>/root/tmp2
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
-  rm -rf /etc/chrony.conf
-  cp /TopStor/chrony.conf /etc/
+ ntp=`ETCDCTL_API=3 /TopStor/etcdget.py ntp`
+ rm -rf /etc/chrony.conf
+ cp /TopStor/chrony.conf /etc/
+ echo $ntp | grep '\.'
+ if [ $? -eq 0 ];
+ then
+  sed -i "s/MASTERSERVER/$ntp/g" /etc/chrony.conf
+ else
   sed -i '/MASTERSERVER/,+1 d' /etc/chrony.conf
-  systemctl restart chronyd
+  ntp=`cat /etc/chrony.conf | grep server | grep -v servers | head -1 | awk '{print $2}'`
+ fi
+ systemctl restart chronyd
  /TopStor/logmsg2.sh $datenow $timenow $myhost Partst03 info system $myhost $myip
  ./runningetcdnodes.py $myip 2>/dev/null
+ ./etcdput.py ntp $ntp
  ./etcddel.py known --prefix 2>/dev/null 
  ./etcddel.py possbile --prefix 2>/dev/null 
  ./etcddel.py ready --prefix 2>/dev/null 
@@ -205,6 +214,7 @@ else
   ./etcdsync.py $myip logged logged 2>/dev/null
   ./etcdsync.py $myip updlogged updlogged 2>/dev/null
   ./etcdsync.py $myip ActivePartners ActivePartners 2>/dev/null
+  ./etcdsync.py $myip ntp ntp 2>/dev/null
   /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
   /bin/crontab /TopStor/plaincron
   ./etcdsync.py $myip Snapperiod Snapperiod 2>/dev/null
@@ -217,6 +227,11 @@ else
   ./etcddellocal.py $myip users --prefix 2>/dev/null
   ./usersyncall.py $myip
   ./groupsyncall.py $myip
+  ntp=`ETCDCTL_API=3 /TopStor/etcdget.py ntp`
+  rm -rf /etc/chrony.conf
+  cp /TopStor/chrony.conf /etc/
+  sed -i "s/MASTERSERVER/$ntp/g" /etc/chrony.conf
+  systemctl restart chronyd
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
   if [[ $myalias -ne -1 ]];
   then

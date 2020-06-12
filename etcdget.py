@@ -17,8 +17,11 @@ def etcdget(key, prefix=''):
     z.append(x) 
     print(x)
   elif(prefix == ''):
-   z.append((str(result.stdout).split(key)[1][2:][:-3]))
-   print(str(result.stdout).split(key)[1][2:][:-3])
+   if len(str(result.stdout).split(key)) > 2 :	
+    z.append(key.join(str(result.stdout).split(key)[1:])[2:][:-3])
+   else:
+    z.append((str(result.stdout).split(key)[1][2:][:-3]))
+   print(z[0])
   else:
    cmdline=['/bin/etcdctl','--endpoints='+endpoints,'get',key,'--prefix']
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
