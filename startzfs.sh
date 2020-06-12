@@ -71,7 +71,18 @@ then
  done
  echo started etcd as primary>>/root/tmp2
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
+ ./runningetcdnodes.py $myip 2>/dev/null
+ tzone=`ETCDCTL_API=3 /TopStor/etcdget.py tz`
+ echo $tzone | grep '\/'
+ if [ $? -ne 0 ];
+ then
+  tzone='@@'`timedatectl | grep  zone | awk -F':' '{print $2}'` 
+  tzone=${tzone//,/@}
+  tzone=${tzone// /_}
+  ./etcdput.py tz $tzone
+ fi
  ntp=`ETCDCTL_API=3 /TopStor/etcdget.py ntp`
+ echo ntp=$ntp >/root/ntptemp
  rm -rf /etc/chrony.conf
  cp /TopStor/chrony.conf /etc/
  echo $ntp | grep '\.'
@@ -81,11 +92,10 @@ then
  else
   sed -i '/MASTERSERVER/,+1 d' /etc/chrony.conf
   ntp=`cat /etc/chrony.conf | grep server | grep -v servers | head -1 | awk '{print $2}'`
+  ./etcdgput.py ntp $ntp
  fi
  systemctl restart chronyd
  /TopStor/logmsg2.sh $datenow $timenow $myhost Partst03 info system $myhost $myip
- ./runningetcdnodes.py $myip 2>/dev/null
- ./etcdput.py ntp $ntp
  ./etcddel.py known --prefix 2>/dev/null 
  ./etcddel.py possbile --prefix 2>/dev/null 
  ./etcddel.py ready --prefix 2>/dev/null 
