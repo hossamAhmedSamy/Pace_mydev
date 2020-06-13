@@ -72,6 +72,13 @@ then
  echo started etcd as primary>>/root/tmp2
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
  ./runningetcdnodes.py $myip 2>/dev/null
+ gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw`
+ echo $gateway | grep '\.'
+ if [ $? -eq 0 ];
+ then
+  route del default
+  route add default gw $gateway
+ fi 
  tzone=`ETCDCTL_API=3 /TopStor/etcdget.py tz`
  echo $tzone | grep '\/'
  if [ $? -ne 0 ];
@@ -225,6 +232,8 @@ else
   ./etcdsync.py $myip updlogged updlogged 2>/dev/null
   ./etcdsync.py $myip ActivePartners ActivePartners 2>/dev/null
   ./etcdsync.py $myip ntp ntp 2>/dev/null
+  ./etcdsync.py $myip tz tz 2>/dev/null
+  ./etcdsync.py $myip gw gw 2>/dev/null
   /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
   /bin/crontab /TopStor/plaincron
   ./etcdsync.py $myip Snapperiod Snapperiod 2>/dev/null
@@ -237,11 +246,17 @@ else
   ./etcddellocal.py $myip users --prefix 2>/dev/null
   ./usersyncall.py $myip
   ./groupsyncall.py $myip
-  ntp=`ETCDCTL_API=3 /TopStor/etcdget.py ntp`
-  rm -rf /etc/chrony.conf
-  cp /TopStor/chrony.conf /etc/
-  sed -i "s/MASTERSERVER/$ntp/g" /etc/chrony.conf
-  systemctl restart chronyd
+  gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw`
+  echo $gateway | grep '\.'
+  if [ $? -eq 0 ];
+  then
+   route del default
+   route add default gw $gateway
+  fi 
+ t
+  /TopStor/HostManualconfigTZ
+  /TopStor/HostManualconfigNTP
+  cd /pace/
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
   if [[ $myalias -ne -1 ]];
   then
