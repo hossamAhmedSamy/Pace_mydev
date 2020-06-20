@@ -8,6 +8,7 @@ targetcli saveconfig
 targetcli restoreconfig /pacedata/targetconfig
 targetcli saveconfig
 failddisks=''
+oldlsscsi='00'
 isknown=0
 leaderfail=0
 ActivePartners=1
@@ -460,10 +461,17 @@ do
    oldclocker=$clocker
   else
    echo checking zpool to import>> /root/zfspingtmp
-   pgrep  zpooltoimport 
+#   pgrep  zpooltoimport 
+#   if [ $? -ne 0 ];
+#   then
+#    /TopStor/zpooltoimport.py all &
+#   fi
+   lsscsi=`lsscsi | wc -c`'lsscsi'
+   echo $oldlsscsi | grep $lsscsi
    if [ $? -ne 0 ];
    then
     /TopStor/zpooltoimport.py all &
+    oldlsscsi=$lsscsi
    fi
   fi
  fi
