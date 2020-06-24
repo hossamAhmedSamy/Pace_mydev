@@ -72,6 +72,11 @@ then
  echo started etcd as primary>>/root/tmp2
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
  ./runningetcdnodes.py $myip 2>/dev/null
+ ./etcdget.py configured | grep 1
+ if [ $? -eq 0 ];
+ then
+  ./etcdput.py configured no
+ fi
  gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw`
  echo $gateway | grep '\.'
  if [ $? -eq 0 ];
@@ -86,7 +91,7 @@ then
   tzone='@@'`timedatectl | grep  zone | awk -F':' '{print $2}'` 
   tzone=${tzone//,/@}
   tzone=${tzone// /_}
-  ./etcdput.py tz $tzone
+#  ./etcdput.py tz $tzone
  fi
  ntp=`ETCDCTL_API=3 /TopStor/etcdget.py ntp`
  echo ntp=$ntp >/root/ntptemp
