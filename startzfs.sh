@@ -39,10 +39,17 @@ then
  echo found cluster with leader $result.. no need for node search >>/root/tmp2
  knownsearch=1
 else
+ configured=`ETCDCTL_API=3 ./etcdget.py configured` 
  systemctl stop etcd & 
- echo starting nodesearch>>/root/tmp2
- result=` ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
- echo finish nodesearch with ip=$myip, result=$result >>/root/tmp2
+ echo $configured | grep yes 
+ if [ $? -eq 0 ];
+ then
+  result='nothing'
+ else
+  echo starting nodesearch>>/root/tmp2
+  result=` ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
+  echo finish nodesearch with ip=$myip, result=$result >>/root/tmp2
+ fi
 fi
 freshcluster=0
 echo $result > /root/hihi
