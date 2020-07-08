@@ -21,7 +21,7 @@ clocker=0
 oldclocker=0
 clockdiff=0
 date=`date`
-enpdev='enp0s8'
+enpdev='eno1'
 echo $date >> /root/zfspingstart
 systemctl restart target
 cd /pace
@@ -467,7 +467,8 @@ do
 #    /TopStor/zpooltoimport.py all &
 #   fi
    lsscsi=`lsscsi | wc -c`'lsscsi'
-   echo $oldlsscsi | grep $lsscsi
+#   echo $oldlsscsi | grep $lsscsi
+   pgrep zpooltoimport
    if [ $? -ne 0 ];
    then
     /TopStor/zpooltoimport.py all &
