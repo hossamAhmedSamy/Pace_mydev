@@ -473,7 +473,11 @@ do
     /TopStor/zpooltoimport.py all &
     oldlsscsi=$lsscsi
    fi
-   /TopStor/VolumeCheck
+   pgrep  VolumeCheck 
+   if [ $? -ne 0 ];
+   then
+    /TopStor/VolumeCheck
+   fi
   fi
  fi
  if [ $toimport -eq 0 ];
