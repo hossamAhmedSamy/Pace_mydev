@@ -21,7 +21,7 @@ clocker=0
 oldclocker=0
 clockdiff=0
 date=`date`
-enpdev='eno1'
+enpdev='enp0s8'
 echo $date >> /root/zfspingstart
 systemctl restart target
 cd /pace
