@@ -127,7 +127,7 @@ then
  echo $allow | grep 1
  if [ $? -eq 0 ];
  then
-  ./etcdput.py allowedPartners allow
+  ./etcdput.py allowedPartners notallowed 
   echo started setting allowedPartners to allow >>/root/tmp2
  fi 
  myalias=`ETCDCTL_API=3 /pace/etcdget.py alias/$myhost`
