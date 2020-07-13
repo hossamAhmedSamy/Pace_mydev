@@ -32,7 +32,7 @@ systemctl daemon-reload 2>/dev/null
 systemctl stop etcd 2>/dev/null
 systemctl start etcd 2>/dev/null
 knownsearch=0
-result=` ETCDCTL_API=3 ./knownsearch.py $myip 2>/dev/null`
+result=` ETCDCTL_API=3 ./clustersearch.py $myip 2>/dev/null`
 echo $result | grep nothing 
 if [ $? -ne 0 ];
 then

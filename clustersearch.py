@@ -4,9 +4,9 @@ from etcdgetlocal import etcdget as getlocal
 
 ip=sys.argv[1].split('.')
 serverstatus='nothing'
-x=getlocal(sys.argv[1],'known','--prefix')
-for host in x:
- cmdline=['etcdctl','-w','json','--endpoints='+host[1]+':2379','member','list','2>/dev/null']
+x=getlocal(sys.argv[1],'clusternode','--prefix')
+#for host in x:
+# cmdline=['etcdctl','-w','json','--endpoints='+host[1]+':2379','member','list','2>/dev/null']
 #subprocess.run('export','ETCDCTL_API=3')
 for host in x:
  cmdline=['etcdctl','-w','json','--endpoints='+host[1]+':2379','member','list']

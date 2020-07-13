@@ -467,11 +467,17 @@ do
 #    /TopStor/zpooltoimport.py all &
 #   fi
    lsscsi=`lsscsi | wc -c`'lsscsi'
-   echo $oldlsscsi | grep $lsscsi
+#   echo $oldlsscsi | grep $lsscsi
+   pgrep zpooltoimport
    if [ $? -ne 0 ];
    then
     /TopStor/zpooltoimport.py all &
     oldlsscsi=$lsscsi
+   fi
+   pgrep  VolumeCheck 
+   if [ $? -ne 0 ];
+   then
+    /TopStor/VolumeCheck
    fi
   fi
  fi
