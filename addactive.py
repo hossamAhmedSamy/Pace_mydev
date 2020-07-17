@@ -14,17 +14,17 @@ perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
 if '1' in perfmon:
  cmdline=['/TopStor/queuethis.sh','addknown.py','start','system']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-toactive=get('toactive','--prefix')
-if toactive != []:
- for x in toactive:
+toactivate=get('toactivate','--prefix')
+if toactivate != []:
+ for x in toactivate:
   Active=get('ActivePartners','--prefix')
-  if x[0].replace('toactive','') in str(Active):
-   etcddel('toactive',x[0])
-  put('known/'+x[0].replace('toactive',''),x[1])
-  put('nextlead',x[0].replace('toactive','/')+x[1])
-  etcddel('losthost/'+x[0].replace('toactive',''))
+  if x[0].replace('toactivate','') in str(Active):
+   etcddel('toactivate',x[0])
+  put('known/'+x[0].replace('toactivate',''),x[1])
+  put('nextlead',x[0].replace('toactivate','/')+x[1])
+  etcddel('losthost/'+x[0].replace('toactivate',''))
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-  put('change/'+x[0].replace('toactive','')+'/booted',x[1])
+  put('change/'+x[0].replace('toactivate','')+'/booted',x[1])
   put('tosync','yes')
   broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
   #cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
@@ -36,7 +36,7 @@ if toactive != []:
 #  cmdline=['/bin/sleep','5']
 #  subprocess.run(cmdline,stdout=subprocess.PIPE)
 else:
- print('toactive is empty')
+ print('toactivate is empty')
 if '1' in perfmon:
  cmdline=['/TopStor/queuethis.sh','addknown.py','stop','system']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
