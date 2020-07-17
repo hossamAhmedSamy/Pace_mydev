@@ -293,17 +293,12 @@ do
    echo $known | grep $myhost  &>/dev/null
    if [ $? -ne 0 ];
    then
-    echo $myconfig | grep yes  &>/dev/null
-    if [ $? -ne 0 ];
-    then
-     echo I am not a known and I am not configured. So, adding me as possible >> /root/zfspingtmp
      ./etcdput.py possible$myhost $myip 2>/dev/null &
-     fi
-    else
-    echo $perfmon | grep 1
-    if [ $? -eq 0 ]; then
-      /TopStor/queuethis.sh iamkknown start system &
-    fi
+   else
+   echo $perfmon | grep 1
+   if [ $? -eq 0 ]; then
+     /TopStor/queuethis.sh iamkknown start system &
+   fi
     echo I am known so running all needed etcd task:boradcast,isknown:$isknown >> /root/zfspingtmp
     if [[ $isknown -eq 0 ]];
     then
