@@ -3,8 +3,9 @@ import sys, subprocess
 from etcdgetlocal import etcdget as getlocal
 
 ip=sys.argv[1].split('.')
+etcdserver='nohost'
 serverstatus='nothing'
-x=getlocal(sys.argv[1],'clusternode','--prefix')
+x=getlocal(sys.argv[1],'Active','--prefix')
 #for host in x:
 # cmdline=['etcdctl','-w','json','--endpoints='+host[1]+':2379','member','list','2>/dev/null']
 #subprocess.run('export','ETCDCTL_API=3')
@@ -24,4 +25,4 @@ etcdfile.close()
 etcdfile=open('/var/www/html/des20/Data/runningetcdnodes.txt','w')
 etcdfile.write(serverstatus)
 etcdfile.close()
-print(serverstatus)
+print('hostis='+etcdserver)
