@@ -133,6 +133,7 @@ do
   ./syncthis.py pools/ --prefix &
   ./syncthis.py volumes/ --prefix &
   ./syncthis.py ActivePartners --prefix &
+  ./syncthis.py allowedPartners --prefix &
  else
   readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
   ActivePartners=`ETCDCTL_API=3 /pace/etcdget.py ActivePartners --prefix | wc -l` 

@@ -21,8 +21,11 @@ print('possible=',possible)
 if possible != []:
  for x in possible:
   print('x=',x[0], x[1])
-  if 'allow' not in str(allow):
+  if 'yestoall' not in str(allow):
+   print(x[0].replace('possible',''))
+   print(str(allow))
    if x[0].replace('possible','') not in str(allow):
+    print('iamhere')
     Active=get('AcivePartners','--prefix')
     if x[0].replace('possible','') not in str(Active):
      exit()
@@ -37,6 +40,7 @@ if possible != []:
   etcddel('losthost/'+x[0].replace('possible',''))
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   put('change/'+x[0].replace('possible','')+'/booted',x[1])
+  put('tosync','yes')
   broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
   #cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
   #subprocess.run(cmdline,stdout=subprocess.PIPE)
