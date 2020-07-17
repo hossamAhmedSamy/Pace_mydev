@@ -290,6 +290,7 @@ do
    echo checking if I am known host >> /root/zfspingtmp
    known=` ./etcdget.py known --prefix 2>/dev/null`
    myconfig=` ./etcdgetlocal.py $myip configured 2>/dev/null`
+
    echo $known | grep $myhost  &>/dev/null
    if [ $? -ne 0 ];
    then
