@@ -28,6 +28,7 @@ if possible != []:
     print('iamhere')
     Active=get('AcivePartners','--prefix')
     if x[0].replace('possible','') not in str(Active):
+     print('imhere2')
      exit()
   etcddel('possible',x[0])
   put('known/'+x[0].replace('possible',''),x[1])

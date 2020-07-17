@@ -129,20 +129,23 @@ do
  then
   ETCDCTL_API=3 /pace/etcddel.py tosync --prefix
   echo syncthing with the ready to sync partners >> /root/zfspingtmp
-  ./syncthis.py ready --prefix &
-  ./syncthis.py pools/ --prefix &
-  ./syncthis.py volumes/ --prefix &
-  ./syncthis.py ActivePartners --prefix &
-  ./syncthis.py allowedPartners --prefix &
-  ./syncthis.py configured --prefix &
+  ./syncthis.py ready --prefix 
+  ./syncthis.py pools/ --prefix 
+  ./syncthis.py volumes/ --prefix 
+  ./syncthis.py ActivePartners --prefix 
+  ./syncthis.py allowedPartners --prefix 
+  ./syncthis.py configured --prefix 
  else
   readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
+  lostcount=`ETCDCTL_API=3 /pace/etcdget.py lost --prefix | wc -l` 
+  totalin=$(readycount+lostcount)
   ActivePartners=`ETCDCTL_API=3 /pace/etcdget.py ActivePartners --prefix | wc -l` 
-  if [ $readycount -eq $ActivePartners ];
+  if [ $totalin -eq $ActivePartners ];
   then  
    echo All running partners are ready and in sync >> /root/zfspingtmp
   else
    echo some partners are not in sync >> /root/zfspingtmp
+   ./etcdput.py tosync yes
   fi
  fi
  else
