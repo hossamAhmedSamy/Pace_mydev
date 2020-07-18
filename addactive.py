@@ -24,6 +24,9 @@ if toactivate != []:
   put('nextlead',x[0].replace('toactivate','/')+x[1])
   etcddel('losthost/'+x[0].replace('toactivate',''))
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  frstnode=get('frstnode')
+  if x[0].replace('possible','') not in frstnode[0]:
+   newfrstnode=frstnode[0]+'/'+x[0].repalce('possible','')
   put('change/'+x[0].replace('toactivate','')+'/booted',x[1])
   put('tosync','yes')
   broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')

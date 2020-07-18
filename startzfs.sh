@@ -91,7 +91,7 @@ then
   ./etcdget.py frstnode | grep dhcp
   if [ $? -ne 0 ];
   then
-   ./etcdget.py frstnode $myhost
+   ./etcdput.py frstnode $myhost
   fi
  fi
  gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw`
