@@ -32,8 +32,8 @@ systemctl daemon-reload 2>/dev/null
 systemctl stop etcd 2>/dev/null
 systemctl start etcd 2>/dev/null
 knownsearch=0
-result=` ETCDCTL_API=3 ./clustersearch.py $myip 2>/dev/null`
-echo $result | grep nothing 
+result=` ETCDCTL_API=3 ./clustersearch.py $myip 2>/dev/null | grep hostis | awk -F'=' '{print $2}'`
+echo $result | grep nohost 
 if [ $? -ne 0 ];
 then
  echo found cluster with leader $result.. no need for node search >>/root/tmp2
