@@ -134,7 +134,6 @@ do
   ./syncthis.py volumes/ --prefix 
   ./syncthis.py ActivePartners --prefix 
   ./syncthis.py allowedPartners --prefix 
-  ./syncthis.py configured --prefix 
  else
   readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
   lostcount=`ETCDCTL_API=3 /pace/etcdget.py lost --prefix | wc -l` 
@@ -290,16 +289,21 @@ do
    fi
    echo checking if I am known host >> /root/zfspingtmp
    known=` ./etcdget.py known --prefix 2>/dev/null`
+   myconfig=` ./etcdgetlocal.py $myip configured 2>/dev/null`
    echo $known | grep $myhost  &>/dev/null
    if [ $? -ne 0 ];
    then
-    echo I am not a known adding me as possible >> /root/zfspingtmp
-    ./etcdput.py possible$myhost $myip 2>/dev/null &
-   else
- echo $perfmon | grep 1
- if [ $? -eq 0 ]; then
-    /TopStor/queuethis.sh iamkknown start system &
- fi
+    echo $myconfig | grep yes  &>/dev/null
+    if [ $? -ne 0 ];
+    then
+     echo I am not a known and I am not configured. So, adding me as possible >> /root/zfspingtmp
+     ./etcdput.py possible$myhost $myip 2>/dev/null &
+     fi
+    else
+    echo $perfmon | grep 1
+    if [ $? -eq 0 ]; then
+      /TopStor/queuethis.sh iamkknown start system &
+    fi
     echo I am known so running all needed etcd task:boradcast,isknown:$isknown >> /root/zfspingtmp
     if [[ $isknown -eq 0 ]];
     then

@@ -7,6 +7,7 @@ from broadcasttolocal import broadcasttolocal as broadcasttolocal
 from etcdget import etcdget as get
 from etcdgetlocal import etcdget as getlocal
 from etcdput import etcdput as put 
+from etcdputlocal import etcdput as putlocal 
 import json
 allow=get('allowedPartners')
 if 'notallowed' in str(allow):
@@ -30,7 +31,9 @@ if possible != []:
     if x[0].replace('possible','') not in str(Active):
      print('imhere2')
      exit()
+  put('allowedPartners','notoall')
   etcddel('possible',x[0])
+  putlocal(x[1],'configured','yes')
   put('known/'+x[0].replace('possible',''),x[1])
   put('ActivePartners/'+x[0].replace('possible',''),x[1])
   broadcasttolocal('ActivePartners/'+x[0].replace('possible',''),x[1])
