@@ -220,6 +220,7 @@ do
     if [ $? -ne 0 ];
     then
      /pace/putzpool.py 2 $isprimary $primtostd  &
+     /TopStor/HostgetIPs
     fi
 #    systemctl status nfs 
 #    if [ $? -ne 0 ];
