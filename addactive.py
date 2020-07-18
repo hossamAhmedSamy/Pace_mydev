@@ -9,8 +9,8 @@ from etcdgetlocal import etcdget as getlocal
 from etcdput import etcdput as put 
 from etcdputlocal import etcdput as putlocal 
 import json
-cmdline='cat /pacedata/perfmon'
-perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
+cmdline=['cat','/pacedata/perfmon']
+perfmon=str(subprocess.run(cmdline,stdout=subprocess.PIPE).stdout)
 if '1' in perfmon:
  cmdline=['/TopStor/queuethis.sh','addknown.py','start','system']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
@@ -21,12 +21,14 @@ if toactivate != []:
   if x[0].replace('toactivate','') in str(Active):
    etcddel('toactivate',x[0])
   put('known/'+x[0].replace('toactivate',''),x[1])
-  put('nextlead',x[0].replace('toactivate','/')+x[1])
+  put('nextlead',x[0].replace('toactivate','')+'/'+x[1])
   etcddel('losthost/'+x[0].replace('toactivate',''))
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   frstnode=get('frstnode')
-  if x[0].replace('possible','') not in frstnode[0]:
-   newfrstnode=frstnode[0]+'/'+x[0].repalce('possible','')
+  print('frst',frstnode[0])
+  if x[0].replace('toactivate','') not in frstnode[0]:
+   newfrstnode=frstnode[0]+'/'+x[0].replace('toactivate','')
+   put('frstnode',newfrstnode)
   put('change/'+x[0].replace('toactivate','')+'/booted',x[1])
   put('tosync','yes')
   broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
