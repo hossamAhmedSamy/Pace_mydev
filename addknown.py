@@ -31,8 +31,10 @@ if possible != []:
     if x[0].replace('possible','') not in str(Active):
      print('imhere2')
      exit()
-  put('allowedPartners','notoall')
-  etcddel('possible',x[0])
+  knowns=get('known','--prefix')
+  if x[0].replace('possible','') in str(knowns):
+   put('allowedPartners','notoall')
+   etcddel('possible',x[0])
   putlocal(x[1],'configured','yes')
   put('known/'+x[0].replace('possible',''),x[1])
   put('ActivePartners/'+x[0].replace('possible',''),x[1])
