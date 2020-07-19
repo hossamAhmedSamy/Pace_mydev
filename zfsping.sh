@@ -293,18 +293,21 @@ do
    echo $known | grep $myhost  &>/dev/null
    if [ $? -ne 0 ];
    then
-    echo $myconfig | grep yes  &>/dev/null
+    echo $myconfig | grep no  &>/dev/null
     if [ $? -ne 0 ];
     then
      echo I am not a known and I am not configured. So, adding me as possible >> /root/zfspingtmp
      ./etcdput.py possible$myhost $myip 2>/dev/null &
-     fi
     else
-    echo $perfmon | grep 1
-    if [ $? -eq 0 ]; then
-      /TopStor/queuethis.sh iamkknown start system &
-    fi
-    echo I am known so running all needed etcd task:boradcast,isknown:$isknown >> /root/zfspingtmp
+     echo I am not a known but I am configured so need to activate >> /root/zfspingtmp
+     ./etcdput.py toactivate$myhost $myip 2>/dev/null &
+    fi 
+   else
+   echo $perfmon | grep 1
+   if [ $? -eq 0 ]; then
+     /TopStor/queuethis.sh iamkknown start system &
+   fi
+   echo I am known so running all needed etcd task:boradcast,isknown:$isknown >> /root/zfspingtmp
     if [[ $isknown -eq 0 ]];
     then
      echo running sendhost.py $leaderip 'user' 'recvreq' $myhost >>/root/tmp2
@@ -422,6 +425,11 @@ do
    if [ $? -ne 0 ];
    then
     ./addknown.py $myhost 2>/dev/null & 
+   fi
+   pgrep addactive 
+   if [ $? -ne 0 ];
+   then
+    ./addactive.py $myhost 2>/dev/null & 
    fi
    pgrep  selectimport 
    if [ $? -ne 0 ];
