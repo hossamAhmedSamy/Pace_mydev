@@ -80,6 +80,9 @@ then
  echo started etcd as primary>>/root/tmp2
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
  ./runningetcdnodes.py $myip 2>/dev/null
+ /TopStor/HostManualconfigTZlocal $myip 
+ /TopStor/HostManualconfigNTPlocal $myip
+ cd /pace
  ./etcdget.py configured | grep 1
  if [ $? -eq 0 ];
  then
@@ -217,9 +220,12 @@ else
   echo sync leader with local database >>/root/tmp2
   rm -rf /etc/chrony.conf
   cp /TopStor/chrony.conf /etc/
+  /TopStor/HostManualconfigTZ 
+  /TopStor/HostManualconfigNTP
+  cd /pace
+  systemctl restart chronyd
   leaderip=` ./etcdget.py leader/$leader `
   sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
-  systemctl restart chronyd
   ./etcdsync.py $myip primary primary 2>/dev/null
   ./etcddellocal.py $myip known --prefix 2>/dev/null
   ./etcddellocal.py $myip activepool --prefix 2>/dev/null
@@ -266,9 +272,6 @@ else
    route del default
    route add default gw $gateway
   fi 
- t
-  /TopStor/HostManualconfigTZ
-  /TopStor/HostManualconfigNTP
   cd /pace/
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
   if [[ $myalias -ne -1 ]];
