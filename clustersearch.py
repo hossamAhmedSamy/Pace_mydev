@@ -6,9 +6,6 @@ ip=sys.argv[1].split('.')
 etcdserver='nohost'
 serverstatus='nothing'
 x=getlocal(sys.argv[1],'Active','--prefix')
-#for host in x:
-# cmdline=['etcdctl','-w','json','--endpoints='+host[1]+':2379','member','list','2>/dev/null']
-#subprocess.run('export','ETCDCTL_API=3')
 for host in x:
  cmdline=['etcdctl','-w','json','--endpoints='+host[1]+':2379','member','list']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
