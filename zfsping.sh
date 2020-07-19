@@ -294,7 +294,7 @@ do
    echo $known | grep $myhost  &>/dev/null
    if [ $? -ne 0 ];
    then
-    echo $myconfig | grep no  &>/dev/null
+    echo $myconfig | grep yes  &>/dev/null
     if [ $? -ne 0 ];
     then
      echo I am not a known and I am not configured. So, adding me as possible >> /root/zfspingtmp
