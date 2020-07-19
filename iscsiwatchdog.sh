@@ -44,5 +44,5 @@ fi
 pgrep checkfrstnode -a
 if [ $? -ne 0 ];
 then
- /pace/checkfrstnode 
+ /pace/frstnodecheck.py
 fi
