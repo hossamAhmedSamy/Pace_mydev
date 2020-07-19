@@ -87,6 +87,12 @@ then
  if [ $? -eq 0 ];
  then
   ./etcdput.py configured no
+ else 
+  ./etcdget.py frstnode | grep dhcp
+  if [ $? -ne 0 ];
+  then
+   ./etcdget.py frstnode $myhost
+  fi
  fi
  gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw`
  echo $gateway | grep '\.'

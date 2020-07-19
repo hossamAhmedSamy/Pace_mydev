@@ -6,6 +6,7 @@ thehost=`echo $@ | awk '{print $1}'`
 myip=`echo $@ | awk '{print $2}'`
 thehostip=`echo $@ | awk '{print $3}'`
 ./etcddellocal.py $myip pool $thehost
+./etcddellocal.py $myip vol $thehost
 #declare -a disks=(`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`);
 declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
 iscsiadm -m node -p $thehostip:3260 -u 

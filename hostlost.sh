@@ -4,6 +4,7 @@ myhost=`hostname -s `
 thehost=`echo $@ | awk '{print $1}'`
 #declare -a disks=(`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`);
 ./etcddel.py pool $thehost
+./etcddel.py vol $thehost
 ./etcdput.py tosync yes 
 declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
 echo "${disks[@]}"
@@ -35,3 +36,5 @@ ETCDCTL_API=3 /pace/etcddel.py cannot  --prefix
 ETCDCTL_API=3 /pace/etcddel.py oldhosts/$thehost  --prefix
 ETCDCTL_API=3 /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
 ETCDCTL_API=3 /pace/putzpool.py 
+echo  it is done >> /root/hostlosttmp
+

@@ -134,6 +134,7 @@ do
   ./syncthis.py volumes/ --prefix 
   ./syncthis.py ActivePartners --prefix 
   ./syncthis.py allowedPartners --prefix 
+  ./syncthis.py frstnode --prefix 
  else
   readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
   lostcount=`ETCDCTL_API=3 /pace/etcdget.py lost --prefix | wc -l` 

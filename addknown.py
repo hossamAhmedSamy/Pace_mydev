@@ -36,6 +36,10 @@ if possible != []:
    put('allowedPartners','notoall')
    etcddel('possible',x[0])
   putlocal(x[1],'configured','yes')
+  frstnode=get('frstnode')
+  if x[0].replace('possible','') not in frstnode[0]:
+   newfrstnode=frstnode[0]+'/'+x[0].repalce('possible','')
+   put('frstnode',newfrstnode)
   put('known/'+x[0].replace('possible',''),x[1])
   put('ActivePartners/'+x[0].replace('possible',''),x[1])
   broadcasttolocal('ActivePartners/'+x[0].replace('possible',''),x[1])
