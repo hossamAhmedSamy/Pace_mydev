@@ -3,6 +3,8 @@ export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/root
 myhost=`hostname -s `
 thehost=`echo $@ | awk '{print $1}'`
 #declare -a disks=(`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`);
+./etcddel.py pool $thehost
+./etcdput.py tosync yes 
 declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
 echo "${disks[@]}"
 echo $@ > /root/losthostparam
