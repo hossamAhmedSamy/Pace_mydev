@@ -32,7 +32,15 @@ systemctl daemon-reload 2>/dev/null
 systemctl stop etcd 2>/dev/null
 systemctl start etcd 2>/dev/null
 knownsearch=0
-result=` ETCDCTL_API=3 ./clustersearch.py $myip 2>/dev/null | grep hostis | awk -F'=' '{print $2}'`
+result='nohost'
+toreset=`./etcdgetlocal.py $myip toreset`'r'
+echo $toreset | grep yes
+if [ $? -eq 0 ];
+then
+ ./etcddellocal.py $myip "" --prefix
+else
+ result=` ETCDCTL_API=3 ./clustersearch.py $myip 2>/dev/null | grep hostis | awk -F'=' '{print $2}'`
+fi
 echo $result | grep nohost 
 if [ $? -ne 0 ];
 then
