@@ -33,6 +33,7 @@ systemctl stop etcd 2>/dev/null
 systemctl start etcd 2>/dev/null
 knownsearch=0
 result='nohost'
+./etcdputlocal.py $myip ActivePartners/$myhost $myip
 toreset=`./etcdgetlocal.py $myip toreset`'r'
 echo $toreset | grep yes
 if [ $? -eq 0 ];
