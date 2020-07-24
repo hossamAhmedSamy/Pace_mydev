@@ -3,7 +3,8 @@ import sys, subprocess, socket
 from etcdget import etcdget as get
 
 myhost=socket.gethostname()
-leader=get('leader')
+leader=get('leader','--prefix')
+print('leader', leader)
 if myhost in str(leader):
  frstnode=get('frstnode')[0].split('/')[0]
  if myhost not in frstnode:
@@ -11,4 +12,5 @@ if myhost in str(leader):
   cmdline=['etcdctl','-w','json','--endpoints='+frstnodeip+':2379','member','list']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   if result.returncode==0:
-   /TopStor/rebootme 
+   cmdline=['/TopStor/rebootme']
+   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
