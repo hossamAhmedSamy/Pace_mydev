@@ -415,7 +415,14 @@ do
   continue
  fi
  cd /pace
- echo No. so checking  I am primary >> /root/zfspingtmp
+ echo No then Checking Node Evacuation >> /root/zfspingtmp
+ pgrep Evacuatelocal
+ if [ $? -ne 0 ];
+ then
+  /TopStor/Evacuatelocal.py
+  cd /pace
+ fi
+ echo Checking  I am primary >> /root/zfspingtmp
  if [[ $runningcluster -eq 1 ]];
  then
   echo Yes I am primary so will check for known hosts >> /root/zfspingtmp
@@ -473,12 +480,6 @@ do
      leaderfail=0
     fi
      
-   fi
-   pgrep Evacuatelocal
-   if [ $? -ne 0 ];
-   then
-    /TopStor/Evacuatelocal.py
-    cd /pace
    fi
    if [ $toimport -eq 3 ];
    then
