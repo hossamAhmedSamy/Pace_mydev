@@ -1,6 +1,5 @@
 #!/bin/python3.6
-import subprocess,sys, logmsg
-from ast import literal_eval as mtuple
+import subprocess, logmsg
 from etcddel import etcddel as etcddel
 from broadcast import broadcast as broadcast 
 from broadcasttolocal import broadcasttolocal as broadcasttolocal
@@ -8,7 +7,6 @@ from etcdget import etcdget as get
 from etcdgetlocal import etcdget as getlocal
 from etcdput import etcdput as put 
 from etcdputlocal import etcdput as putlocal 
-import json
 allow=get('allowedPartners')
 if 'notallowed' in str(allow):
  exit()
@@ -52,6 +50,9 @@ if possible != []:
   if x[0].replace('possible','') in str(knowns):
    put('allowedPartners','notoall')
    etcddel('possible',x[0])
+   logmsg.sendlog('AddHostsu01','info',arg[-1],name)
+   cmdline=['/TopStor/queuethis.sh','AddHost.py','finished',bargs[-1]]
+   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 else:
  print('possible is empty')
 if '1' in perfmon:
