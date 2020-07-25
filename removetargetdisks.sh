@@ -13,5 +13,5 @@ then
  iscsiadm -m node -p $thehostip:3260 -u
 else
  targetcli clearconfig confirm=true
- iscsiadmin -m node -u
+ iscsiadm -m node -u
 fi
