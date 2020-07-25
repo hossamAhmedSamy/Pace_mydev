@@ -40,9 +40,8 @@ echo $toreset | grep yes
 if [ $? -eq 0 ];
 then
  ./etcddellocal.py $myip "" --prefix
- ./etcddellocal.py $myip toreset
+ ./etcdputlocal.py $myip configured yes
  /TopStor/logmsg2.sh $datenow $timenow $myhost Evacuaesu01 info system $myhost
- 
 else
  result=` ETCDCTL_API=3 ./clustersearch.py $myip 2>/dev/null | grep hostis | awk -F'=' '{print $2}'`
 fi
