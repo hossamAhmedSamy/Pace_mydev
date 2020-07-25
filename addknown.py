@@ -32,13 +32,15 @@ if possible != []:
      print('imhere2')
      exit()
   knowns=get('known','--prefix')
+  print('x0',x[0])
   if x[0].replace('possible','') in str(knowns):
+   print('-------------I am here-----------')
    put('allowedPartners','notoall')
    etcddel('possible',x[0])
   putlocal(x[1],'configured','yes')
   frstnode=get('frstnode')
   if x[0].replace('possible','') not in frstnode[0]:
-   newfrstnode=frstnode[0]+'/'+x[0].repalce('possible','')
+   newfrstnode=frstnode[0]+'/'+x[0].replace('possible','')
    put('frstnode',newfrstnode)
   put('known/'+x[0].replace('possible',''),x[1])
   put('ActivePartners/'+x[0].replace('possible',''),x[1])

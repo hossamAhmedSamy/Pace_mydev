@@ -414,6 +414,7 @@ do
   echo Yes. so I have to exit >> /root/zfspingtmp
   continue
  fi
+ cd /pace
  echo No. so checking  I am primary >> /root/zfspingtmp
  if [[ $runningcluster -eq 1 ]];
  then
