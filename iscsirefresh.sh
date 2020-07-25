@@ -6,7 +6,7 @@ perfmon=`cat /pacedata/perfmon`
 fi
 iscsimapping='/pacedata/iscsimapping';
 iscsitargets='/pacedata/iscsitargets';
-declare -a iscsitargets=(`ETCDCTL_API=3 ./iscsiclients.py`);
+declare -a iscsitargets=(`ETCDCTL_API=3 ./iscsiclients.py | grep target | awk -F'/' '{print $2}'`);
 systemctl status iscsid &>/dev/null
 if [ $? -ne 0 ];
 then
