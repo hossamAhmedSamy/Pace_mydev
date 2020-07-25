@@ -31,6 +31,7 @@ chmod +r /etc/etcd/etcd.conf.yml 2>/dev/null
 systemctl daemon-reload 2>/dev/null
 systemctl stop etcd 2>/dev/null
 systemctl start etcd 2>/dev/null
+datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
 knownsearch=0
 result='nohost'
 ./etcdputlocal.py $myip ActivePartners/$myhost $myip
@@ -39,6 +40,9 @@ echo $toreset | grep yes
 if [ $? -eq 0 ];
 then
  ./etcddellocal.py $myip "" --prefix
+ ./etcddellocal.py $myip toreset
+ /TopStor/logmsg2.sh $datenow $timenow $myhost Evacuaesu01 info system $myhost
+ 
 else
  result=` ETCDCTL_API=3 ./clustersearch.py $myip 2>/dev/null | grep hostis | awk -F'=' '{print $2}'`
 fi
