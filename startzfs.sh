@@ -41,6 +41,7 @@ if [ $? -eq 0 ];
 then
  ./etcddellocal.py $myip "" --prefix
  ./etcdputlocal.py $myip configured yes
+ targetcli clearconfig confirm=true
  /TopStor/logmsg2.sh $datenow $timenow $myhost Evacuaesu01 info system $myhost
 else
  result=` ETCDCTL_API=3 ./clustersearch.py $myip 2>/dev/null | grep hostis | awk -F'=' '{print $2}'`

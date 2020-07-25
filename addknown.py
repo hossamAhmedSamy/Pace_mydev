@@ -32,11 +32,6 @@ if possible != []:
      print('imhere2')
      exit()
   knowns=get('known','--prefix')
-  print('x0',x[0])
-  if x[0].replace('possible','') in str(knowns):
-   print('-------------I am here-----------')
-   put('allowedPartners','notoall')
-   etcddel('possible',x[0])
   putlocal(x[1],'configured','yes')
   frstnode=get('frstnode')
   if x[0].replace('possible','') not in frstnode[0]:
@@ -54,14 +49,9 @@ if possible != []:
   put('change/'+x[0].replace('possible','')+'/booted',x[1])
   put('tosync','yes')
   broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
-  #cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
-  #subprocess.run(cmdline,stdout=subprocess.PIPE)
-#  cmdline=['/bin/sleep','5']
-#  subprocess.run(cmdline,stdout=subprocess.PIPE)
-#  cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
-#  subprocess.run(cmdline,stdout=subprocess.PIPE)
-#  cmdline=['/bin/sleep','5']
-#  subprocess.run(cmdline,stdout=subprocess.PIPE)
+  if x[0].replace('possible','') in str(knowns):
+   put('allowedPartners','notoall')
+   etcddel('possible',x[0])
 else:
  print('possible is empty')
 if '1' in perfmon:
