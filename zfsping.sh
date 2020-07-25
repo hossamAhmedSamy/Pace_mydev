@@ -474,6 +474,12 @@ do
     fi
      
    fi
+   pgrep Evacuatelocal
+   if [ $? -ne 0 ];
+   then
+    /TopStor/Evacuatelocal.py
+    cd /pace
+   fi
    if [ $toimport -eq 3 ];
    then
     /TopStor/logmsg.py Partsu06 info system &
@@ -482,13 +488,7 @@ do
    oldclocker=$clocker
   else
    echo checking zpool to import>> /root/zfspingtmp
-#   pgrep  zpooltoimport 
-#   if [ $? -ne 0 ];
-#   then
-#    /TopStor/zpooltoimport.py all &
-#   fi
    lsscsi=`lsscsi | wc -c`'lsscsi'
-#   echo $oldlsscsi | grep $lsscsi
    pgrep zpooltoimport
    if [ $? -ne 0 ];
    then
