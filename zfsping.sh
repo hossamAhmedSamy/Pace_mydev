@@ -7,6 +7,7 @@ targetcli clearconfig True
 targetcli saveconfig
 targetcli restoreconfig /pacedata/targetconfig
 targetcli saveconfig
+touch /pacedata/perfmon
 failddisks=''
 oldlsscsi='00'
 isknown=0
