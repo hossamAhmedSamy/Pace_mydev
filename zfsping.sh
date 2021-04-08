@@ -8,6 +8,7 @@ targetcli saveconfig
 targetcli restoreconfig /pacedata/targetconfig
 targetcli saveconfig
 touch /pacedata/perfmon
+/TopStor/logqueueheap.py &
 failddisks=''
 oldlsscsi='00'
 isknown=0
