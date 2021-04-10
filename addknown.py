@@ -28,6 +28,8 @@ if possible != []:
     Active=get('AcivePartners','--prefix')
     if x[0].replace('possible','') not in str(Active):
      print('imhere2')
+     if '1' in perfmon:
+      queuethis('addknown.py','stop','system')
      exit()
   knowns=get('known','--prefix')
   putlocal(x[1],'configured','yes')
