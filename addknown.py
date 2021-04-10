@@ -1,6 +1,7 @@
 #!/bin/python3.6
 import subprocess, logmsg
 from etcddel import etcddel as etcddel
+from logqueue import queuethis
 from broadcast import broadcast as broadcast 
 from broadcasttolocal import broadcasttolocal as broadcasttolocal
 from etcdget import etcdget as get
@@ -10,11 +11,10 @@ from etcdputlocal import etcdput as putlocal
 allow=get('allowedPartners')
 if 'notallowed' in str(allow):
  exit()
-cmdline=['cat','/pacedata/perfmon']
-perfmon=str(subprocess.run(cmdline,stdout=subprocess.PIPE).stdout)
+with open('/pacedata/perfmon','r') as f:
+ perfmon = f.readline() 
 if '1' in perfmon:
- cmdline=['/TopStor/queuethis.sh','addknown.py','start','system']
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ queuethis('addknown.py','start','system')
 possible=get('possible','--prefix')
 print('possible=',possible)
 if possible != []:
@@ -51,10 +51,8 @@ if possible != []:
    put('allowedPartners','notoall')
    etcddel('possible',x[0])
    logmsg.sendlog('AddHostsu01','info',arg[-1],name)
-   cmdline=['/TopStor/queuethis.sh','AddHost.py','finished',bargs[-1]]
-   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+   queuethis('AddHost.py','stop',bargs[-1])
 else:
  print('possible is empty')
 if '1' in perfmon:
- cmdline=['/TopStor/queuethis.sh','addknown.py','stop','system']
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ queuethis('addknown.py','stop','system')

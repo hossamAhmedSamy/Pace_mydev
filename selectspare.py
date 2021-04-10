@@ -1,5 +1,6 @@
 #!/bin/python3.6
 import subprocess,sys,socket
+from logqueue import queuethis
 import json
 from ast import literal_eval as mtuple
 from collections import Counter
@@ -405,12 +406,10 @@ def spare2(*args):
  
  
 if __name__=='__main__':
- cmdline='cat /pacedata/perfmon'
- perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
+ with open('/pacedata/perfmon','r') as f:
+  perfmon = f.readline() 
  if '1' in perfmon:
-  cmdline=['/TopStor/queuethis.sh','selectspare.py','start','system']
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  queuethis('selectspare.py','start','system')
  spare2(*sys.argv[1:])
  if '1' in perfmon:
-  cmdline=['/TopStor/queuethis.sh','selectspare.py','stop','system']
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  queuethis('selectspare.py','stop','system')

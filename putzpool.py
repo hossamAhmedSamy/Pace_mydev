@@ -1,17 +1,17 @@
 #!/bin/python3.6
 import subprocess, socket
 from os import listdir
+from logqueue import queuethis
 from etcdput import etcdput as put
 from etcdget import etcdget as get 
 from etcddel import etcddel as dels 
 from os.path import getmtime
 
 
-cmdline='cat /pacedata/perfmon'
-perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
+with open('/pacedata/perfmon','r') as f:
+ perfmon = f.readline() 
 if '1' in perfmon:
- cmdline=['/TopStor/queuethis.sh','putzpool.py','start','system']
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ queuethis('putzpool.py','start','system')
 x=subprocess.check_output(['pgrep','-c','putzpool'])
 x=str(x).replace("b'","").replace("'","").split('\\n')
 if(x[0]!= '1' ):
@@ -212,6 +212,5 @@ for y in xnotfound:
 for y in xnew:
  put(y[0],y[1])
 if '1' in perfmon: 
- cmdline=['/TopStor/queuethis.sh','putzpool.py','stop','system']
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ queuethis('putzpool.py','stop','system')
 

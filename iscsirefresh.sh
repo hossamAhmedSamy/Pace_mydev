@@ -2,7 +2,7 @@ cd /pace
 perfmon=`cat /pacedata/perfmon`
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-/TopStor/queuethis.sh Iscsirefresh start system &
+/TopStor/logqueue.py Iscsirefresh start system &
 fi
 iscsimapping='/pacedata/iscsimapping';
 iscsitargets='/pacedata/iscsitargets';
@@ -52,5 +52,5 @@ do
 done
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-/TopStor/queuethis.sh Iscsirefresh stop system &
+/TopStor/logqueue.py Iscsirefresh stop system &
 fi

@@ -1,5 +1,6 @@
 #!/bin/python3.6
 import subprocess,sys, logmsg
+from logqueue import queuethis
 from ast import literal_eval as mtuple
 from etcddel import etcddel as etcddel
 from broadcast import broadcast as broadcast 
@@ -9,11 +10,12 @@ from etcdgetlocal import etcdget as getlocal
 from etcdput import etcdput as put 
 from etcdputlocal import etcdput as putlocal 
 import json
-cmdline=['cat','/pacedata/perfmon']
-perfmon=str(subprocess.run(cmdline,stdout=subprocess.PIPE).stdout)
+
+
+with open('/pacedata/perfmon','r') as f:
+ perfmon = f.readline() 
 if '1' in perfmon:
- cmdline=['/TopStor/queuethis.sh','addknown.py','start','system']
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ queuethis('addknown.py','start','system')
 toactivate=get('toactivate','--prefix')
 if toactivate != []:
  for x in toactivate:
@@ -43,5 +45,4 @@ if toactivate != []:
 else:
  print('toactivate is empty')
 if '1' in perfmon:
- cmdline=['/TopStor/queuethis.sh','addknown.py','stop','system']
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ queuethis('addknown.py','stop','system')
