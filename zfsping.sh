@@ -8,7 +8,7 @@ targetcli saveconfig
 targetcli restoreconfig /pacedata/targetconfig
 targetcli saveconfig
 touch /pacedata/perfmon
-/TopStor/logqueueheap.py &
+#/TopStor/logqueueheap.py &
 failddisks=''
 oldlsscsi='00'
 isknown=0
@@ -56,14 +56,14 @@ do
  chown apache /var/www/html/des20/Data/TopStorqueue.log
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
- /TopStor/queuethis.sh AmIprimary start system &
+ /TopStor/logqueue.py AmIprimary start system &
  fi
   
  echo check if I primary etcd >> /root/zfspingtmp
  netstat -ant | grep 2379 | grep LISTEN &>/dev/null
  if [ $? -eq 0 ]; 
  then
-  echo I am primary etcd,isprimary:$isprimary >> /root/zfspingtmp
+  echo I am primary etcd,isprimary:$isprimary, primtostd:$primtostd >> /root/zfspingtmp
   if [[ $isprimary -le 10 ]];
   then
    isprimary=$((isprimary+1))
@@ -100,7 +100,7 @@ do
   then
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-   /TopStor/queuethis.sh FixIamleader start system &
+   /TopStor/logqueue.py FixIamleader start system &
  fi
    echo no leader although I am primary node >> /root/zfspingtmp
    ./runningetcdnodes.py $myip 2>/dev/null
@@ -108,7 +108,7 @@ do
    ./etcdput.py leader/$myhost $myip 2>/dev/null &
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-   /TopStor/queuethis.sh FixIamleader stop system &
+   /TopStor/logqueue.py FixIamleader stop system &
  fi
   fi
   echo adding known from list of possbiles >> /root/zfspingtmp
@@ -117,12 +117,12 @@ do
    then
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-    /TopStor/queuethis.sh addingknown start system &
+    /TopStor/logqueue.py addingknown start system &
  fi
     ./addknown.py 2>/dev/null & 
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-    /TopStor/queuethis.sh addingknown stop system &
+    /TopStor/logqueue.py addingknown stop system &
  fi 
    fi
  echo checking if there are partners to sync >> /root/zfspingtmp
@@ -140,7 +140,7 @@ do
  else
   readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
   lostcount=`ETCDCTL_API=3 /pace/etcdget.py lost --prefix | wc -l` 
-  totalin=$(readycount+lostcount)
+  totalin=$((readycount+lostcount))
   ActivePartners=`ETCDCTL_API=3 /pace/etcdget.py ActivePartners --prefix | wc -l` 
   if [ $totalin -eq $ActivePartners ];
   then  
@@ -171,7 +171,7 @@ do
    then
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-    /TopStor/queuethis.sh AddingMePrimary start system &
+    /TopStor/logqueue.py AddingMePrimary start system &
  fi
     echo hostlostlocal getting all my pools from $leadername >> /root/zfspingtmp
     ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername $myip $leaderip
@@ -235,7 +235,7 @@ do
     leadername=$myhost
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-    /TopStor/queuethis.sh AddinMePrimary stop system &
+    /TopStor/logqueue.py AddinMePrimary stop system &
  fi
    else
     ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername $myip $leaderip
@@ -254,7 +254,7 @@ do
      else
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-      /TopStor/queuethis.sh AddingtoOtherleader start system &
+      /TopStor/logqueue.py AddingtoOtherleader start system &
  fi
       echo found the new leader run $result >> /root/zfspingtmp
       waiting=0
@@ -272,7 +272,7 @@ do
       systemctl restart chronyd
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-      /TopStor/queuethis.sh AddingtoOtherleader start system &
+      /TopStor/logqueue.py AddingtoOtherleader start system &
  fi
      fi
     done 
@@ -309,7 +309,7 @@ do
    else
    echo $perfmon | grep 1
    if [ $? -eq 0 ]; then
-     /TopStor/queuethis.sh iamkknown start system &
+     /TopStor/logqueue.py iamkknown start system &
    fi
    echo I am known so running all needed etcd task:boradcast,isknown:$isknown >> /root/zfspingtmp
     if [[ $isknown -eq 0 ]];
@@ -345,14 +345,14 @@ do
     echo finish running tasks task:boradcast, log..etc >> /root/zfspingtmp
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-    /TopStor/queuethis.sh iamkknown stop system &
+    /TopStor/logqueue.py iamkknown stop system &
  fi
    fi
   fi 
  fi
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
- /TopStor/queuethis.sh AmIprimary stop system &
+ /TopStor/logqueue.py AmIprimary stop system &
  fi
  pgrep putzpool 
  if [ $? -ne 0 ];
@@ -364,7 +364,7 @@ do
  then
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-  /TopStor/queuethis.sh IamLocal start system &
+  /TopStor/logqueue.py IamLocal start system &
  fi
   echo start the local etcd >> /root/zfspingtmp
   ./etccluster.py 'local' $myip 2>/dev/null
@@ -398,7 +398,7 @@ do
   continue 
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
-  /TopStor/queuethis.sh IamLocal stop system &
+  /TopStor/logqueue.py IamLocal stop system &
  fi
  fi
  if [[ $needlocal -eq  2 ]];
