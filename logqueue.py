@@ -27,10 +27,10 @@ def queuethis(*args):
  msg={'req': 'queue', 'reply':z}
  print('sending', leaderip, str(msg),'recevreply',myhost)
  sendhost(leaderip, str(msg),'recvreply',myhost)
- for k in knowninfo:
-  sendhost(k[1], str(msg),'recvreply',myhost)
-  knowns.append(k[1])
- print('logqueue z=',z)
+ #for k in knowninfo:
+ # sendhost(k[1], str(msg),'recvreply',myhost)
+ # knowns.append(k[1])
+ #print('logqueue z=',z)
 
 if __name__=='__main__':
  queuethis(*sys.argv[1:])
