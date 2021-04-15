@@ -313,7 +313,7 @@ else
   systemctl start topstorremote
   systemctl start topstorremoteack
   systemctl start servicewatchdog 
-  ./syncq $leaderip $myhost
+  /pace/syncq.py $leaderip $myhost
   echo etcd started as local >>/root/tmp2
   rm -rf /var/lib/iscsi/nodes/* 2>/dev/null
   echo starting iscsiwaatchdog >>/root/tmp2
