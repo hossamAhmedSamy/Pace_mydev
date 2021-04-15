@@ -244,6 +244,8 @@ else
   cd /pace
   systemctl restart chronyd
   leaderip=` ./etcdget.py leader/$leader `
+  rm -rf /etc/chrony.conf
+  cp /TopStor/chrony.conf /etc/
   sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
   ./etcdsync.py $myip primary primary 2>/dev/null
   ./etcddellocal.py $myip known --prefix 2>/dev/null
@@ -310,6 +312,7 @@ else
   systemctl start topstorremote
   systemctl start topstorremoteack
   systemctl start servicewatchdog 
+  ./syncq $leaderip $myhost
   echo etcd started as local >>/root/tmp2
   rm -rf /var/lib/iscsi/nodes/* 2>/dev/null
   echo starting iscsiwaatchdog >>/root/tmp2
