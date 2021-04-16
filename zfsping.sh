@@ -393,6 +393,8 @@ do
   ./etcdsync.py $myip known known 2>/dev/null &
   ./etcdsync.py $myip localrun localrun 2>/dev/null &
   ./etcdsync.py $myip leader known 2>/dev/null &
+  echo /TopStor/syncq.py $leaderip $myhost >>/root/tmp2
+  /TopStor/syncq.py $leaderip $myhost 2>/root/syncqerror
 #   ./etcddellocal.py $myip known/$myhost --prefix 2>/dev/null
   echo done and exit >> /root/zfspingtmp
   continue 

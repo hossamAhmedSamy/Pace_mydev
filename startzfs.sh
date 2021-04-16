@@ -319,8 +319,8 @@ else
   /sbin/zpool export -a
   /pace/iscsiwatchdog.sh $myip $myhost $leader 2>/dev/null
   echo started iscsiwaatchdog >>/root/tmp2
-  echo /pace/syncq.py $leaderip $myhost >>/root/tmp2
-  /pace/syncq.py $leaderip $myhost 2>/root/syncqerror
+  echo /TopStor/syncq.py $leaderip $myhost >>/root/tmp2
+  /TopStor/syncq.py $leaderip $myhost 2>/root/syncqerror
  fi
 fi
 /TopStor/HostgetIPs &
