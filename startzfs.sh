@@ -93,8 +93,8 @@ then
  echo started etcd as primary>>/root/tmp2
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
  ./runningetcdnodes.py $myip 2>/dev/null
- /TopStor/HostManualconfigTZlocal $myip 
- /TopStor/HostManualconfigNTPlocal $myip
+ /TopStor/HostManualconfigTZ $myip 
+ /TopStor/HostManualconfigNTP $myip
  cd /pace
  ./etcddel.py OpenTasks --prefix
  ./etcdget.py configured | grep 1
@@ -240,8 +240,8 @@ else
   echo sync leader with local database >>/root/tmp2
   rm -rf /etc/chrony.conf
   cp /TopStor/chrony.conf /etc/
-  /TopStor/HostManualconfigTZ 
-  /TopStor/HostManualconfigNTP
+  /TopStor/HostManualconfigTZlocal $myip $leader 
+  /TopStor/HostManualconfigNTPlocal $myip $leader
   cd /pace
   systemctl restart chronyd
   leaderip=` ./etcdget.py leader/$leader `
