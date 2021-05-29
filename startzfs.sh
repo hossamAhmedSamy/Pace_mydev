@@ -40,7 +40,7 @@ echo $toreset | grep yes
 if [ $? -eq 0 ];
 then
  ./etcddellocal.py $myip "" --prefix
- ./etcdputlocal.py $myip configured yes
+ ./etcdputlocal.py $myip configured/$myhost yes
  targetcli clearconfig confirm=true
  /TopStor/logmsg2.sh $datenow $timenow $myhost Evacuaesu01 info system $myhost
 else
@@ -52,7 +52,7 @@ then
  echo found cluster with leader $result.. no need for node search >>/root/tmp2
  knownsearch=1
 else
- configured=`ETCDCTL_API=3 ./etcdgetlocal.py $myip configured` 
+ configured=`ETCDCTL_API=3 ./etcdgetlocal.py $myip configured/$myhost` 
  echo configured is $configured >>/root/tmp2
  systemctl stop etcd & 
  echo $configured | grep yes 
@@ -97,10 +97,10 @@ then
  /TopStor/HostManualconfigNTP $myip
  cd /pace
  ./etcddel.py OpenTasks --prefix
- ./etcdget.py configured | grep 1
+ ./etcdget.py configured/$myhost | grep 1
  if [ $? -eq 0 ];
  then
-  ./etcdput.py configured no
+  ./etcdput.py configured/$myhost no
  else 
   ./etcdget.py frstnode | grep dhcp
   if [ $? -ne 0 ];

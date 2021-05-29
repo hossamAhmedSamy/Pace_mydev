@@ -1,5 +1,5 @@
 #!/bin/python3.6
-import subprocess, logmsg
+import socket, subprocess, logmsg
 from etcddel import etcddel as etcddel
 from logqueue import queuethis
 from broadcast import broadcast as broadcast 
@@ -8,6 +8,8 @@ from etcdget import etcdget as get
 from etcdgetlocal import etcdget as getlocal
 from etcdput import etcdput as put 
 from etcdputlocal import etcdput as putlocal 
+
+myhost=socket.gethostname()
 allow=get('allowedPartners')
 if 'notallowed' in str(allow):
  exit()
@@ -32,7 +34,7 @@ if possible != []:
       queuethis('addknown.py','stop','system')
      exit()
   knowns=get('known','--prefix')
-  putlocal(x[1],'configured','yes')
+  putlocal(x[1],'configured/'+myhost,'yes')
   frstnode=get('frstnode')
   if x[0].replace('possible','') not in frstnode[0]:
    newfrstnode=frstnode[0]+'/'+x[0].replace('possible','')
