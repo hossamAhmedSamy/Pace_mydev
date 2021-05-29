@@ -24,17 +24,10 @@ oldclocker=0
 clockdiff=0
 date=`date`
 enpdev='enp0s8'
-echo $date >> /root/zfspingstart
 systemctl restart target
 cd /pace
 rm -rf /pacedata/addiscsitargets 2>/dev/null
 rm -rf /pacedata/startzfsping 2>/dev/null
-while [ ! -f /pacedata/startzfsping ];
-do
- sleep 1;
- echo cannot run now > /root/zfspingtmp
-done
-echo startzfs run >> /root/zfspingtmp
 /pace/startzfs.sh
 leadername=` ./etcdget.py leader --prefix | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
 leaderip=` ./etcdget.py leader/$leadername `

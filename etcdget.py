@@ -1,7 +1,8 @@
 #!/bin/python3.6
-import subprocess,sys
+import subprocess,sys, os
 import json
 def etcdget(key, prefix=''):
+ os.environ['ETCDCTL_API']= '3'
  endpoints=''
  data=json.load(open('/pacedata/runningetcdnodes.txt'));
  for x in data['members']:

@@ -1,7 +1,8 @@
 #!/bin/python3.6
-import subprocess,sys
+import subprocess,sys, os
 import json
 
+os.environ['ETCDCTL_API']= '3'
 key=sys.argv[1]
 try:
  prefix=sys.argv[2]

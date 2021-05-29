@@ -1,8 +1,9 @@
 #!/bin/python3.6
-import subprocess,sys
+import subprocess,sys, os
 import json
 
 def etcdput(*args):
+ os.environ['ETCDCTL_API']= '3'
  myip=args[0]
  key=args[1]
  val=args[2]
