@@ -186,6 +186,16 @@ then
  systemctl start topstorremote
  systemctl start topstorremoteack
  systemctl start servicewatchdog 
+ gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw/$myhost`
+ oldgw=`ip route |grep default | awk '{print $3}'`
+ echo $gateway | grep '\.'
+ if [ $? -eq 0 ];
+ then
+  route del default gw $oldgw
+  route add default gw $gateway
+ else
+   ./etcdput.py gw/$myhost $oldgw
+ fi 
  cat /etc/passwd | grep NoUser 
  if [ $? -ne 0 ];
  then
@@ -287,12 +297,18 @@ else
   ./etcddellocal.py $myip users --prefix 2>/dev/null
   ./usersyncall.py $myip
   ./groupsyncall.py $myip
-  gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw`
+  gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw/$leader`
+  oldgw=`ip route |grep default | awk '{print $3}'`
   echo $gateway | grep '\.'
   if [ $? -eq 0 ];
   then
-   route del default
+   route del default gw $oldgw
    route add default gw $gateway
+   ./etcdput.py gw/$myhost $gateway
+   ./etcdputlocal.py gw/$myhost $gateway
+  else
+   ./etcdput.py gw/$myhost $oldgw
+   ./etcdputlocal.py gw/$myhost $oldgw
   fi 
   cd /pace/
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`

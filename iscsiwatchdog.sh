@@ -46,3 +46,4 @@ if [ $? -ne 0 ];
 then
  /pace/frstnodecheck.py
 fi
+/usr/bin/chronyc -a makestep
