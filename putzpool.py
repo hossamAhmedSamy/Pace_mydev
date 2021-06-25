@@ -185,6 +185,14 @@ if len(freepool) > 0:
   size=z[7]
   devname=z[5].replace('/dev/','')
   ddict={'name':'scsi-'+z[6],'actualdisk':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname}
+  if z[6] in str(zpool):
+   continue
+  if '0cca' in z[6]:
+    
+   print('#######################################################################################')
+   print(zpool)
+   print(ddict)
+   print('#######################################################################################')
   disklist.append(ddict)
   ldisks.append(ddict)
 if len(lhosts)==0:
