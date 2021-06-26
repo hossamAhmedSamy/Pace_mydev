@@ -526,9 +526,15 @@ do
    then
     ETCDCTL_API=3 /pace/changeop.py $myhost &
    fi
+
+   pgrep  selectspare 
+   if [ $? -ne 0 ];
+   then
+    ETCDCTL_API=3 /pace/selectspare.py $myhost &
+   fi
    pgrep  electspare 
    if [ $? -ne 0 ];
    then
-    ETCDCTL_API=3 /TopStor/electspare.py $myhost &
+    /TopStor/electspare.py 
    fi
 done

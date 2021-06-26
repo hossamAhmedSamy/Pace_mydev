@@ -52,11 +52,15 @@ poolsstatus=[]
 x=list(map(chr,(range(97,123))))
 drives=';sd'.join(x).split(';')
 drives[0]='sd'+drives[0]
+print('dirves',drives)
+cmdline=['fdisk','-l']
+cdisks=subprocess.run(cmdline,stdout=subprocess.PIPE)
+drives=[ x for x in drives if x in str(cdisks)]
 cmdline=['/sbin/zfs','list','-t','snapshot,filesystem','-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available,snap:type','-H']
 result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
 #lists=[lpools,ldisks,ldefdisks,lavaildisks,lfreedisks,lsparedisks,lraids,lvolumes,lsnapshots]
-print('zfslistall',zfslistall)
+zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
 lists={'pools':lpools,'disks':ldisks,'defdisks':ldefdisks,'inusedisks':linusedisks,'freedisks':lfreedisks,'sparedisks':lsparedisks,'raids':lraids,'volumes':lvolumes,'snapshots':lsnapshots, 'hosts':lhosts, 'phosts':phosts}
 for a in sty:
  print('aaaaaa',a)
@@ -67,6 +71,10 @@ for a in sty:
    for lss in lsscsi:
     if any('/dev/'+b[0] in lss for drive in drives):
      b[0]='scsi-'+lss.split()[6]
+     print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+     print(drive)
+     print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+     
  print('strb',str(b))
  if "pdhc" in str(b) and  'pool' not in str(b):
   raidlist=[]
@@ -176,6 +184,13 @@ if len(freepool) > 0:
  lraids.append(rdict)
  for lss in freepool:
   z=lss.split()
+  devname=z[5].replace('/dev/','')
+  if devname not in drives:
+   print('hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
+   print('lss',lss)
+   print(drives)
+   print('hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
+   continue
   diskid=lsscsi.index(lss)
   host=z[3].split('-')[1]
   if host not in str(readyhosts):
@@ -183,7 +198,6 @@ if len(freepool) > 0:
 ##### commented for not adding free disks of freepool
   lhosts.add(host)
   size=z[7]
-  devname=z[5].replace('/dev/','')
   ddict={'name':'scsi-'+z[6],'actualdisk':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname}
   if z[6] in str(zpool):
    continue

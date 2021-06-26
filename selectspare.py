@@ -51,6 +51,7 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    cmd.append(defdisk['actualdisk'])
    cmd.append(spare['actualdisk'])
    try: 
+    print('cmd',cmd)
     subprocess.check_call(cmd)
     if 'attach' in cmd:
      logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
