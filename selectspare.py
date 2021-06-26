@@ -385,11 +385,12 @@ def spare2(*args):
  striperaids=[]
  if newop==[-1]:
   return
+ availability = get('balance','--prefix')
  degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['changeop']]
  #strippools=[x for x in newop['pools'] if myhost in x['host']  and 'stripe' in str(x[raidlist])]
  for spool in newop['pools']:
   for sraid in spool['raidlist']:
-   if 'ree' not in sraid['name']:
+   if 'ree' not in sraid['name'] and spool['name'] in str(availability):
     allraids.append(sraid)
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
