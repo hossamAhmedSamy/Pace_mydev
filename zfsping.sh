@@ -532,9 +532,5 @@ do
    then
     ETCDCTL_API=3 /pace/selectspare.py $myhost &
    fi
-   pgrep  electspare 
-   if [ $? -ne 0 ];
-   then
     /TopStor/electspare.py 
-   fi
 done
