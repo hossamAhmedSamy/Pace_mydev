@@ -163,6 +163,9 @@ then
  ./setnamespace.py $enpdev
  ./setdataip.py
  echo created namespaces >>/root/tmp2
+ ./etcddel.py versions --prefix
+ cversion=`git branch | grep '*' | awk -F'QS' '{print $2}'`
+ ./etcdput.py versions/$myhost $cversion
  ./etcddel.py leader --prefix 2>/dev/null
  ./etcddel.py pools --prefix 2>/dev/null
  ./etcddel.py poolsnxt --prefix 2>/dev/null
@@ -258,6 +261,9 @@ else
   rm -rf /etc/chrony.conf
   cp /TopStor/chrony.conf /etc/
   sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
+  cversion=`git branch | grep '*' | awk -F'QS' '{print $2}'`
+  ./etcdput.py versions/$myhost $cversion
+  ./etcdsync.py $myip versions versions
   ./etcdsync.py $myip primary primary 2>/dev/null
   ./etcddellocal.py $myip known --prefix 2>/dev/null
   ./etcddellocal.py $myip activepool --prefix 2>/dev/null
