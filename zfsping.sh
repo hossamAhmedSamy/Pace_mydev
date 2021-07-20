@@ -83,6 +83,12 @@ do
    then
     /pace/putzpool.py 1 $isprimary $primtostd  &
    fi
+   pgrep activeusers 
+   if [ $? -ne 0 ];
+   then
+    /pace/activeusers.py   &
+   fi
+
    ./etcddel.py toimport/$myhost
    toimport=2
   fi
@@ -217,6 +223,12 @@ do
      /pace/putzpool.py 2 $isprimary $primtostd  &
      /TopStor/HostgetIPs
     fi
+    pgrep activeusers 
+    if [ $? -ne 0 ];
+    then
+     /pace/activeusers.py   &
+    fi
+
 #    systemctl status nfs 
 #    if [ $? -ne 0 ];
 #    then
@@ -352,6 +364,13 @@ do
  then
   /pace/putzpool.py 3 $isprimary $primtostd  &
  fi
+ pgrep activeusers 
+ if [ $? -ne 0 ];
+ then
+  /pace/activeusers.py   &
+ fi
+
+
  echo checking if I need to run local etcd >> /root/zfspingtmp
  if [[ $needlocal -eq 1 ]];
  then

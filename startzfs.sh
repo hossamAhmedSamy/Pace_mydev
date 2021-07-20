@@ -145,6 +145,7 @@ then
  ./etcddel.py locked --prefix 2>/dev/null 
  ./etcddel.py cannot --prefix 2>/dev/null 
  ./etcddel.py request --prefix 2>/dev/null 
+ ./etcddel.py connections --prefix 2>/dev/null 
  allow=`ETCDCTL_API=3 ./etcdget.py allowedPartners ` 2>/dev/null 
  echo checking allow=$allow >>/root/tmp2
  echo $allow | grep 1
