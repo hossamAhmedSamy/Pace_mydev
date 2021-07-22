@@ -10,7 +10,7 @@ if [ $? -ne 0 ];
 then
  initiator=`targetcli ls | grep $thehost | grep 1994 | awk -F'o- ' '{print $2}' | awk '{print $1}'`
  targetcli iscsi/iqn.2016-03.com.$hostname:t1/tpg1/acls/ delete $initiator
- iscsiadm -m node -p $thehostip:3260 -u
+ iscsiadm -m node -p $thehostip:3266 -u
 else
  targetcli clearconfig confirm=true
  iscsiadm -m node -u
