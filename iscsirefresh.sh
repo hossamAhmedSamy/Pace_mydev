@@ -54,3 +54,13 @@ done
  if [ $? -eq 0 ]; then
 /TopStor/logqueue.py Iscsirefresh stop system 
 fi
+
+dskperf=`ls -lisa /TopStordata/dskperfmon.txt | awk '{print -$2}'`
+dskperflimit=$((8000000-dskperf))
+echo $dskperflimit | grep '-'
+if [ $? -eq 0 ];
+then
+ tail -n 60000 /TopStordata/dskperfmon.txt > /TopStordata/dskperfmon.txttmp
+ cat /TopStordata/dskperfmon.txttmp > /TopStordata/dskperfmon.txt
+ rm -rf /TopStordata/dskperfmon.txttmp
+fi
