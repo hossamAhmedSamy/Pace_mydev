@@ -12,9 +12,9 @@ def etcddel(*args):
  data=json.load(open('/pacedata/runningetcdnodes.txt'));
  endpoints='http://'+args[0]+':2378'
  if len(args) > 2:
-  cmdline=['etcdctl','--endpoints='+endpoints,'get',args[1],'--prefix']
+  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',args[1],'--prefix']
  else:
-  cmdline=['etcdctl','--endpoints='+endpoints,'get',args[1]]
+  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',args[1]]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  mylist=str(result.stdout)[2:][:-3].split('\\n')
  zipped=zip(mylist[0::2],mylist[1::2])
@@ -35,7 +35,7 @@ def etcddel(*args):
   return (-1)
  count=0
  for key in todel:
-  cmdline=['etcdctl','--endpoints='+endpoints,'del',key]
+  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'del',key]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   reslist=str(result.stdout)[2:][:-3]
   if '1' in reslist:

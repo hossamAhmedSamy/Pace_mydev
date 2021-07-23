@@ -7,7 +7,7 @@ def etcdput(key,val):
  data=json.load(open('/pacedata/runningetcdnodes.txt'));
  for x in data['members']:
   endpoints=endpoints+str(x['clientURLs'])[2:][:-2]
- cmdline=['etcdctl','-w','json','--endpoints='+endpoints,'put',key,val]
+ cmdline=['etcdctl','--user=root:YN-Password_123','-w','json','--endpoints='+endpoints,'put',key,val]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  #print(result)
  return 1 
