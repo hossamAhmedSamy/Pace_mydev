@@ -13,7 +13,7 @@ target='iqn.1991-05.com.microsoft:desktop-jckvhk3'
 #target='iqn.1994-05.com.redhat:dhcp13038'
 disk='zd0'
 diskids='QuicStor-zd0'
-iqn='.2016-03.com.dhcp13038:data'
+iqn='.2016-03.com.'$myhost':data'
 targetcli ls iscsi/ | grep ".$myhost:data" &>/dev/null
 if [ $? -ne 0 ]; then
  targetcli iscsi/ create iqn.2016-03.com.${myhost}:data &>/dev/null
