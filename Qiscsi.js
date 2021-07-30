@@ -183,18 +183,19 @@ function initVolumelist(){
           }
         },
         {
-          data:"Subnet",
+          data:"portalport",
           render: function(data, type, row){
-            return '<input type="number"  style="font-size: 99.9%;" min="8" max="32" step="8" class="form-control changeprop"'
+            return '<input type="number"  style="font-size: 99.9%;" min="3260" max="100000" step="1" class="form-control changeprop"'
             +'id="sub'+row.name+'" data-key="Subnet" data-name='+row.name+' data-value="'+data+'" value="'+data+'">'
           }
         },
         {
           data:"initiators",
           render: function(data, type, row){
-            return '<input type="text" class=" multiple changeprop volinitiators '+row.name+' form-control"' 
+            return '<textarea rows=4 type="text" style="font-size: 93%;" class=" multiple changeprop volinitiators '+row.name+' form-control"' 
             + ' data-name='+row.name+'  '
-            + 'data-initiators="'+row.initiators+'" data-key="initiators" data-value="'+data+'" data-name='+row.name+' value='+data+' data-change="" id="sel'+row.name+'">';
+            + 'data-initiators="'+row.initiators+'" data-key="initiators" data-value="'+data+'" ' 
+            + 'data-name='+row.name+' value='+data+' data-change="" id="sel'+row.name+'">'+data+'</textarea>';
           }
         },
         {
