@@ -36,14 +36,19 @@ then
  targetcli backstores/block create $diskids /dev/$disk
  echo targetcli backstores/block create $diskids /dev/$disk
 fi
-targetcli iscsi/iqn${iqn}/tpg1/luns/ create /backstores/block/$diskids  
-targetcli iscsi/iqn${iqn}/tpg1/acls/ create $target
-targetcli iscsi/iqn${iqn}/tpg1 set attribute demo_mode_write_protect=0 
-targetcli iscsi/iqn${iqn}/tpg1 set attribute cache_dynamic_acls=1
-targetcli iscsi/iqn${iqn}/tpg1 set attribute generate_node_acls=1 
-targetcli iscsi/iqn${iqn}/tpg1 set attribute authentication=0
-targetcli iscsi/iqn${iqn}/tpg1 set auth userid=$chapuser 
-targetcli iscsi/iqn${iqn}/tpg1 set auth password=$chappas
-targetcli iscsi/iqn.2016-03.com.$myhost:data/tpg1/portals create $ipaddr $portalport 
+tpg='tpg'$portalport
+tpg='tpg1'
+
+#targetcli iscsi/iqn${iqn} create $portalport  
+targetcli iscsi/iqn.2016-03.com.$myhost:data/${tpg}/portals delete 0.0.0.0 3260
+targetcli iscsi/iqn${iqn}/${tpg}/luns/ create /backstores/block/$diskids  
+targetcli iscsi/iqn${iqn}/${tpg}/acls/ create $target
+targetcli iscsi/iqn${iqn}/${tpg} set attribute demo_mode_write_protect=0 
+targetcli iscsi/iqn${iqn}/${tpg} set attribute cache_dynamic_acls=1
+targetcli iscsi/iqn${iqn}/${tpg} set attribute generate_node_acls=1 
+targetcli iscsi/iqn${iqn}/${tpg} set attribute authentication=0
+targetcli iscsi/iqn${iqn}/${tpg} set auth userid=$chapuser 
+targetcli iscsi/iqn${iqn}/${tpg} set auth password=$chappas
+targetcli iscsi/iqn.2016-03.com.$myhost:data/${tpg}/portals create $ipaddr $portalport 
 targetcli saveconfig
  #targetcli saveconfig /pacedata/targetconfig
