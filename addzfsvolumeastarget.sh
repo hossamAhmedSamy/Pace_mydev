@@ -12,6 +12,7 @@ portalport=`echo $@ | awk '{print $4}'`
 target=`echo $@ | awk '{print $5}'`
 chapuser=`echo $@ | awk '{print $6}'`
 chappas=`echo $@ | awk '{print $7}'`
+lunid=`echo $@ | awk '{print $8}'`
 disk=`ls -l /dev/zvol/${pool}/$vol | awk -F'/' '{print $NF}'`
 echo disk $disk
 #chapuser='iqn.1991-05.com.microsoft:desktop-jckvhk3'
@@ -36,13 +37,16 @@ then
  targetcli backstores/block create $diskids /dev/$disk
  echo targetcli backstores/block create $diskids /dev/$disk
 fi
-tpg='tpg'$portalport
+#tpg='tpg'$portalport
 tpg='tpg1'
 
 #targetcli iscsi/iqn${iqn} create $portalport  
+targetcli iscsi/iqn${iqn} set global auto_add_mapped_luns=false
 targetcli iscsi/iqn.2016-03.com.$myhost:data/${tpg}/portals delete 0.0.0.0 3260
 targetcli iscsi/iqn${iqn}/${tpg}/luns/ create /backstores/block/$diskids  
 targetcli iscsi/iqn${iqn}/${tpg}/acls/ create $target
+targetcli iscsi/iqn${iqn}/${tpg}/acls/$target create mapped_lun=$lunid tpg_lun_or_backstore=/backstores/block/$diskids write_protect=0
+echo targetcli iscsi/iqn${iqn}/${tpg}/acls/$target create mapped_lun=$lunid tpg_lun_or_backstore=/backstores/block/$diskids write_protect=0
 targetcli iscsi/iqn${iqn}/${tpg} set attribute demo_mode_write_protect=0 
 targetcli iscsi/iqn${iqn}/${tpg} set attribute cache_dynamic_acls=1
 targetcli iscsi/iqn${iqn}/${tpg} set attribute generate_node_acls=1 
