@@ -45,10 +45,15 @@ targetcli iscsi/iqn${iqn} set global auto_add_mapped_luns=false
 targetcli iscsi/iqn.2016-03.com.$myhost:data/${tpg}/portals delete 0.0.0.0 3260
 targetcli iscsi/iqn${iqn}/${tpg}/luns/ create /backstores/block/$diskids  
 targetcli iscsi/iqn${iqn}/${tpg}/acls/ create $target
-nextlun=`targetcli iscsi/iqn${iqn}/${tpg}/acls/$target ls | wc -l`
-echo targetcli iscsi/iqn${iqn}/${tpg}/acls/$target = $nextlun
-targetcli iscsi/iqn${iqn}/${tpg}/acls/$target create mapped_lun=$nextlun tpg_lun_or_backstore=/backstores/block/$diskids write_protect=0
-echo targetcli iscsi/iqn${iqn}/${tpg}/acls/$target create mapped_lun=$nextlun tpg_lun_or_backstore=/backstores/block/$diskids write_protect=0
+cluns=`targetcli iscsi/iqn${iqn}/${tpg}/acls/$target ls`
+echo $cluns | grep $diskids 
+if [ $? -ne 0 ];
+then
+ nextlun=`echo $cluns | wc -l`
+ echo targetcli iscsi/iqn${iqn}/${tpg}/acls/$target = $nextlun
+ targetcli iscsi/iqn${iqn}/${tpg}/acls/$target create mapped_lun=$nextlun tpg_lun_or_backstore=/backstores/block/$diskids write_protect=0
+ echo targetcli iscsi/iqn${iqn}/${tpg}/acls/$target create mapped_lun=$nextlun tpg_lun_or_backstore=/backstores/block/$diskids write_protect=0
+fi
 targetcli iscsi/iqn${iqn}/${tpg} set attribute demo_mode_write_protect=0 
 targetcli iscsi/iqn${iqn}/${tpg} set attribute cache_dynamic_acls=1
 targetcli iscsi/iqn${iqn}/${tpg} set attribute generate_node_acls=1 
