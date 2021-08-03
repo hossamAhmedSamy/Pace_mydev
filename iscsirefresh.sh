@@ -8,7 +8,7 @@ while read -r  hostline ; do
  host=`echo $hostline | awk '{print $2}'`
  echo $myhost | grep $host
  if [ $? -eq 0 ]; then
-  host='127.0.0.1'
+  host=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
  fi
  ping -c 1 -W 1 $host &>/dev/null
  if [ $? -eq 0 ]; then
@@ -19,15 +19,15 @@ while read -r  hostline ; do
   if [ $? -eq 0 ]; then
    echo here
    #rm -rf /var/lib/iscsi/nodes/send_targets/$host* &>/dev/null
-   hostiqn=`/sbin/iscsiadm -m discovery --portal $host --type sendtargets | awk '{print $2}'`
-   /sbin/iscsiadm -m node --targetname $hostiqn --portal $host -u
-   /sbin/iscsiadm -m node --targetname $hostiqn --portal $host -l
+   hostiqn=`/sbin/iscsiadm -m discovery --portal $host:3266 --type sendtargets | awk '{print $2}'`
+   /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -u
+   /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -l
   fi
   cat $iscsimapping | grep "$host" &>/dev/null
   if [ $? -ne 0 ]; then
    echo new $host
-   hostiqn=`/sbin/iscsiadm -m discovery --portal $host --type sendtargets | awk '{print $2}'`
-   /sbin/iscsiadm -m node --targetname $hostiqn --portal $host -l
+   hostiqn=`/sbin/iscsiadm -m discovery --portal $host:3266 --type sendtargets | awk '{print $2}'`
+   /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -l
   fi
  else
   echo deleteing $host

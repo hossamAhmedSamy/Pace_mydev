@@ -395,4 +395,3 @@ fi
 #zpool export -a
 rm -rf /pacedata/forzfsping 2>/dev/null
 echo fisniehd startzfs >>/root/tmp2
-targetcli iscsi/ delete iqn.2016-03.com.${myhost}:data
