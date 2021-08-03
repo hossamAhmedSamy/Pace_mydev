@@ -26,6 +26,7 @@ echo start >> /root/iscsiwatch
 sh /pace/iscsirefresh.sh
 echo finished start of iscsirefresh  > /root/iscsiwatch
 sh /pace/listingtargets.sh
+   
 echo finished listingtargets >> /root/iscsiwatch
 echo updating iscsitargets >> /root/iscsiwatch
 sh /pace/addtargetdisks.sh

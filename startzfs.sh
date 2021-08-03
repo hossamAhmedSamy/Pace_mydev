@@ -31,8 +31,13 @@ chmod +r /etc/etcd/etcd.conf.yml 2>/dev/null
 systemctl daemon-reload 2>/dev/null
 systemctl stop etcd 2>/dev/null
 systemctl start etcd 2>/dev/null
-/pace/etcdcmdlocal.py $myip user add root:YN-Password_123
-/pace/etcdcmdlocal.py $myip auth enable
+cat /pacedata/initetcd | grep 1
+if [ $? -ne 0 ];
+then
+ /pace/etcdcmdlocal.py $myip user add root:YN-Password_123
+ /pace/etcdcmdlocal.py $myip auth enable
+ echo 1 > /pacedata/initetcd
+fi
 datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
 knownsearch=0
 result='nohost'
@@ -63,7 +68,7 @@ else
   result='nothing'
  else
   echo starting nodesearch>>/root/tmp2
-  result=` ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
+  result=` ETCDCTL_API=3 ./nodesearch.sh $myip 2>/dev/null`
   echo finish nodesearch with ip=$myip, result=$result >>/root/tmp2
  fi
 fi
@@ -390,3 +395,4 @@ fi
 #zpool export -a
 rm -rf /pacedata/forzfsping 2>/dev/null
 echo fisniehd startzfs >>/root/tmp2
+targetcli iscsi/ delete iqn.2016-03.com.${myhost}:data
