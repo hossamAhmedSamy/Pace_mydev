@@ -419,6 +419,12 @@ do
  if [[ $needlocal -eq  2 ]];
  then
   echo I am already local etcd running iscsirefresh on $myip $myhost  >> /root/zfspingtmp
+  pgrep fapi 
+  if [ $? -ne 0 ];
+  then
+   cd /TopStor
+   ./fapi.py 1>/root/fapi.log 2>/root/fapierr.log &
+  fi
   pgrep iscsiwatchdog
   if [ $? -ne 0 ];
   then
@@ -533,6 +539,12 @@ do
   toimport=3
   oldclocker=$clocker
   clockdiff=0
+ fi
+ pgrep fapi 
+ if [ $? -ne 0 ];
+ then
+  cd /TopStor
+  ./fapi.py 1>/root/fapi.log 2>/root/fapierr.log &
  fi
  pgrep iscsiwatchdog
  if [ $? -ne 0 ];
