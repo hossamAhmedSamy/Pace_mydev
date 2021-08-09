@@ -48,6 +48,7 @@ if [ $? -eq 0 ];
 then
  ./etcddellocal.py $myip "" --prefix
  ./etcdputlocal.py $myip configured/$myhost yes
+ ./etcddellocal.py $myip request --prefix 2>/dev/null 
  targetcli clearconfig confirm=true
  /TopStor/logmsg2.sh $datenow $timenow $myhost Evacuaesu01 info system $myhost
 else
