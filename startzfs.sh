@@ -395,4 +395,5 @@ echo i all zpool exported >>/root/tmp2
 fi
 #zpool export -a
 rm -rf /pacedata/forzfsping 2>/dev/null
+ionice -c2 -n0 -p `pgrep etcd`
 echo fisniehd startzfs >>/root/tmp2

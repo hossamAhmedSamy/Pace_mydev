@@ -182,6 +182,7 @@ do
     chmod +r /etc/etcd/etcd.conf.yml
     systemctl daemon-reload 2>/dev/null
     systemctl start etcd 2>/dev/null
+    ionice -c2 -n0 -p `pgrep etcd`
     while true;
     do
      echo starting etcd=$?
@@ -385,6 +386,7 @@ do
   systemctl daemon-reload
   systemctl stop etcd 2>/dev/null
   systemctl start etcd 2>/dev/null
+  ionice -c2 -n0 -p `pgrep etcd`
   while true;
   do
    echo starting etcd=$?
