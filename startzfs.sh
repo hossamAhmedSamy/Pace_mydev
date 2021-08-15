@@ -267,7 +267,7 @@ else
   rm -rf /etc/chrony.conf
   cp /TopStor/chrony.conf /etc/
   /TopStor/HostManualconfigTZlocal $myip $leader 
-  /TopStor/HostManualconfigNTPlocal $myip $leader
+  /TopStor/HostManualconfigNTP $myip $leader
   cd /pace
   systemctl restart chronyd
   leaderip=` ./etcdget.py leader/$leader `
