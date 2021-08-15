@@ -15,8 +15,7 @@ if 'notallowed' in str(allow):
  exit()
 with open('/pacedata/perfmon','r') as f:
  perfmon = f.readline() 
-if '1' in perfmon:
- queuethis('addknown.py','start','system')
+queuethis('addknown.py','start','system')
 possible=get('possible','--prefix')
 print('possible=',possible)
 if possible != []:
@@ -30,8 +29,7 @@ if possible != []:
     Active=get('AcivePartners','--prefix')
     if x[0].replace('possible','') not in str(Active):
      print('imhere2')
-     if '1' in perfmon:
-      queuethis('addknown.py','stop','system')
+     queuethis('addknown','stop','system')
      exit()
   knowns=get('known','--prefix')
   putlocal(x[1],'configured/'+myhost,'yes')
@@ -55,8 +53,7 @@ if possible != []:
    put('allowedPartners','notoall')
    etcddel('possible',x[0])
    logmsg.sendlog('AddHostsu01','info',arg[-1],name)
-   queuethis('AddHost.py','stop',bargs[-1])
+   queuethis('AddHost','stop',bargs[-1])
 else:
  print('possible is empty')
-if '1' in perfmon:
- queuethis('addknown.py','stop','system')
+queuethis('addknown.py','stop','system')
