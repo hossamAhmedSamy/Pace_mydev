@@ -1,42 +1,18 @@
 cd /pace
 iscsimapping='/pacedata/iscsimapping';
 iscsitargets='/pacedata/iscsitargets';
-/sbin/iscsiadm -m session --rescan &>/dev/null
+sessions='sessions'`/sbin/iscsiadm -m session --rescan `
 needrescan=0;
 myhost=`hostname -s`
-while read -r  hostline ; do
- host=`echo $hostline | awk '{print $2}'`
- echo $myhost | grep $host
- if [ $? -eq 0 ]; then
-  host=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
- fi
- ping -c 1 -W 1 $host &>/dev/null
- if [ $? -eq 0 ]; then
+hosts=`./etcdget.py ready --prefix | awk -F"', " '{print $2}' | awk -F"'" '{print $2}'`
+for host in $hosts ; do
+ echo $sessions  | grep $host
+ if [ $? -ne 0 ]; then
   needrescan=1;
   hostpath=`ls /var/lib/iscsi/nodes/ | grep "$host"`;
-  echo cat $iscsimapping  echo $host  grep notconnected 
-  cat $iscsimapping |  grep "$host" | grep notconnected &>/dev/null
-  if [ $? -eq 0 ]; then
-   echo here
-   #rm -rf /var/lib/iscsi/nodes/send_targets/$host* &>/dev/null
-   hostiqn=`/sbin/iscsiadm -m discovery --portal $host:3266 --type sendtargets | awk '{print $2}'`
-   /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -u
-   /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -l
+  hostiqn=`/sbin/iscsiadm -m discovery --portal $host:3266 --type sendtargets | awk '{print $2}'`
+  /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -u
+  /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -l
   fi
-  cat $iscsimapping | grep "$host" &>/dev/null
-  if [ $? -ne 0 ]; then
-   echo new $host
-   hostiqn=`/sbin/iscsiadm -m discovery --portal $host:3266 --type sendtargets | awk '{print $2}'`
-   /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -l
-  fi
- else
-  echo deleteing $host
-  #rm -rf /var/lib/iscsi/nodes/iqn.2016-03.com.${host}:t1 
-  #rm -rf /var/lib/iscsi/nodes/${host}* &>/dev/null
- fi
-done < $iscsitargets
-if [ $needrescan -eq 1 ]; then
-# /sbin/iscsiadm -m session --rescan &>/dev/null
- sleep 1; 
-fi
-sleep 2;
+done
+sleep 2
