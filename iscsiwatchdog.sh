@@ -48,3 +48,9 @@ then
  /pace/frstnodecheck.py
 fi
 /usr/bin/chronyc -a makestep
+rebootstatus='thestatus'`cat /TopStordata/rebootstatus`
+echo $rebootstatus | grep finish
+if [ $? -ne 0 ];
+then
+ /TopStor/rebootme `cat /TopStordata/rebootstatus`  2>/root/rebooterr
+fi

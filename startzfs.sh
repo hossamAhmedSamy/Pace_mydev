@@ -2,6 +2,7 @@
 cd /pace
 export ETCDCTL_API=3
 echo >/etc/exports
+echo finish > /TopStordata/rebootstatus
 /sbin/pcs resource disable namespaces  2>/dev/null
 /sbin/pcs resource disable  ip-all  2>/dev/null
 /sbin/pcs resource disable  dataip  2>/dev/null
