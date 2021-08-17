@@ -47,8 +47,9 @@ if possible != []:
    newfrstnode=frstnode[0]+'/'+x[0].replace('possible','')
    put('frstnode',newfrstnode)
   put('known/'+x[0].replace('possible',''),x[1])
-  put('ActivePartners/'+x[0].replace('possible',''),x[1])
-  put('hostipsubnet/'+x[0].replace('possible',''),x[1])
+  hostsubnet = getlocal('hostipsubnet/'+x[0].replace('possible','')])[0]
+  put('ActivePartners/'+x[0].replace('possible',''),hostsubnet)
+  put('hostipsubnet/'+x[0].replace('possible',''),hostsubnet)
   broadcasttolocal('hostipsubnet/'+x[0].replace('possible',''),x[1])
   broadcasttolocal('ActivePartners/'+x[0].replace('possible',''),x[1])
   put('nextlead',x[0].replace('possible','')+'/'+x[1])
