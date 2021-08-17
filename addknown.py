@@ -10,12 +10,21 @@ from etcdput import etcdput as put
 from etcdputlocal import etcdput as putlocal 
 
 myhost=socket.gethostname()
+possible=get('possible','--prefix')
+active = get('Active','--prefix')
+for pos in possible:
+ posname=pos[0].replace('possible','')
+ if posname in str(active):
+  print(posname)
+  etcddel('lost',posname)
+  etcddel('poss',posname)
+  put('known/'+posname,pos[1])
 allow=get('allowedPartners')
 if 'notallowed' in str(allow):
  exit()
 with open('/pacedata/perfmon','r') as f:
  perfmon = f.readline() 
-queuethis('addknown.py','start','system')
+queuethis('addknown','start','system')
 possible=get('possible','--prefix')
 print('possible=',possible)
 if possible != []:
