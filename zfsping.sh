@@ -432,6 +432,12 @@ do
   then
    /pace/iscsiwatchdog.sh $myip $myhost $leader 2>/dev/null &
   fi
+  pgrep checksyncs 
+  if [ $? -ne 0 ];
+  then
+   /pace/checksyncs.py
+  fi
+
  fi
  echo checking if still in the start initcron is still running  >> /root/zfspingtmp
  if [ -f /pacedata/forzfsping ];
@@ -553,6 +559,12 @@ do
  then
   /pace/iscsiwatchdog.sh 2>/dev/null  &
  fi
+ pgrep checksyncs 
+ if [ $? -ne 0 ];
+ then
+  /pace/checksyncs.py
+ fi
+
   echo Collecting a change in system occured >> /root/zfspingtmp
  #/pace/changeop.py hosts/$myhost/current d
    pgrep  changeop 

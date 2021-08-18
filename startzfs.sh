@@ -315,8 +315,7 @@ else
   /sbin/rabbitmqctl add_user rabb_$leader YousefNadody 2>/dev/null
   /sbin/rabbitmqctl set_permissions -p / rabb_$leader ".*" ".*" ".*" 2>/dev/null
   ./etcddellocal.py $myip users --prefix 2>/dev/null
-  ./usersyncall.py $myip
-  ./groupsyncall.py $myip
+  ./checksyncs.py
   gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw/$leader`
   oldgw=`ip route |grep default | awk '{print $3}'`
   echo $gateway | grep '\.'
