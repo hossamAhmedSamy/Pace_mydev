@@ -6,9 +6,7 @@ from etcdgetlocal import etcdget as getlocal
 from ast import literal_eval as mtuple
 from socket import gethostname as hostname
 
-myip=sys.argv[1]
 allusers=get('usersinfo','--prefix')
-myusers=getlocal(myip,'usersinfo','--prefix')
 
 def thread_add(*user):
  username=user[0].replace('usersinfo/','')
@@ -44,6 +42,8 @@ def usersyncall(*args):
  global allusers
  global myusers
  global myip 
+ myip = args[0]
+ myusers=getlocal(myip,'usersinfo','--prefix')
  threads=[]
  if '-1' in allusers:
   allusers=[]

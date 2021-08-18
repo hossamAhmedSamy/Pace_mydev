@@ -6,9 +6,7 @@ from etcdgetlocal import etcdget as getlocal
 from ast import literal_eval as mtuple
 from socket import gethostname as hostname
 
-myip=sys.argv[1]
 allusers=get('usersigroup','--prefix')
-myusers=getlocal(myip,'usersigroup','--prefix')
 
 #def thread_add(*user):
 def thread_add(user):
@@ -34,10 +32,12 @@ def thread_del(user):
   cmdline=['/TopStor/UnixDelGroup_sync',username,'system']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
-def usersyncall(*args):
+def groupsyncall(*args):
  global allusers
  global myusers
  global myip 
+ myip=args[0]
+ myusers=getlocal(myip,'usersigroup','--prefix')
  threads=[]
  if '-1' in allusers:
   allusers=[]
@@ -65,4 +65,4 @@ def usersyncall(*args):
 if __name__=='__main__':
  with open('/root/sync2','w') as f:
   f.write('Starting\n')
- usersyncall(*sys.argv[1:])
+ groupsyncall(*sys.argv[1:])
