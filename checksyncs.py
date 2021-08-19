@@ -2,6 +2,7 @@
 from logqueue import queuethis
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
+from broadcasttolocal import broadcasttolocal
 from etcdputlocal import etcdput as putlocal 
 from usersyncall import usersyncall
 from groupsyncall import groupsyncall
@@ -11,6 +12,7 @@ syncs = ['user']
 myhost = hostname()
 hostip = get('ActivePartners/'+myhost)[0]
 allsyncs = get('sync','--prefix') 
+leader = get('leader','--prefix')[0][0].replace('leader/','')
 
 def checksync():
  global syncs, myhost, allsyncs
@@ -28,8 +30,10 @@ def checksync():
      usersyncall(hostip)
      groupsyncall(hostip)
      adminuser = get('usershash/admin')[0]
-     putlocal(hostip,'usershash/admin',adminuser)
+     if myhost != leader:
+      putlocal(hostip,'usershash/admin',adminuser)
      put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
+     broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
       
  
 if __name__=='__main__':
