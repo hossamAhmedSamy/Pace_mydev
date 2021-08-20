@@ -108,6 +108,8 @@ then
  /TopStor/HostManualconfigNTP $myip
  cd /pace
  ./etcddel.py OpenTasks --prefix
+ ./etcddel.py cpu --prefix
+ ./etcddel.py pool --prefix
  ./etcdget.py configured/$myhost | grep 1
  if [ $? -eq 0 ];
  then
@@ -396,4 +398,5 @@ fi
 #zpool export -a
 rm -rf /pacedata/forzfsping 2>/dev/null
 ionice -c2 -n0 -p `pgrep etcd`
+/TopStor/ioperf.py performance
 echo fisniehd startzfs >>/root/tmp2
