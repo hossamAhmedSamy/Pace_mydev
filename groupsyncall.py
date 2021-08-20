@@ -43,6 +43,9 @@ def groupsyncall(hostip,tosync='usrsigroup'):
  myusers=getlocal(myip,'usersigroup','--prefix')
  if tosync != 'usersigroup':
   groups = get('modified','group')
+  print('groups',groups)
+  if -1 in groups:
+   return
   groups = [ x[0].split('/')[2] for x in groups if myhost not in str(x) ]
   allusers = [ x for x in allusers if x[0].replace('usersigroup/','') ]
   delgroups = []
