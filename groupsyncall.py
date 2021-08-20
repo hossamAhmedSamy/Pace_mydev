@@ -1,12 +1,14 @@
 #!/bin/python3.6
 import subprocess,sys
 from etcdget import etcdget as get
-from threading import Thread
 from etcdgetlocal import etcdget as getlocal
+from etcdput import etcdput as put
+from broadcasttolocal import broadcasttolocal
 from ast import literal_eval as mtuple
 from socket import gethostname as hostname
 
-allusers=get('usersigroup','--prefix')
+myhost = hostname()
+allusers= []
 
 #def thread_add(*user):
 def thread_add(user):
@@ -32,12 +34,23 @@ def thread_del(user):
   cmdline=['/TopStor/UnixDelGroup_sync',username,'system']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
-def groupsyncall(*args):
+def groupsyncall(hostip,tosync='usrsigroup'):
  global allusers
  global myusers
  global myip 
- myip=args[0]
+ myip=hostip
+ allusers=get('usersigroup','--prefix')
  myusers=getlocal(myip,'usersigroup','--prefix')
+ if tosync != 'usersigroup':
+  groups = get('modified','group')
+  groups = [ x[0].split('/')[2] for x in groups if myhost not in str(x) ]
+  allusers = [ x for x in allusers if x[0].replace('usersigroup/','') ]
+  delgroups = []
+  for group in groups:
+   if group not in allusers:
+    delgroups.append(group)
+  myusers= [ x for x in myusers if x[0].replace('usersinfo/','') in delgroups ]
+ 
  threads=[]
  if '-1' in allusers:
   allusers=[]
@@ -51,6 +64,13 @@ def groupsyncall(*args):
 
  for user in allusers:
   thread_add(user)
+ if tosync != 'usersigroup': 
+  for group in groups:
+   gethosts = get('modified/group/'+group)[0]
+   if myhost not in gethosts:
+    put('modified/group/'+group,gethosts+'/'+myhost)
+    broadcasttolocal('modified/group/'+group,gethosts+'/'+myhost)
+ 
  # thread_add(user)
 #x=Thread(target=thread_add,name='addingusers',args=user)
 #  x.start()

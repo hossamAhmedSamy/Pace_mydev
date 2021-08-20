@@ -8,7 +8,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['user']
+syncs = ['user','group']
 myhost = hostname()
 hostip = get('ActivePartners/'+myhost)[0]
 allsyncs = get('sync','--prefix') 
@@ -18,22 +18,29 @@ def checksync():
  global syncs, myhost, allsyncs
  for sync in syncs:
    gsyncs = [ x for x in allsyncs if sync in x[0] ] 
+   if len(gsyncs) == 0:
+    return
    maxgsync = max(gsyncs, key=lambda x: float(x[1]))
    mysync = [x for x in gsyncs if myhost in str(x) ]
    if len(mysync) < 1:
     mysync = [(-1,-1)]
    mysync = float(mysync[0][1])
    if mysync != float(maxgsync[1]):
-    print(mysync, float(maxgsync[1]))
     if sync == 'user':
-     print('need sync',maxgsync,hostip)
-     usersyncall(hostip)
-     groupsyncall(hostip)
+     if mysync == -1:
+      usersyncall(hostip)
+     else:
+      usersyncall(hostip,'check')
      adminuser = get('usershash/admin')[0]
      if myhost != leader:
       putlocal(hostip,'usershash/admin',adminuser)
-     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
-     broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
+    elif sync == 'group':
+     if mysync == -1:
+      groupsyncall(hostip)
+     else: 
+      groupsyncall(hostip,'check')
+    put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
+    broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
       
  
 if __name__=='__main__':
