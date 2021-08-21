@@ -47,7 +47,7 @@ toreset=`./etcdgetlocal.py $myip toreset`'r'
 echo $toreset | grep yes
 if [ $? -eq 0 ];
 then
- ./etcddellocal.py $myip "" --prefix
+ #./etcddellocal.py $myip "" --prefix
  ./etcdputlocal.py $myip configured/$myhost yes
  ./etcddellocal.py $myip request --prefix 2>/dev/null 
  targetcli clearconfig confirm=true
@@ -307,6 +307,7 @@ else
   ./etcdsync.py $myip ntp ntp 2>/dev/null
   ./etcdsync.py $myip tz tz 2>/dev/null
   ./etcdsync.py $myip gw gw 2>/dev/null
+  ./etcdsync.py $myip pool pool 2>/dev/null
   /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
   /bin/crontab /TopStor/plaincron
   ./etcdsync.py $myip Snapperiod Snapperiod 2>/dev/null
@@ -316,7 +317,7 @@ else
   ./etcddel.py hosts/$myhost  --prefix 2>/dev/null
   /sbin/rabbitmqctl add_user rabb_$leader YousefNadody 2>/dev/null
   /sbin/rabbitmqctl set_permissions -p / rabb_$leader ".*" ".*" ".*" 2>/dev/null
-  ./etcddellocal.py $myip users --prefix 2>/dev/null
+  #./etcddellocal.py $myip users --prefix 2>/dev/null
   ./checksyncs.py
   gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw/$leader`
   oldgw=`ip route |grep default | awk '{print $3}'`
@@ -343,7 +344,7 @@ else
     ./etcdput.py alias/$myhost $myhost
    fi
   fi
-  ./etcddellocal.py $myip alias --prefix 2>/dev/null
+  #./etcddellocal.py $myip alias --prefix 2>/dev/null
   ./etcdsync.py $myip alias alias 2>/dev/null
   systemctl start iscsid &
   systemctl start iscsi &
