@@ -395,6 +395,12 @@ def spare2(*args):
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
+ print('degraded',degradedraids)
+ for raid in degradedraids:
+  for disk in raid['disklist']:
+   if 'ONLINE' not in disk['changeop']:
+     cmdline2=['/sbin/zpool', 'detach', disk['pool'],disk['actualdisk']]
+     subprocess.run(cmdline2,stdout=subprocess.PIPE)
  freedisks=[ x for x in newop['disks']  if 'free' in x['raid']]  
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  if len(disksfree) > 0 and len(degradedraids) > 0 : 
