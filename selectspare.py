@@ -401,6 +401,8 @@ def spare2(*args):
    if 'ONLINE' not in disk['changeop']:
      cmdline2=['/sbin/zpool', 'detach', disk['pool'],disk['actualdisk']]
      subprocess.run(cmdline2,stdout=subprocess.PIPE)
+     dels('disk',disk['actualdisk'])
+     
  freedisks=[ x for x in newop['disks']  if 'free' in x['raid']]  
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  if len(disksfree) > 0 and len(degradedraids) > 0 : 
