@@ -34,6 +34,7 @@ ETCDCTL_API=3 /pace/etcdput.py losthost/$thehost `date +%s`
 ETCDCTL_API=3 /pace/etcddel.py cannot  --prefix
 #ETCDCTL_API=3 /pace/etcddel.py pools $thehost
 ETCDCTL_API=3 /pace/etcddel.py oldhosts/$thehost  --prefix
+
 ETCDCTL_API=3 /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
 ETCDCTL_API=3 /pace/putzpool.py 
 echo  it is done >> /root/hostlosttmp
