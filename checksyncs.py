@@ -8,7 +8,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['user','group']
+syncs = ['user','group','evacuatehost']
 myhost = hostname()
 hostip = get('ActivePartners/'+myhost)[0]
 allsyncs = get('sync','--prefix') 
@@ -39,6 +39,12 @@ def checksync():
       groupsyncall(hostip)
      else: 
       groupsyncall(hostip,'check')
+    elif sync == 'evacuatehost':
+      hosts = get('modified','evacuatehost')
+      for hostn in hosts:
+       cmdline=['/pace/removetargetdisks.sh', hostn.split('/')[2], hostn[1]]
+       result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+      
     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
     broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
       
