@@ -1,6 +1,7 @@
 #!/bin/python3.6
 import socket, subprocess, logmsg
 from etcddel import etcddel as etcddel
+from deltolocal import deltolocal 
 from logqueue import queuethis
 from broadcast import broadcast as broadcast 
 from broadcasttolocal import broadcasttolocal as broadcasttolocal
@@ -48,6 +49,10 @@ if possible != []:
    put('frstnode',newfrstnode)
   put('known/'+x[0].replace('possible',''),x[1])
   hostsubnet = getlocal(x[1],'hostipsubnet/'+x[0].replace('possible',''))[0]
+  etcddel('sync',x[0].replace('possible',''))
+  etcddel('modified',x[0].replace('possible',''))
+  deltolocal('sync',x[0].replace('possible',''))
+  deltolocal('modified',x[0].replace('possible',''))
   put('ActivePartners/'+x[0].replace('possible',''),hostsubnet)
   put('hostipsubnet/'+x[0].replace('possible',''),hostsubnet)
   broadcasttolocal('hostipsubnet/'+x[0].replace('possible',''),x[1])

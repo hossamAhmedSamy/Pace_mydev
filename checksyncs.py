@@ -5,6 +5,7 @@ from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
 from broadcasttolocal import broadcasttolocal
 from etcdputlocal import etcdput as putlocal 
+from Evacuatelocal import setall
 from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
@@ -44,8 +45,7 @@ def checksync():
       hosts = get('modified','evacuatehost')
       for hostn in hosts:
        print('hhhhh',hostn)
-       cmdline=['/pace/removetargetdisks.sh', hostn[0].split('/')[2], hostn[1]]
-       result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+       setall()
       
     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
     broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
