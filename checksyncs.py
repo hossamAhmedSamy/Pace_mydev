@@ -1,4 +1,5 @@
 #!/bin/python3.6
+import subprocess
 from logqueue import queuethis
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
@@ -42,7 +43,8 @@ def checksync():
     elif sync == 'evacuatehost':
       hosts = get('modified','evacuatehost')
       for hostn in hosts:
-       cmdline=['/pace/removetargetdisks.sh', hostn.split('/')[2], hostn[1]]
+       print('hhhhh',hostn)
+       cmdline=['/pace/removetargetdisks.sh', hostn[0].split('/')[2], hostn[1]]
        result=subprocess.run(cmdline,stdout=subprocess.PIPE)
       
     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))

@@ -49,7 +49,10 @@ done;
 for target in "${iscsitargets[@]}"; do
  echo $mappedhosts | grep $target &>/dev/null
  if [ $? -ne 0 ]; then
+   myip=`/pace/etcdget.py ActivePartners/$myhost`
   targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/acls/ create iqn.1994-05.com.redhat:$target
+  targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals delete 0.0.0.0 3260
+  targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals create $newips 3266
   
   #targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1 demo_mode_write_protect=0 
   #targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1 generate_node_acls=1 
