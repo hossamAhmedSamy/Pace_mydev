@@ -63,9 +63,6 @@ def usersyncall(hostip,tosync='usersinfo'):
   allusers=[]
  if '-1' in myusers:
   myusers=[]
- print('############3',allusers)
- print('############3',myusers)
- print('############3',delusers)
  for user in allusers:
   thread_add(user)
  for user in myusers:
