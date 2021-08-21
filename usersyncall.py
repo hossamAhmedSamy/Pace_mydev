@@ -65,11 +65,13 @@ def usersyncall(hostip,tosync='usersinfo'):
   myusers=[]
  for user in allusers:
   thread_add(user)
- for user in myusers:
-  if user in allusers:
-   print(user,allusers)
-  else:
-   thread_del(user)
+ leader=get('leader','--prefix')
+ if myhost not in str(leader):
+  for user in myusers:
+   if user in allusers:
+    print(user,allusers)
+   else:
+    thread_del(user)
  if tosync != 'usersinfo': 
   for user in users:
    gethosts = get('modified/user/'+user)[0]
