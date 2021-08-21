@@ -446,13 +446,6 @@ do
   continue
  fi
  cd /pace
- echo No then Checking Node Evacuation >> /root/zfspingtmp
- pgrep Evacuatelocal
- if [ $? -ne 0 ];
- then
-  /TopStor/Evacuatelocal.py
-  cd /pace
- fi
  echo Checking  I am primary >> /root/zfspingtmp
  if [[ $runningcluster -eq 1 ]];
  then
