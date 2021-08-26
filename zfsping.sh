@@ -137,6 +137,7 @@ do
   ./syncthis.py ActivePartners --prefix 
   ./syncthis.py allowedPartners --prefix 
   ./syncthis.py frstnode --prefix 
+  ./syncthis.py namespace --prefix 
  else
   readycount=`ETCDCTL_API=3 /pace/etcdget.py ready --prefix | wc -l` 
   lostcount=`ETCDCTL_API=3 /pace/etcdget.py lost --prefix | wc -l` 
@@ -329,6 +330,7 @@ do
      /pace/etcdsync.py $myip pools pools 2>/dev/null
      /pace/etcdsync.py $myip poolsnxt poolsnxt 2>/dev/null
      /pace/etcdsync.py $myip nextlead nextlead 2>/dev/null
+     /pace/etcdsync.py $myip namespace namespace 
      #/pace/sendhost.py $leaderip 'cifs' 'recvreq' $myhost &
      /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost &
      isknown=$((isknown+1))
