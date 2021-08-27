@@ -4,7 +4,7 @@ from logqueue import queuethis
 import json
 from ast import literal_eval as mtuple
 from collections import Counter
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
 from etcddel import etcddel as dels 
 from poolall import getall as getall
@@ -386,12 +386,16 @@ def spare2(*args):
  if newop==[-1]:
   return
  availability = get('balance','--prefix')
- degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['changeop']]
- #strippools=[x for x in newop['pools'] if myhost in x['host']  and 'stripe' in str(x[raidlist])]
+ degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['status']]
  for spool in newop['pools']:
   for sraid in spool['raidlist']:
-   if 'ree' not in sraid['name'] and spool['name'] in str(availability):
-    allraids.append(sraid)
+   if len(availability) > 0:
+    if 'ree' not in sraid['name'] and spool['name'] in str(availability):
+     allraids.append(sraid)
+   else:
+    if 'ree' not in sraid['name']:
+     allraids.append(sraid)
+ print(allraids)
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
