@@ -7,7 +7,7 @@ etcdserver='nohost'
 serverstatus='nothing'
 x=getlocal(sys.argv[1],'Active','--prefix')
 for host in x:
- cmdline=['etcdctl','-w','json','--endpoints='+host[1]+':2379','member','list']
+ cmdline=['etcdctl','-w','json','--user=root:YN-Password_123','--endpoints='+host[1]+':2379','member','list']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  if result.returncode==0:
   etcdserver=host[1]

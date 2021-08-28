@@ -44,5 +44,16 @@ if known != []:
    if nextone == []:
     put('nextlead',kn[0].replace('known/','')+'/'+kn[1])
     broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
+poss = get('pos','--prefix')
+if poss != []:
+ for pos in poss:
+  heart = getlocal(pos[1],'local','--prefix')
+  print(type(heart),heart)
+  if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in pos[1]):
+   print(pos[0].replace('possible',''))
+   etcddel('ready/'+pos[0].replace('possible',''))
+   etcddel(pos[0])
+  
+  
 if '1' in perfmon:
  queuethis('remknown.py','stop','system')

@@ -1,8 +1,9 @@
 #!/bin/python3.6
-import subprocess,sys
+import subprocess,sys, os
 import json
 
 def etcddel(*args):
+ os.environ['ETCDCTL_API']= '3'
  if args[-1]=='--prefix':
   pointer=-1
  else:
@@ -12,9 +13,9 @@ def etcddel(*args):
  for x in data['members']:
   endpoints=endpoints+str(x['clientURLs'])[2:][:-2]
  if len(args) > 1:
-  cmdline=['etcdctl','--endpoints='+endpoints,'get',args[0],'--prefix']
+  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',args[0],'--prefix']
  else:
-  cmdline=['etcdctl','--endpoints='+endpoints,'get',args[0]]
+  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',args[0]]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  mylist=str(result.stdout)[2:][:-3].split('\\n')
  zipped=zip(mylist[0::2],mylist[1::2])
@@ -35,7 +36,7 @@ def etcddel(*args):
   return (-1)
  count=0
  for key in todel:
-  cmdline=['etcdctl','--endpoints='+endpoints,'del',key]
+  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'del',key]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   reslist=str(result.stdout)[2:][:-3]
   if '1' in reslist:

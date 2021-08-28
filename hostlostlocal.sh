@@ -9,7 +9,7 @@ thehostip=`echo $@ | awk '{print $3}'`
 ./etcddellocal.py $myip vol $thehost
 #declare -a disks=(`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`);
 declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
-iscsiadm -m node -p $thehostip:3260 -u 
+iscsiadm -m node -p $thehostip:3266 -u 
 echo "${disks[@]}"
 echo $@ > /root/losthostparam
 echo "${disks[@]}" > /root/losthost

@@ -1,14 +1,15 @@
 #!/bin/python3.6
-import subprocess,sys
+import subprocess,sys, os
 import json
 
 def etcdput(*args):
+ os.environ['ETCDCTL_API']= '3'
  myip=args[0]
  key=args[1]
  val=args[2]
  endpoints=''
  endpoints='http://'+myip+':2378'
- cmdline=['etcdctl','-w','json','--endpoints='+endpoints,'put',key,val]
+ cmdline=['etcdctl','--user=root:YN-Password_123','-w','json','--endpoints='+endpoints,'put',key,val]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  print(result)
 

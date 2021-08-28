@@ -1,12 +1,14 @@
 #!/bin/python3.6
-import subprocess,sys
+import subprocess,sys, os
 import json
 def etcdget(key, prefix=''):
+ os.environ['ETCDCTL_API']= '3'
  endpoints=''
  data=json.load(open('/pacedata/runningetcdnodes.txt'));
  for x in data['members']:
   endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
- cmdline=['/bin/etcdctl','--endpoints='+endpoints,'get',key,prefix]
+ endpoints = endpoints[:-1]
+ cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  z=[]
  try:
@@ -23,7 +25,7 @@ def etcdget(key, prefix=''):
     z.append((str(result.stdout).split(key)[1][2:][:-3]))
    print(z[0])
   else:
-   cmdline=['/bin/etcdctl','--endpoints='+endpoints,'get',key,'--prefix']
+   cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,'--prefix']
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    mylist=str(result.stdout)[2:][:-3].split('\\n')
    zipped=zip(mylist[0::2],mylist[1::2])
