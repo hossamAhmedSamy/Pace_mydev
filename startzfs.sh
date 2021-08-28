@@ -304,6 +304,7 @@ else
   ./etcdsync.py $myip logged logged 2>/dev/null
   ./etcdsync.py $myip updlogged updlogged 2>/dev/null
   ./etcdsync.py $myip ActivePartners ActivePartners 2>/dev/null
+  ./etcdsync.py $myip Partner Partner 2>/dev/null
   ./etcdsync.py $myip ntp ntp 2>/dev/null
   ./etcdsync.py $myip tz tz 2>/dev/null
   ./etcdsync.py $myip gw gw 2>/dev/null
