@@ -64,8 +64,8 @@ else
  configured=`ETCDCTL_API=3 ./etcdgetlocal.py $myip configured/$myhost` 
  echo configured is $configured >>/root/tmp2
  systemctl stop etcd 
- echo $configured | grep yes 
- if [ $? -eq 0 ];
+ echo $configured | grep no 
+ if [ $? -ne 0 ];
  then
   result='nothing'
  else
