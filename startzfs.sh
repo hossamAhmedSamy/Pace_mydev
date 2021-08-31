@@ -232,10 +232,7 @@ then
 
  echo deleted knowns and added leader >>/root/tmp2
 else
- echo found other host as primary.. checking if it shares same host name>>/root/tmp2
- cat /pacedata/runningetcdnodes.txt | grep $myhost &>/dev/null
- if [ $? -ne 0 ];
- then
+ echo found other host as primary.>>/root/tmp2
   leaderall=` ./etcdget.py leader --prefix `
   leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
   leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
@@ -247,7 +244,7 @@ else
    echo starting etcd as local >>/root/tmp2
     ./etccluster.py 'local' $myip 2>/dev/null
    chmod +r /etc/etcd/etcd.conf.yml 2>/dev/null
-   rm -rf /var/lib/etcd/*
+   #rm -rf /var/lib/etcd/*
    systemctl daemon-reload 2>/dev/null
    systemctl stop etcd 2>/dev/null
    systemctl start etcd 2>/dev/null
@@ -319,7 +316,7 @@ else
   /sbin/rabbitmqctl add_user rabb_$leader YousefNadody 2>/dev/null
   /sbin/rabbitmqctl set_permissions -p / rabb_$leader ".*" ".*" ".*" 2>/dev/null
   #./etcddellocal.py $myip users --prefix 2>/dev/null
-  ./checksyncs.py
+  ./checksyncs.py $myip
   gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw/$leader`
   oldgw=`ip route |grep default | awk '{print $3}'`
   echo $gateway | grep '\.'
@@ -360,10 +357,8 @@ else
   echo started iscsiwaatchdog >>/root/tmp2
   echo /TopStor/syncq.py $leaderip $myhost >>/root/tmp2
   /TopStor/syncq.py $leaderip $myhost 2>/root/syncqerror
- fi
 fi
 /TopStor/HostgetIPs &
-
 echo starting disk LIO check >>/root/tmp2
 myhost=`hostname -s`
 hostnam=`cat /TopStordata/hostname`

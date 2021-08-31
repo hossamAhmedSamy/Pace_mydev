@@ -1,5 +1,5 @@
 #!/bin/python3.6
-import subprocess
+import subprocess, sys
 from logqueue import queuethis
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
@@ -16,12 +16,15 @@ hostip = get('ActivePartners/'+myhost)[0]
 allsyncs = get('sync','--prefix') 
 leader = get('leader','--prefix')[0][0].replace('leader/','')
 
-def checksync():
- global syncs, myhost, allsyncs
+def checksync(myip='nothing'):
+ global syncs, myhost, allsyncs, hostip
  for sync in syncs:
    gsyncs = [ x for x in allsyncs if sync in x[0] ] 
    if len(gsyncs) == 0:
     return
+   if myip != 'nothing':
+    hostip = myip
+    
    maxgsync = max(gsyncs, key=lambda x: float(x[1]))
    mysync = [x for x in gsyncs if myhost in str(x) ]
    if len(mysync) < 1:
@@ -47,9 +50,10 @@ def checksync():
        print('hhhhh',hostn)
        setall()
       
+    print('hi')
     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
     broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
       
  
 if __name__=='__main__':
- checksync()
+ checksync(*sys.argv[1:])
