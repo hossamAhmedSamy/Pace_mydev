@@ -20,13 +20,15 @@ def checksync(myip='nothing'):
  global syncs, myhost, allsyncs, hostip
  for sync in syncs:
    gsyncs = [ x for x in allsyncs if sync in x[0] ] 
+   print(allsyncs,sync)
    if len(gsyncs) == 0:
-    return
+    continue 
    if myip != 'nothing':
     hostip = myip
-    
+   print('sync',sync) 
    maxgsync = max(gsyncs, key=lambda x: float(x[1]))
    mysync = [x for x in gsyncs if myhost in str(x) ]
+   print('sync',sync)
    if len(mysync) < 1:
     mysync = [(-1,-1)]
    mysync = float(mysync[0][1])
@@ -49,7 +51,7 @@ def checksync(myip='nothing'):
       for hostn in hosts:
        setall()
     elif sync in ['dataip','tz','ntp','gw']:
-     cmdline='/TopStor/HostManualconfig'+sync+local  
+     cmdline='/TopStor/HostManualconfig'+sync+'local'
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       
     print('hi')
