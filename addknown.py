@@ -55,8 +55,10 @@ if possible != []:
   deltolocal('modified',x[0].replace('possible',''))
   put('ActivePartners/'+x[0].replace('possible',''),hostsubnet)
   put('hostipsubnet/'+x[0].replace('possible',''),hostsubnet)
+  put('config/'+x[0].replace('possible',''),'yes')
   broadcasttolocal('hostipsubnet/'+x[0].replace('possible',''),x[1])
   broadcasttolocal('ActivePartners/'+x[0].replace('possible',''),x[1])
+  broadcasttolocal('config/'+x[0].replace('possible',''),'yes')
   put('nextlead',x[0].replace('possible','')+'/'+x[1])
   broadcasttolocal('nextlead',x[0].replace('possible','')+'/'+x[1])
   cmdline=['/sbin/rabbitmqctl','add_user','rabb_'+x[0].replace('possible',''),'YousefNadody']
