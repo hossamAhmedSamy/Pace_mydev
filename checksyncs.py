@@ -10,7 +10,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['user','group','evacuatehost']
+syncs = ['user','group','evacuatehost','dataip','tz','ntp','gw']
 myhost = hostname()
 hostip = get('ActivePartners/'+myhost)[0]
 allsyncs = get('sync','--prefix') 
@@ -47,8 +47,10 @@ def checksync(myip='nothing'):
     elif sync == 'evacuatehost':
       hosts = get('modified','evacuatehost')
       for hostn in hosts:
-       print('hhhhh',hostn)
        setall()
+    elif sync in ['dataip','tz','ntp','gw']:
+     cmdline='/TopStor/HostManualconfig'+sync+local  
+     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       
     print('hi')
     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
