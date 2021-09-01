@@ -10,7 +10,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['user','group','evacuatehost','dataip','tz','ntp','gw']
+syncs = ['user','group','evacuatehost','dataip','tz','ntp','gw','namespace']
 myhost = hostname()
 hostip = get('ActivePartners/'+myhost)[0]
 allsyncs = get('sync','--prefix') 
