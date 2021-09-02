@@ -51,7 +51,7 @@ def checksync(myip='nothing'):
       for hostn in hosts:
        setall()
     elif sync in ['dataip','tz','ntp','gw']:
-     cmdline='/TopStor/HostManualconfig'+sync+'local'
+     cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local ll'
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       
     print('hi')
