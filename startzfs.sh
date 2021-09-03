@@ -61,7 +61,7 @@ then
  echo found cluster with leader $result.. no need for node search >>/root/tmp2
  knownsearch=1
 else
- configured=`ETCDCTL_API=3 ./etcdgetlocal.py $myip configured/$myhost` 
+ configured=`./etcdgetlocal.py $myip configured/$myhost` 
  echo configured is $configured >>/root/tmp2
  systemctl stop etcd 
  echo $configured | grep no 
