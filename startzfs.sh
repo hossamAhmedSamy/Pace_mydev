@@ -65,7 +65,7 @@ else
  echo configured is $configured >>/root/tmp2
  systemctl stop etcd 
  echo $configured | grep no 
- if [ $? -eq 0 ];
+ if [ $? -ne 0 ];
  then
   echo configured is $configured so result will not search for a primary>>/root/tmp2
   result='nothing'
