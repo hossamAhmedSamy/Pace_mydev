@@ -44,21 +44,25 @@ if possible != []:
   knowns=get('known','--prefix')
   putlocal(x[1],'configured/'+myhost,'yes')
   frstnode=get('frstnode')
+  if frstnode == [-1]:
+   frstnode = [""] 
   if x[0].replace('possible','') not in frstnode[0]:
    newfrstnode=frstnode[0]+'/'+x[0].replace('possible','')
    put('frstnode',newfrstnode)
   put('known/'+x[0].replace('possible',''),x[1])
   hostsubnet = getlocal(x[1],'hostipsubnet/'+x[0].replace('possible',''))[0]
+  if hostsubnet == -1:
+   hostsubnet = "24"
   etcddel('sync',x[0].replace('possible',''))
   etcddel('modified',x[0].replace('possible',''))
   deltolocal('sync',x[0].replace('possible',''))
   deltolocal('modified',x[0].replace('possible',''))
-  put('ActivePartners/'+x[0].replace('possible',''),hostsubnet)
+  put('ActivePartners/'+x[0].replace('possible',''),x[1])
   put('hostipsubnet/'+x[0].replace('possible',''),hostsubnet)
-  put('config/'+x[0].replace('possible',''),'yes')
-  broadcasttolocal('hostipsubnet/'+x[0].replace('possible',''),x[1])
+  put('configured/'+x[0].replace('possible',''),'yes')
+  broadcasttolocal('hostipsubnet/'+x[0].replace('possible',''),hostsubnet)
   broadcasttolocal('ActivePartners/'+x[0].replace('possible',''),x[1])
-  broadcasttolocal('config/'+x[0].replace('possible',''),'yes')
+  broadcasttolocal('configured/'+x[0].replace('possible',''),'yes')
   put('nextlead',x[0].replace('possible','')+'/'+x[1])
   broadcasttolocal('nextlead',x[0].replace('possible','')+'/'+x[1])
   cmdline=['/sbin/rabbitmqctl','add_user','rabb_'+x[0].replace('possible',''),'YousefNadody']
