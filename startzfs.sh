@@ -114,7 +114,7 @@ then
  ./etcdget.py configured/$myhost | grep 1
  if [ $? -eq 0 ];
  then
-  ./etcdput.py configured/$myhost no
+  ./etcdput.py configured/$myhost yes 
  else 
   ./etcdget.py frstnode | grep dhcp
   if [ $? -ne 0 ];
