@@ -67,7 +67,6 @@ def groupsyncall(hostip,tosync='usrsigroup'):
   else:
    thread_del(user)
 
- print('hi')
  for user in allusers:
   thread_add(user)
  if tosync != 'usrsigroup': 
