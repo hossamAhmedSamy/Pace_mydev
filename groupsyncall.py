@@ -41,10 +41,10 @@ def groupsyncall(hostip,tosync='usrsigroup'):
  myip=hostip
  allusers=get('usersigroup','--prefix')
  myusers=getlocal(myip,'usersigroup','--prefix')
- if tosync != 'usersigroup':
+ if tosync != 'usrsigroup':
   groups = get('modified','group')
-  print('groups',groups)
   if -1 in groups:
+   print('groups',groups)
    return
   groups = [ x[0].split('/')[2] for x in groups if myhost not in str(x) ]
   allusers = [ x for x in allusers if x[0].replace('usersigroup/','') ]
@@ -55,7 +55,7 @@ def groupsyncall(hostip,tosync='usrsigroup'):
     if group not in allusers:
      delgroups.append(group)
   myusers= [ x for x in myusers if x[0].replace('usersinfo/','') in delgroups ]
- 
+ print(';;;;;',myusers,allusers)
  threads=[]
  if '-1' in allusers:
   allusers=[]
@@ -67,9 +67,10 @@ def groupsyncall(hostip,tosync='usrsigroup'):
   else:
    thread_del(user)
 
+ print('hi')
  for user in allusers:
   thread_add(user)
- if tosync != 'usersigroup': 
+ if tosync != 'usrsigroup': 
   for group in groups:
    gethosts = get('modified/group/'+group)[0]
    if myhost not in gethosts:
