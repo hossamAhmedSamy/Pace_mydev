@@ -25,7 +25,7 @@ def setall(*bargs):
   if '1' in perfmon:
    queuethis('Evacuate','stop_cancel','system')
   return
- leader=get('primary/name')[0]
+ leader=getlocal(myip,'primary/name')[0]
  for host in thehosts:
   hostn=host[0].split('/')[2]
   hostip=host[1]
