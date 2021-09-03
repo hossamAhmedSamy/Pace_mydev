@@ -16,10 +16,11 @@ serverstatus=str(serverstatus)[2:]
 serverstatus=serverstatus[:-3]
 if len(serverstatus) < 6:
  serverstatus='nothing'
-etcdfile=open('/pacedata/runningetcdnodes.txt','w')
-etcdfile.write(serverstatus)
-etcdfile.close()
-etcdfile=open('/var/www/html/des20/Data/runningetcdnodes.txt','w')
-etcdfile.write(serverstatus)
-etcdfile.close()
+else:
+ etcdfile=open('/pacedata/runningetcdnodes.txt','w')
+ etcdfile.write(serverstatus)
+ etcdfile.close()
+ etcdfile=open('/var/www/html/des20/Data/runningetcdnodes.txt','w')
+ etcdfile.write(serverstatus)
+ etcdfile.close()
 print('hostis='+etcdserver)
