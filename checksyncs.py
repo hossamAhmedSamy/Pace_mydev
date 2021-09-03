@@ -23,20 +23,22 @@ def checksync(myip='nothing'):
  global syncs, myhost, allsyncs, hostip, actives
  for sync in syncs:
    gsyncs = [ x for x in allsyncs if sync in x[0] ] 
+   if myhost == leader and  len(gsyncs) == 0:
+     put('sync/'+sync+'/'+leader,'10') 
    print(allsyncs,sync)
    if len(gsyncs) == 0:
     continue 
-   
    if myip != 'nothing':
     hostip = myip
    print('sync',sync) 
    maxgsync = max(gsyncs, key=lambda x: float(x[1]))
    mingsync = min(gsyncs, key=lambda x: float(x[1]))
-   if maxgsync[1] == mingsync[1]  and len(actives) <= len(gsyncs):
-    dels('sync/'+sync, '--prefix')
-    deltolocal('sync/'+sync, '--prefix')
-    dels('modified/'+sync, '--prefix')
-    deltolocal('modified/'+sync, '--prefix')
+   #if maxgsync[1] == mingsync[1]  and len(actives) <= len(gsyncs):
+   # dels('sync/'+sync, '--prefix')
+   # deltolocal('sync/'+sync, '--prefix')
+   # dels('modified/'+sync, '--prefix')
+   # deltolocal('modified/'+sync, '--prefix')
+   
    mysync = [x for x in gsyncs if myhost in str(x) ]
    print('sync',sync)
    if len(mysync) < 1:
