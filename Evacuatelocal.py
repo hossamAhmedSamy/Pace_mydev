@@ -20,9 +20,10 @@ def setall(*bargs):
   if '1' in perfmon:
    queuethis('Evacuate','stop_cancel','system')
   return
- leader=get('leader','--prefix')[0][0].replace('leader/','')
  myhost=hostname()
- myip=get('ready',myhost)[0][1]
+ cmdline=['/pace/getmyip.sh']
+ myip=subprocess.run(cmdline,stdout=subprocess.PIPE).decode('utf-8')
+ leader=get('primary/name')[0]
  for host in thehosts:
   hostn=host[0].split('/')[2]
   hostip=host[1]
@@ -33,7 +34,7 @@ def setall(*bargs):
     result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    cmdline=['/TopStor/resettarget.sh',myhost]
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-   delilocal("",hostn)
+   delilocal(myip,"",hostn)
    while True:
     cmdline=['/TopStor/rebootme','reset']
     result=subprocess.run(cmdline,stdout=subprocess.PIPE)
@@ -47,7 +48,7 @@ def setall(*bargs):
    else:
      cmdline=['/pace/removetargetdisks.sh', hostn, hostip]
      result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-     delilocal("",hostn)
+     delilocal(myip,"",hostn)
   logmsg.sendlog('Evacuaesu01','info','system',hostn)
  if '1' in perfmon:
   queuethis('Evacuate','stop','system')
