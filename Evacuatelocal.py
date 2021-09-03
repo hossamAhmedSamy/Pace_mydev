@@ -5,7 +5,9 @@ from etcdput import etcdput as put
 from time import sleep
 from etcdputlocal import etcdput as putlocal
 from etcdget import etcdget as get 
+from etcdgetlocal import etcdget as getlocal
 from etcddel import etcddel as deli 
+from etcddellocal import etcddel as delilocal 
 from socket import gethostname as hostname
 import logmsg
 def setall(*bargs):
@@ -31,14 +33,21 @@ def setall(*bargs):
     result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    cmdline=['/TopStor/resettarget.sh',myhost]
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+   delilocal("",hostn)
    while True:
     cmdline=['/TopStor/rebootme','reset']
     result=subprocess.run(cmdline,stdout=subprocess.PIPE)
     sleep(10)
-  if myhost not in hostn : 
+  else:
+   if myhost in leader:
      print('iam here', hostn, hostip)
      cmdline=['/pace/removetargetdisks.sh', hostn, hostip]
      result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+     deli("",hostn)
+   else:
+     cmdline=['/pace/removetargetdisks.sh', hostn, hostip]
+     result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+     delilocal("",hostn)
   logmsg.sendlog('Evacuaesu01','info','system',hostn)
  if '1' in perfmon:
   queuethis('Evacuate','stop','system')
