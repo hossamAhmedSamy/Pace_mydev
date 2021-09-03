@@ -6,27 +6,37 @@ from etcdput import etcdput as put
 from broadcasttolocal import broadcasttolocal
 from etcdputlocal import etcdput as putlocal 
 from Evacuatelocal import setall
+from etcddel import etcddel as dels
+from deltolocal import deltolocal
 from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
 syncs = ['user','group','evacuatehost','dataip','tz','ntp','gw','namespace']
 myhost = hostname()
+actives = get('ActivePartners','--prefix')
 hostip = get('ActivePartners/'+myhost)[0]
 allsyncs = get('sync','--prefix') 
 leader = get('leader','--prefix')[0][0].replace('leader/','')
 
 def checksync(myip='nothing'):
- global syncs, myhost, allsyncs, hostip
+ global syncs, myhost, allsyncs, hostip, actives
  for sync in syncs:
    gsyncs = [ x for x in allsyncs if sync in x[0] ] 
    print(allsyncs,sync)
    if len(gsyncs) == 0:
     continue 
+   
    if myip != 'nothing':
     hostip = myip
    print('sync',sync) 
    maxgsync = max(gsyncs, key=lambda x: float(x[1]))
+   mingsync = min(gsyncs, key=lambda x: float(x[1]))
+   if maxgsync[1] == mingsync[1]  and len(actives) <= len(gsyncs):
+    dels('sync/'+sync, '--prefix')
+    deltolocal('sync/'+sync, '--prefix')
+    dels('modified/'+sync, '--prefix')
+    deltolocal('modified/'+sync, '--prefix')
    mysync = [x for x in gsyncs if myhost in str(x) ]
    print('sync',sync)
    if len(mysync) < 1:
@@ -57,6 +67,7 @@ def checksync(myip='nothing'):
     print('hi')
     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
     broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
+  
       
  
 if __name__=='__main__':
