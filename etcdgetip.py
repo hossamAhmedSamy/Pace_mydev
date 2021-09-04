@@ -1,6 +1,7 @@
 #!/bin/python3.6
 import subprocess,sys
 import json
+from time import sleep
 
 key=sys.argv[1]
 endpoints=''

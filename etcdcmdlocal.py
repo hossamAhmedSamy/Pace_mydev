@@ -1,6 +1,8 @@
 #!/bin/python3.6
 import subprocess,sys, os
 import json
+from time import sleep
+
 def etcdcmd(thehost,cmd,*args):
  os.environ['ETCDCTL_API']= '3'
  endpoints='http://'+thehost+':2378'

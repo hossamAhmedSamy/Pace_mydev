@@ -1,6 +1,7 @@
 #!/bin/python3.6
 import subprocess,sys, os
 import json
+from time import sleep
 def etcdput(key,val):
  os.environ['ETCDCTL_API']= '3'
  endpoints=''

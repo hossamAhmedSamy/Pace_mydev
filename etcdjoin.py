@@ -1,8 +1,8 @@
 #!/bin/python3.6
 import subprocess,socket
 from ast import literal_eval as mtuple
-from etcdput import etcdput as put
 import json
+from time import sleep
 
 myname=socket.gethostname()
 myip=socket.gethostbyname(myname)
@@ -28,5 +28,6 @@ if myname in str(promote.stdout):
   f.writelines(cmdline)
  etcfile.close()
 else:
- put('possible'+myname, myip)
+ cmdline=['./etcdput.py','possible'+myname, myip]
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  
