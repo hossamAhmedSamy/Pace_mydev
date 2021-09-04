@@ -12,8 +12,14 @@ endpoints=''
 data=json.load(open('/pacedata/runningetcdnodes.txt'));
 for x in data['members']:
  endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
+endpoints = endpoints[:-1]
 cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
-result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+err = 2
+while err == 2:
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ err = result.returncode
+ if err == 2:
+  sleep(2)
 ilist=[]
 try:
  if(prefix !=''):

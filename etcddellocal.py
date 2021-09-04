@@ -15,7 +15,12 @@ def etcddel(*args):
   cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',args[1],'--prefix']
  else:
   cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',args[1]]
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ err = 2
+ while err == 2:
+  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  err = result.returncode
+  if err == 2:
+    sleep(2)
  mylist=str(result.stdout)[2:][:-3].split('\\n')
  zipped=zip(mylist[0::2],mylist[1::2])
  if mylist==['']:
@@ -36,7 +41,13 @@ def etcddel(*args):
  count=0
  for key in todel:
   cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'del',key]
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  err = 2
+  while err == 2:
+   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+   err = result.returncode
+   if err == 2:
+     sleep(2)
+ 
   reslist=str(result.stdout)[2:][:-3]
   if '1' in reslist:
    count+=1

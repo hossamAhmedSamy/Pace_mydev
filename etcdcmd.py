@@ -8,7 +8,12 @@ def etcdcmd(cmd,*args):
  for x in data['members']:
   endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
  cmdline='/bin/etcdctl --endpoints='+endpoints+' '+cmd+' '+' '.join(args)
- result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+ err = 2
+ while err == 2:
+  result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+  err = result.returncode
+  if err == 2:
+   sleep(2)
  print(result)
 
 
