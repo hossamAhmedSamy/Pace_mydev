@@ -97,6 +97,7 @@ then
   then
    break
   else
+   systemctl start etcd 2>/dev/null
    sleep 1
   fi
  done
@@ -257,6 +258,7 @@ else
     then
      break
     else
+     systemctl start etcd 2>/dev/null
      sleep 1
     fi
    done
