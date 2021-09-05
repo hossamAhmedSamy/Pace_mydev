@@ -105,6 +105,7 @@ then
  ./runningetcdnodes.py $myip 2>/dev/null
  /pace/etcdcmd.py user add root:YN-Password_123
  /pace/etcdcmd.py auth enable
+ ./etcddel.py known --prefix 2>/dev/null 
  /TopStor/HostManualconfigTZ $myip 
  /TopStor/HostManualconfigNTP $myip
  cd /pace
@@ -153,7 +154,6 @@ then
  fi
  systemctl restart chronyd
  /TopStor/logmsg2.sh $datenow $timenow $myhost Partst03 info system $myhost $myip
- ./etcddel.py known --prefix 2>/dev/null 
  ./etcddel.py possbile --prefix 2>/dev/null 
  ./etcddel.py ready --prefix 2>/dev/null 
  ./etcddel.py locked --prefix 2>/dev/null 
