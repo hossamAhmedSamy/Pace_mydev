@@ -88,7 +88,8 @@ then
  chmod +r /etc/etcd/etcd.conf.yml 2>/dev/null
  echo startinetcd >>/root/tmp2
  systemctl daemon-reload 2>/dev/null
- systemctl start etcd 2>/dev/null
+ sleep 2
+ systemctl start etcd >> /root/tmp2 
  while true;
  do
   echo starting etcd=$?
@@ -97,8 +98,8 @@ then
   then
    break
   else
-   systemctl start etcd 2>/dev/null
-   sleep 1
+   systemctl start etcd >> /root/tmp2
+   sleep 2 
   fi
  done
  echo started etcd as primary>>/root/tmp2
@@ -258,7 +259,7 @@ else
     then
      break
     else
-     systemctl start etcd 2>/dev/null
+     systemctl start etcd
      sleep 1
     fi
    done
