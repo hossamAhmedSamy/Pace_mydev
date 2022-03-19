@@ -31,6 +31,7 @@ echo starting etcd as local >>/root/tmp2
 chmod +r /etc/etcd/etcd.conf.yml 2>/dev/null
 systemctl daemon-reload 2>/dev/null
 systemctl stop etcd 2>/dev/null
+sleep 2
 systemctl start etcd 2>/dev/null
 cat /pacedata/initetcd | grep 1
 if [ $? -ne 0 ];
@@ -88,6 +89,7 @@ then
  chmod +r /etc/etcd/etcd.conf.yml 2>/dev/null
  echo startinetcd >>/root/tmp2
  systemctl daemon-reload 2>/dev/null
+ systemctl stop etcd
  sleep 2
  systemctl start etcd >> /root/tmp2 
  while true;
@@ -250,6 +252,7 @@ else
    #rm -rf /var/lib/etcd/*
    systemctl daemon-reload 2>/dev/null
    systemctl stop etcd 2>/dev/null
+   sleep 2
    systemctl start etcd 2>/dev/null
    while true;
    do
