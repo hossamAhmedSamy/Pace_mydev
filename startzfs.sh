@@ -33,6 +33,18 @@ systemctl daemon-reload 2>/dev/null
 systemctl stop etcd 2>/dev/null
 sleep 2
 systemctl start etcd 2>/dev/null
+while true;
+   do
+    echo starting etcd=$?
+    systemctl status etcd
+    if [ $? -eq 0 ];
+    then
+     break
+    else
+     systemctl start etcd
+     sleep 2
+    fi
+done
 cat /pacedata/initetcd | grep 1
 if [ $? -ne 0 ];
 then
