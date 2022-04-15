@@ -373,13 +373,13 @@ else
   echo $dnsname | grep '\-1'
   if [ $? -eq 0 ];
   then
-   dnsname=`cat /etc/resolv.conf | grep name | head -1 | awk '{print $2}'`yy
+   dnsname=`cat /etc/resolv.conf | grep name | head -1 | awk '{print $2}'`
   ./etcdput.py dnsname/$myhost $dnsname 
   fi
   echo $dnssearch | grep '\-1'
   if [ $? -eq 0 ];
   then
-   dnssearch=`cat /etc/resolv.conf | grep search | head -1 | awk '{print $2}'`yy
+   dnssearch=`cat /etc/resolv.conf | grep search | head -1 | awk '{print $2}'`
    ./etcdput.py dnssearch/$myhost $dnssearch 
   fi
  
