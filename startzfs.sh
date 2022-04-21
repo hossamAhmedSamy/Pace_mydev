@@ -139,14 +139,15 @@ then
    ./etcdput.py frstnode $myhost
   fi
  fi
- gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw`
+ gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw/$myhost`
  echo $gateway | grep '\.'
  if [ $? -eq 0 ];
  then
   route del default
   route add default gw $gateway
  fi 
- tzone=`ETCDCTL_API=3 /TopStor/etcdget.py tz`
+ /TopStor/HostaManualconfigDNS
+ tzone=`ETCDCTL_API=3 /TopStor/etcdget.py tz/$myhost`
  echo $tzone | grep '\/'
  if [ $? -ne 0 ];
  then
@@ -155,7 +156,7 @@ then
   tzone=${tzone// /_}
 #  ./etcdput.py tz $tzone
  fi
- ntp=`ETCDCTL_API=3 /TopStor/etcdget.py ntp`
+ ntp=`ETCDCTL_API=3 /TopStor/etcdget.py ntp/$myhost`
  echo ntp=$ntp >/root/ntptemp
  rm -rf /etc/chrony.conf
  cp /TopStor/chrony.conf /etc/
@@ -230,6 +231,21 @@ then
  else
    ./etcdput.py gw/$myhost $oldgw
  fi 
+ dnsname=`ETCDCTL_API=3 /TopStor/etcdget.py dnsname/$myhost`
+ dnssearch=`ETCDCTL_API=3 /TopStor/etcdget.py dnssearch/$myhost`
+ echo $dnsname | grep '\-1'
+ if [ $? -eq 0 ];
+ then
+  dnsname=`cat /etc/resolv.conf | grep name | head -1 | awk '{print $2}'`
+ ./etcdput.py dnsname/$myhost $dnsname 
+ fi
+ echo $dnssearch | grep '\-1'
+ if [ $? -eq 0 ];
+ then
+  dnssearch=`cat /etc/resolv.conf | grep search | head -1 | awk '{print $2}'`
+  ./etcdput.py dnssearch/$myhost $dnssearch 
+ fi
+ /TopStor/HostManualconfigDNS 
  cat /etc/passwd | grep NoUser 
  if [ $? -ne 0 ];
  then
@@ -325,6 +341,8 @@ else
   ./etcdsync.py $myip ntp ntp 2>/dev/null
   ./etcdsync.py $myip tz tz 2>/dev/null
   ./etcdsync.py $myip gw gw 2>/dev/null
+  ./etcdsync.py $myip dnsname dnsname 2>/dev/null
+  ./etcdsync.py $myip dnssearch dnssearch 2>/dev/null
   ./etcdsync.py $myip pool pool 2>/dev/null
   /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
   /bin/crontab /TopStor/plaincron
@@ -345,11 +363,30 @@ else
    route del default gw $oldgw
    route add default gw $gateway
    ./etcdput.py gw/$myhost $gateway
-   ./etcdputlocal.py gw/$myhost $gateway
+   ./etcdputlocal.py $myip gw/$myhost $gateway
   else
    ./etcdput.py gw/$myhost $oldgw
-   ./etcdputlocal.py gw/$myhost $oldgw
+   ./etcdputlocal.py $myip gw/$myhost $oldgw
   fi 
+  dnsname=`ETCDCTL_API=3 /TopStor/etcdget.py dnsname/$leader`
+  dnssearch=`ETCDCTL_API=3 /TopStor/etcdget.py dnssearch/$leader`
+  echo $dnsname | grep '\-1'
+  if [ $? -eq 0 ];
+  then
+   dnsname=`cat /etc/resolv.conf | grep name | head -1 | awk '{print $2}'`yy
+  ./etcdput.py dnsname/$myhost $dnsname 
+  fi
+  echo $dnssearch | grep '\-1'
+  if [ $? -eq 0 ];
+  then
+   dnssearch=`cat /etc/resolv.conf | grep search | head -1 | awk '{print $2}'`yy
+   ./etcdput.py dnssearch/$myhost $dnssearch 
+  fi
+ 
+  ./etcdput.py dnsname/$myhost $dnsname
+  ./etcdput.py dnssearch/$myhost $dnsname
+  /TopStor/HostManualconfigDNS
+ 
   cd /pace/
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
   if [[ $myalias -ne -1 ]];

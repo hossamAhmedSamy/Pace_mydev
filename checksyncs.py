@@ -12,7 +12,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['user','group','evacuatehost','dataip','tz','ntp','gw','namespace']
+syncs = ['user','group','evacuatehost','dataip','tz','ntp','gw','dnsname','dnssearch', 'namespace']
 myhost = hostname()
 actives = get('ActivePartners','--prefix')
 hostip = get('ActivePartners/'+myhost)[0]
@@ -64,7 +64,7 @@ def checksync(myip='nothing'):
       hosts = get('modified','evacuatehost')
       for hostn in hosts:
        setall()
-    elif sync in ['dataip','tz','ntp','gw']:
+    elif sync in ['dataip','tz','ntp','gw','dnsname','dnssearch']:
      cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local ll'
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       
