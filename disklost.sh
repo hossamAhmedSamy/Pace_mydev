@@ -4,6 +4,7 @@ disksphy=(`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -vw sda | grep -
 diskLIO=(`lsscsi -i | grep -v sr0 | grep -vw sda | grep -w LIO | awk '{print $NF}'`)
 diskFAULT=`./etcdget.py disks FAULT`
 diskONLINE=`./etcdget.py disks ONLINE`
+disktrans=`./etcdget.py disks transition`
 for disk in "${disksphy[@]}"; do
  fdisk -l /dev/$disk >/dev/null 2>/dev/null
  if [ $? -eq 0 ];
@@ -46,6 +47,7 @@ for disk in "${diskLIO[@]}"; do
   if [ $? -ne 0 ];
   then
   ./etcdput.py disks/scsi-${diskscsi} FAULT
+  ./broadcasttolocal.py disks/scsi-${diskscsi} FAULT
   fi
   #systemctl restart iscsid
   #echo 1 >/sys/block/dev/$disk/device/delete 
@@ -54,7 +56,30 @@ for disk in "${diskLIO[@]}"; do
   echo $diskONLINE | grep $diskscsi
   if [ $? -ne 0 ];
   then
-   ./etcdput.py disks/scsi-${diskscsi} ONLINE
+   echo $disktrans | grep $diskscsi
+   if [ $? -ne 0 ];
+   then
+    ./etcdput.py disks/scsi-${diskscsi} ONLINE
+    ./broadcasttolocal.py disks/scsi-${diskscsi} ONLINE
+   else
+    echo $disktrans | grep $diskscsi | grep transition3
+    if [ $? -eq 0 ];
+    then
+     ./etcdput.py disks/scsi-${diskscsi} ONLINE
+     ./broadcasttolocal.py disks/scsi-${diskscsi} ONLINE
+    else 
+     echo $disktrans | grep $diskscsi | grep transition2
+     if [ $? -eq 0 ];
+     then
+      ./etcdput.py disks/scsi-${diskscsi} transition3
+      ./broadcasttolocal.py disks/scsi-${diskscsi} transition3 
+     else
+      ./etcdput.py disks/scsi-${diskscsi} transition2
+      ./broadcasttolocal.py disks/scsi-${diskscsi} transition2 
+       
+     fi
+    fi
+   fi 
   fi
  fi
 done

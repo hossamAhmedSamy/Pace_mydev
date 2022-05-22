@@ -3,6 +3,8 @@ import subprocess,sys,socket, os
 from logqueue import queuethis
 import json
 from ast import literal_eval as mtuple
+from diskdata import diskdata
+from broadcasttolocal import broadcasttolocal
 from collections import Counter
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
@@ -101,6 +103,9 @@ def norm(val):
 
 def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
  global newop
+ print('################################################################################33')
+ print('diskB', diskB)
+ print('diskA', diskA)
  raidhosts=hostcounts.copy()
  w=0
  if 'free' in diskA['changeop']:
@@ -332,24 +337,26 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
   defdisks=[x for x in raid['disklist'] if 'ONLINE' not in x['status']]
   onlinedisks=[x for x in raid['disklist'] if 'ONLINE' in x['status']]
   for diskA in freedisks:
-   for diskB in defdisks: 
+   for diskB in defdisks:
+    #####################################################
+    I need to check why we are comparing a faulty disk instead of the others
+    ######################################################
     w=getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks)
     finalw.append({'newd':diskA,'oldd':diskB,'w':w})
  finalw=sorted(finalw,key=lambda x:x['w'])
+ print('finalw',finalw[0])
+ exit()
  return finalw[0] 
 
 def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
  global usedfree
- print('solvedegradedraids')
- onlinedisks=get('disks','ONLINE')
- 
- 
  sparefit={}
  for disk in freedisks:
   sparefit[disk['actualdisk']]=[]
   sparefit[disk['actualdisk']].append({'newd':disk['actualdisk'],'oldd':disk['actualdisk'],'w':100000000})
  for raid in degradedraids:
   sparelist=selectthedisk(freedisks,raid,allraids,allhosts,myhost)
+  print('sparelist',sparelist)
   if len(sparelist) > 0:
    sparefit[sparelist['newd']['actualdisk']].append(sparelist)
  for k in sparefit:
@@ -465,11 +472,39 @@ def spare2(*args):
      cmdline2=['/sbin/zpool', 'detach', disk['pool'],disk['actualdisk']]
      subprocess.run(cmdline2,stdout=subprocess.PIPE)
      dels('disk',disk['actualdisk'])
-     
- freedisks=[ x for x in newop['disks']  if 'free' in x['raid']]  
+ onlinedisks=get('disks','ONLINE')    
+ errordisks=get('errdiskpool','--prefix')
+ freedisks=[ x for x in newop['disks']  if 'free' in x['raid'] or (x['name'] in str(onlinedisks) and 'OFFLINED' not in x['status'] and 'ONLINE' not in x['changeop']) ]  
+   
+ ###################### return back a readded disk in the same slot ########################
+ onlined = 0
+ for disk in freedisks:
+  if 'free' not in disk['pool'] and disk['name']+'/'+disk['pool'] not in str(errordisks):
+   cmdline2=['/sbin/zpool', 'online', disk['pool'],disk['name']]
+   onlinethis = subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   #print('the error is', onlinethis.stderr.decode(), onlinethis.returncode) 
+   if onlinethis.returncode != 0:
+    put('errdiskpool/'+disk['name']+'/'+disk['pool'], 'true')
+   else:
+    dels('errdiskpool/'+disk['name']+'/'+disk['pool'])
+   
+   put('disks/'+disk['name'],'transition1')
+   onlined = 1
+ if onlined == 1:
+  return
+ for disk in freedisks:
+  if disk['changeop'] not in 'ONLINE' :
+   diskinfo = diskdata(disk['name'])
+   disk['actualdisk'] = diskinfo['actualdisk']
+   disk['id'] = diskinfo['id']
+   disk['host'] = diskinfo['host'] 
+   disk['size'] = diskinfo['size'] 
+   disk['devname'] = diskinfo['devname']
+
+   
+ #############################################################################################
  print('####################')
- print('disks', newop['disks'])
- print('freedisks', freedisks)
+ print('freedisksprint', freedisks)
  print('####################')
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  if len(disksfree) > 0 and len(degradedraids) > 0 : 
