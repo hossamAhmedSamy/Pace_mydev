@@ -1,5 +1,5 @@
 #!/bin/python3.6
-import subprocess,sys,socket
+import subprocess,sys,socket, os
 from logqueue import queuethis
 import json
 from ast import literal_eval as mtuple
@@ -11,6 +11,7 @@ from poolall import getall as getall
 from sendhost import sendhost
 #from syncpools import syncmypools
 import logmsg
+os.environ['ETCDCTL_API']= '3'
 newop=[]
 disksvalue=[]
 usedfree=[]
@@ -106,143 +107,197 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
   w=1
 ########## Stripe  DiskA free policy: Any###################################
  if 'stripe' in diskB['raid']: # if stripe calcualte the 
+  print('spare1')
   if norm(diskB['size']) > norm(diskA['size']):
+   print('spare1_1')
    w=1000000
    return w
 ########## Stripe  DiskA free policy: Useability###############################
   if 'useable' in balancetype:
+   print('spare1_2')
    sizediff=10*(norm(diskA['size'])-norm(diskB['size'])) # tendency to same size
    w+=sizediff+int(diskA['host'] in diskB['host'])
    return w
 ########## Stripe  DiskA free policy: Availability##############################
   else:
+   print('spare1_3')
    sizediff=(norm(diskA['size'])-norm(diskB['size']))
    w+=sizediff+10*int(diskA['host'] in diskB['host'])    # tendency to otherhost
    return w
 ######### RAID DiskB online DiskA free policy: useability #####################
  elif 'free' in diskA['changeop'] and 'ONLINE' in diskB['status']:# DiskB online
+  print('spare2')
   if 'useable' in balancetype:
+   print('spare2_1')
    sizediff=(norm(diskA['size'])-norm(diskB['size'])) # tendency to same size
  ########### Mirror and DiskB online diskA free policy: useability ############
    if 'mirror' in diskB['raid']:    # useable type not to mirror large disks
+    print('spare2_2')
     if norm(diskA['size']) > norm(diskB['size']):
+     print('spare2_3')
      w=100002
      return w
+    print('spare2_4')
     w+=10*sizediff+int(diskA['host'] in diskB['host'])
     return w
  ########### RAID and DiskB online diskA free policy: Availability #########
   else:
+   print('spare2_5')
    minB=min(onlinedisks,key=lambda x:norm(x['size']))
    if norm(minB['size']) > norm(diskA['size']):
+    print('spare2_6')
     w=1000000
     return w
+   print('spare2_7')
    raidhosts[diskA['host']]+=1
    raidhosts[diskB['host']]-=1
    if 'raidz' in diskB['raid']:
+    print('spare2_8')
     sizediff=norm(diskA['size'])-norm(diskB['size']) 
     if diskA['host']==diskB['host'] and norm(diskA['size']) >= norm(diskB['size']) :
+     print('spare2_9')
      w=2200000
      return w
    if 'raidz1' in diskB['raid']:
+    print('spare2_10')
     if raidhosts[diskA['host']] > 1:
+     print('spare2_11')
      w=2000000
      return w
     elif raidhosts[diskA['host']]==1 and raidhosts[diskB['host']]<1:
+     print('spare2_12')
      w=2100000
      return w
     elif raidhosts[diskA['host']]<=1 and raidhosts[diskB['host']] >=raidhosts[diskA['host']]:
+     print('spare2_13')
      w+=sizediff+10*int(raidhosts[diskA['host']]-raidhosts[diskB['host']])
      return w
     else:
+      print('spare2_14')
       print('Error',raidhosts)
 
    elif 'raidz2' in diskB['raid']:
+    print('spare2_15')
     if raidhosts[diskA['host']] > 2:
+     print('spare2_16')
      w=2000000
      return w
     elif raidhosts[diskA['host']]==2 and raidhosts[diskB['host']]<2:
+     print('spare2_17')
      w=2100000
      return w
     elif raidhosts[diskA['host']]==1 and raidhosts[diskB['host']]<0:
+     print('spare2_18')
      w=2200000
      return w
     elif raidhosts[diskA['host']]<=2 and raidhosts[diskB['host']] >=raidhosts[diskA['host']]:
+     print('spare2_19')
      w+=sizediff+10*int(raidhosts[diskA['host']]-raidhosts[diskB['host']])
      return w
     else:
+      print('spare2_20')
       print('Error',raidhosts)
     
  ########### Mirror and DiskB online diskA free policy: Availability #########
    elif 'mirror' in diskB['raid']:
+    print('spare2_21')
     if raidhosts[diskA['host']]==2:
      w=3100000
      return w
+    print('spare2_22')
     sizediff=norm(diskA['size'])-norm(diskB['size']) 
     if sizediff >= 0 and hostcounts[diskB['host']]==1:
+     print('spare2_23')
      w=3200000
      return w
+    print('spare2_24')
     w+=sizediff+10*int(diskA['host'] in diskB['host'])
     return w
 ########### RAID and DiskB online diskA in Raid policy: Any #########
  elif diskB['raid'] in diskA['raid'] and 'ONLINE' in diskB['status']:  
+  print('spare3')
   sizediff=norm(diskA['size'])-norm(diskB['size']) 
  ########### Mirror and DiskB online diskA in Raid policy: Useability #########
   if 'useable' in balancetype:  # tendency not to take the large size
+   print('spare3_1')
    if 'mirror' in diskB['raid']:
+    print('spare3_2')
     w+=10*sizediff+int(diskA['host'] in diskB['host'])
     return w
  ########### RAID and DiskB online diskA in Raid policy: Availability ########
   else:
+   print('spare3_3')
    if 'raidz' in diskB['raid']:
     w=3000000
     return w
    elif 'mirror' in diskB['raid']:
+    print('spare3_4')
     w=3000000
     #w+=sizediff+10*int(diskA['host'] in diskB['host'])
     return w 
 ########### RAID DiskB Failed diskA free policy: Any ########
  elif 'free' in diskA['changeop'] and 'ONLINE' not in diskB['status']:
+  print('spare4')
   minB=min(onlinedisks,key=lambda x:norm(x['size']))
   sizediff=norm(diskA['size'])-norm(minB['size']) 
   minB=min(onlinedisks,key=lambda x:norm(x['size']))
 ########### RAIDZ DiskB Failed diskA free policy: Any ########
   if 'raidz' in diskB['raid']:
+   print('spare4_1')
    try:
+    print('spare4_2')
     raidhosts[diskA['host']]+=1
    except:
+    print('spare4_3')
     raidhosts[diskA['host']]=1
+   print('spare4_4')
    minB=min(onlinedisks,key=lambda x:norm(x['size']))
    if norm(minB['size']) > norm(diskA['size']):
+    print('spare4_5')
     w=1000000
     return w
+   print('spare4_6')
    sizediff=norm(diskA['size'])-norm(diskB['size']) 
  ########### RAID DiskB Failed diskA free policy: Useability ########
   if 'useable' in balancetype:
+   print('spare4_7')
    if 'raidz1' in diskB['raid']:
+    print('spare4_8')
     w+=10*sizediff+int(raidhosts[diskA['host']]-1)
     return w
    elif 'raidz2' in diskB['raid']:
+    print('spare4_9')
     w+=10*sizediff+int(raidhosts[diskA['host']]-2)
     return w
  ########### Mirror DiskB Failed diskA free policy: Useability ########
    elif 'mirror' in diskB['raid']:    # useable type not to mirror large disks
+    print('spare4_10')
     if norm(diskA['size']) > norm(minB['size']):
      w=100002
      return w
    else:
+    print('spare4_11')
     w+=sizediff+10*int(diskA['host'] in diskB['host'])
     return w
  ########### RAID DiskB Failed diskA free policy: Availability ########
   else:
+   print('spare4_12')
  ########### Raidz and DiskB Failed diskA free policy: Availability #########
    if 'raidz1' in diskB['raid']:
+    print('spare4_13')
     w=sizediff+10*int(raidhosts[diskA['host']]-1)
     return w
    elif 'raidz2' in diskB['raid']:
+    print('spare4_14')
     w=sizediff+10*int(raidhosts[diskA['host']]-2)
+    return w
+   elif 'raidz3' in diskB['raid']:
+    print('spare4_15')
+    w=sizediff+10*int(raidhosts[diskA['host']]-3)
     return w
  ########### Mirror and DiskB Failed diskA free policy: Availability #########
    elif 'mirror' in diskB['raid']:
+    print('spare4_16')
     w+=sizediff+10*int(raidhosts[diskA['host']] -1)
     return w
   
@@ -285,6 +340,10 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
 
 def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
  global usedfree
+ print('solvedegradedraids')
+ onlinedisks=get('disks','ONLINE')
+ 
+ 
  sparefit={}
  for disk in freedisks:
   sparefit[disk['actualdisk']]=[]
@@ -408,6 +467,10 @@ def spare2(*args):
      dels('disk',disk['actualdisk'])
      
  freedisks=[ x for x in newop['disks']  if 'free' in x['raid']]  
+ print('####################')
+ print('disks', newop['disks'])
+ print('freedisks', freedisks)
+ print('####################')
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  if len(disksfree) > 0 and len(degradedraids) > 0 : 
   solvedegradedraids(degradedraids, disksfree,allraids,allhosts,myhost)
