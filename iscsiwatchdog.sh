@@ -30,6 +30,8 @@ sh /pace/listingtargets.sh
 echo finished listingtargets >> /root/iscsiwatch
 echo updating iscsitargets >> /root/iscsiwatch
 sh /pace/addtargetdisks.sh
+sh /pace/disklost.sh
+sh /pace/addtargetdisks.sh
 echo finished updtating iscsitargets >> /root/iscsiwatch
 if [[ $islocal -eq 0 ]];
 then
