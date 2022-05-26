@@ -20,7 +20,7 @@ newop=[]
 disksvalue=[]
 usedfree=[]
 myhost = hostname()
-def mustattach(cmdline,disksallowed,defdisk,myhost):
+def mustattach(cmdline,disksallowed,raid,myhost):
    print('################################################')
    if len(disksallowed) < 1 : 
     return 'na'
@@ -40,11 +40,14 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
     msg={'req': 'Zpool', 'reply':z}
     sendhost(hostip[0], str(msg),'recvreply',myhost)
     print('returning')
+    print(raid)
     offlinethis=['/sbin/zpool', 'clear', defdisk['pool'] ]
     subprocess.run(offlinethis,stdout=subprocess.PIPE)
     return 'wait' 
    dels('clearplsdisk/'+spare['actualdisk']) 
    dels('cleareddisk/'+spare['actualdisk']) 
+   print('############start replacing')
+   return
    if 'replace' in cmd:
     #cmd = cmd+['/dev/'+spare['actualdisk'],'/dev/'+defdisk['actualdisk']] 
     if 'scsi' in defdisk['actualdisk']:
@@ -488,9 +491,20 @@ def solvedegradedraid(raid,disksfree):
    raidhosts.add(disk['host'])
   else:
    defdisk.append(disk['name'])
-   cmddm= ['/pace/mkdm.sh', raid['name'], myhost ]
-   subprocess.run(cmddm,stdout=subprocess.PIPE)
- 
+   dmstup = get('dm/'+myhost+'/'+raid['name'],'--prefix')
+   dmstup = [ x for x in dmstup if 'inuse' not in str(x)]
+   print('dmstup:',dmstup)
+   if len(dmstup) < 1:
+    cmddm= ['/pace/mkdm.sh', raid['name'], myhost ]
+    subprocess.run(cmddm,stdout=subprocess.PIPE).stdout.decode()
+    dmstup = get('dm/'+myhost+'/'+raid['name'],'--prefix')
+    dmstup = [ x for x in dmstup if 'inuse' not in str(x)]
+   dmstup = dmstup[0][1]
+   cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],dmstup]
+   forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
+   return 
+ print('################## start replace in solvedegradedraid')
  if len(disksample) == 0 :
   return
  if len(defdisk):
@@ -515,7 +529,7 @@ def solvedegradedraid(raid,disksfree):
  print('sparedisk',sparedisk)  
  print('##############################################') 
  cmdline=['/sbin/zpool', 'replace', '-f',raid['pool']]
- ret=mustattach(cmdline,sparedisk,defdisk,myhost)
+ ret=mustattach(cmdline,sparedisk,raid,myhost)
    
   
 def spare2(*args):
