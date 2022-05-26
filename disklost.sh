@@ -22,7 +22,6 @@ for disk in "${diskLIO[@]}"; do
  diskscsi=`echo $diskinfo |  awk '{print $7}'`
  phydisk=`echo $diskname | awk -F'-' '{print $1}'`
  itisok=1
- diskstatus=`./etcdget.py disks/FAULT/scsi-${diskscsi}`
  fdisk -l $diskdev >/dev/null 2>/dev/null
  if [ $? -ne 0 ];
  then

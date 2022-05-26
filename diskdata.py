@@ -17,7 +17,7 @@ def diskdata(diskname):
  for lss in lsscsi:
   lssa = lss.split()
   if lssa[6] in diskname:
-   ddict={'name':diskname,'actualdisk':lssa[5].split('/')[-1],'id': lsscsi.index(lss), 'host':myhost, 'size':levelthis(lssa[7]),'devname':lssa[5].split('/')[-1]}
+   ddict={'name':diskname,'actualdisk':lssa[5].split('/')[-1],'id': lsscsi.index(lss), 'host':myhost, 'size':lssa[7],'devname':lssa[5].split('/')[-1]}
    print('dict',ddict) 
    with open('/pacedata/perfmon','r') as f:
     perfmon = f.readline() 

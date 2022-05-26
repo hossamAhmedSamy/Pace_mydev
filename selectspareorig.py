@@ -1,5 +1,7 @@
 #!/bin/python3.6
 import subprocess,sys,socket, os
+from socket import gethostname as hostname
+from levelthis import levelthis
 from logqueue import queuethis
 import json
 from ast import literal_eval as mtuple
@@ -17,7 +19,7 @@ os.environ['ETCDCTL_API']= '3'
 newop=[]
 disksvalue=[]
 usedfree=[]
-
+myhost = hostname()
 def mustattach(cmdline,disksallowed,defdisk,myhost):
    print('################################################')
    if len(disksallowed) < 1 : 
@@ -25,6 +27,45 @@ def mustattach(cmdline,disksallowed,defdisk,myhost):
    print('helskdlskdkddlsldssd#######################')
    cmd=cmdline.copy()
    spare=disksallowed
+   print('spare',spare)
+   print('###########################')
+   spareplsclear=get('clearplsdisk/'+spare['actualdisk'])
+   spareiscleared=get('cleareddisk/'+spare['actualdisk']) 
+   if spareiscleared[0] != spareplsclear[0] or spareiscleared[0] == -1:
+    print('asking to clear')
+    put('clearplsdisk/'+spare['actualdisk'],spare['host'])
+    dels('cleareddisk/'+spare['actualdisk']) 
+    hostip=get('ready/'+spare['host'])
+    z=['/TopStor/pump.sh','Zpoolclrrun',spare['actualdisk']]
+    msg={'req': 'Zpool', 'reply':z}
+    sendhost(hostip[0], str(msg),'recvreply',myhost)
+    print('returning')
+    offlinethis=['/sbin/zpool', 'clear', defdisk['pool'] ]
+    subprocess.run(offlinethis,stdout=subprocess.PIPE)
+    return 'wait' 
+   dels('clearplsdisk/'+spare['actualdisk']) 
+   dels('cleareddisk/'+spare['actualdisk']) 
+   if 'replace' in cmd:
+    #cmd = cmd+['/dev/'+spare['actualdisk'],'/dev/'+defdisk['actualdisk']] 
+    if 'scsi' in defdisk['actualdisk']:
+      defdisk['actualdisk'] = 'disk/by-id/'+defdisk['pool'] 
+    offlinethis=['/sbin/zpool', 'clear', defdisk['pool'] ]
+    subprocess.run(offlinethis,stdout=subprocess.PIPE)
+    cmd = cmd+['/dev/'+defdisk['actualdisk'],'/dev/disk/by-id/'+spare['name']] 
+    print('cmd', cmd)
+    res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print('result', res.stderr.decode())    
+   return
+ 
+def mustattachold(cmdline,disksallowed,defdisk,myhost):
+   print('################################################')
+   if len(disksallowed) < 1 : 
+    return 'na'
+   print('helskdlskdkddlsldssd#######################')
+   cmd=cmdline.copy()
+   spare=disksallowed
+   print('spare',spare)
+   print('###########################')
    spareplsclear=get('clearplsdisk/'+spare['actualdisk'])
    spareiscleared=get('cleareddisk/'+spare['actualdisk']) 
    if spareiscleared[0] != spareplsclear[0] or spareiscleared[0] == -1:
@@ -339,7 +380,7 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
   for diskA in freedisks:
    for diskB in defdisks:
     #####################################################
-    I need to check why we are comparing a faulty disk instead of the others
+    #I need to check why we are comparing a faulty disk instead of the others
     ######################################################
     w=getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks)
     finalw.append({'newd':diskA,'oldd':diskB,'w':w})
@@ -433,7 +474,48 @@ def solvestriperaids(striperaids,freedisks,allraids,myhost):
  if 'fault' not in ret:
   usedfree.append(ret)
  return
-  
+ 
+def solvedegradedraid(raid,disksfree):
+ hosts=get('ready','--prefix')
+ hosts=[host[0].split('/')[1] for host in hosts]
+ raidhosts= set()
+ defdisk = [] 
+ disksample = ''
+ sparedisk = []
+ for disk in raid['disklist']:
+  if 'ONLINE' in disk['changeop']:
+   disksample=disk.copy()
+   raidhosts.add(disk['host'])
+  else:
+   defdisk.append(disk['name'])
+   cmddm= ['/pace/mkdm.sh', raid['name'], myhost ]
+   subprocess.run(cmddm,stdout=subprocess.PIPE)
+ 
+ if len(disksample) == 0 :
+  return
+ if len(defdisk):
+  print('no def disk')
+  return
+################## put a wrapping condition after the next "for" line for every new feature (disk type, node load, AI analysis,..etc ##########
+ for disk in disksfree:
+  if levelthis(disk['size']) < levelthis(disksample['size']):
+   continue
+  if disk['host'] not in raidhosts:
+   sparedisk.append([disk,10])
+  else:
+   sparedisk.append([disk,0])
+  if levelthis(disk['size']) ==  levelthis(disksample['size']):
+   sparedisk[-1] = [disk,sparedisk[-1][1]+10]
+ if len(sparedisk) == 0:
+  return
+ print('##############################################') 
+ print('sparedisk',sparedisk)  
+ print('##############################################') 
+ sparedisk = max(sparedisk,key=lambda x:x[1])[0]
+ print('sparedisk',sparedisk)  
+ print('##############################################') 
+ cmdline=['/sbin/zpool', 'replace', '-f',raid['pool']]
+ ret=mustattach(cmdline,sparedisk,defdisk,myhost)
    
   
 def spare2(*args):
@@ -508,7 +590,12 @@ def spare2(*args):
  print('####################')
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  if len(disksfree) > 0 and len(degradedraids) > 0 : 
-  solvedegradedraids(degradedraids, disksfree,allraids,allhosts,myhost)
+  print('degradedraids',degradedraids)
+  print('disksfree',disksfree)
+ for raid in degradedraids:
+  disksfree = solvedegradedraid(raid, disksfree)
+  #solvedegradedraids(degradedraids, disksfree,allraids,allhosts,myhost)
+ exit()
  if len(disksfree) > 0 and len(striperaids) > 0 : 
   solvestriperaids(striperaids, disksfree,allraids,myhost)
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
@@ -522,6 +609,8 @@ if __name__=='__main__':
   perfmon = f.readline() 
  if '1' in perfmon:
   queuethis('selectspare.py','start','system')
+ if len(sys.argv)< 2:
+  sys.argv.append(hostname())
  spare2(*sys.argv[1:])
  if '1' in perfmon:
   queuethis('selectspare.py','stop','system')
