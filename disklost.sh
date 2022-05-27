@@ -1,7 +1,8 @@
 #!/bin/sh
 
 disksphy=(`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -vw sda | grep -v LIO | awk '{print $1}'`)
-diskLIO=(`lsscsi -i | grep -v sr0 | grep -vw sda | grep -w LIO | awk '{print $NF}'`)
+diskLIO=`lsscsi -i | grep -v sr0 | grep -vw sda | grep -w LIO | awk '{print $4" "$6" "$NF}'`
+echo "${diskLIO[@]}"
 diskFAULT=`./etcdget.py disks FAULT`
 diskONLINE=`./etcdget.py disks ONLINE`
 disktrans=`./etcdget.py disks transition`
@@ -11,15 +12,17 @@ for disk in "${disksphy[@]}"; do
  then
   echo $disk ok
  else
-  echo $disk fault
+  echo ohhhhh $disk fault
   echo 1 >/sys/block/dev/$disk/device/delete 
  fi 
 done
-for disk in "${diskLIO[@]}"; do
- diskinfo=`lsscsi -i | grep -w $disk `
- diskname=`echo $diskinfo |  awk '{print $4}'`
- diskdev=`echo $diskinfo |  awk '{print $6}'`
- diskscsi=`echo $diskinfo |  awk '{print $7}'`
+IFS=$'\n'
+for diskinfo in ${diskLIO}; do
+ disk=`echo $diskline | awk '{print $NF'}`
+ echo checking $diskinfo
+ diskname=`echo $diskinfo |  awk '{print $1}'`
+ diskdev=`echo $diskinfo |  awk '{print $2}'`
+ diskscsi=`echo $diskinfo |  awk '{print $3}'`
  phydisk=`echo $diskname | awk -F'-' '{print $1}'`
  itisok=1
  fdisk -l $diskdev >/dev/null 2>/dev/null
@@ -28,6 +31,7 @@ for disk in "${diskLIO[@]}"; do
   echo wiwiwiwiwiwiw $diskdev
   itisok=0
  fi
+ echo disksks $diskname $phydisk
  echo $diskLIO | grep -vw $diskname | grep $phydisk >/dev/null
  if [ $? -eq 0 ];
  then
@@ -41,6 +45,7 @@ for disk in "${diskLIO[@]}"; do
   devname=`echo $diskdev | awk -F'/' '{print $3}'`
   echo faulty disk $diskname $devname
   targetcli backstores/block delete $diskname 
+  echo targetcli backstores/block delete $diskname 
   echo 1 >/sys/block/$devname/device/delete 
   echo $diskFAULT | grep $diskscsi
   if [ $? -ne 0 ];

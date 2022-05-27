@@ -11,6 +11,7 @@ from collections import Counter
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
 from etcddel import etcddel as dels 
+from deltolocal import deltolocal as delstolocal
 from poolall import getall as getall
 from sendhost import sendhost
 #from syncpools import syncmypools
@@ -41,24 +42,36 @@ def mustattach(cmdline,disksallowed,raid,myhost):
     sendhost(hostip[0], str(msg),'recvreply',myhost)
     print('returning')
     print(raid)
-    offlinethis=['/sbin/zpool', 'clear', defdisk['pool'] ]
-    subprocess.run(offlinethis,stdout=subprocess.PIPE)
     return 'wait' 
    dels('clearplsdisk/'+spare['actualdisk']) 
    dels('cleareddisk/'+spare['actualdisk']) 
-   print('############start replacing')
-   return
-   if 'replace' in cmd:
-    #cmd = cmd+['/dev/'+spare['actualdisk'],'/dev/'+defdisk['actualdisk']] 
-    if 'scsi' in defdisk['actualdisk']:
-      defdisk['actualdisk'] = 'disk/by-id/'+defdisk['pool'] 
-    offlinethis=['/sbin/zpool', 'clear', defdisk['pool'] ]
-    subprocess.run(offlinethis,stdout=subprocess.PIPE)
-    cmd = cmd+['/dev/'+defdisk['actualdisk'],'/dev/disk/by-id/'+spare['name']] 
-    print('cmd', cmd)
+   if 'stripe' in raid['name']:
+    print('############start attaching')
+    cmd = cmd+[raid['disklist'][0]['name'],'/dev/disk/by-id/'+spare['name']] 
     res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print('result', res.stderr.decode())    
-   return
+    if res.returncode !=0:
+     print('somehting went wrong', res.stderr.encode())
+    else:
+     print(' the most suitable disk is attached')
+    return
+    
+   print('############start replacing')
+   alldms = get('dm/'+myhost+'/'+raid['name'],'--prefix')
+   alldmlst = [ x for x in alldms if 'inuse' in str(x)]
+   if len(alldmlst) < 1:
+    print('somthing wrong, no stup found for this degraded group')
+    return
+   dmstup = alldmlst[0][1].replace('inuse/','')
+   cmd = cmd+[dmstup, '/dev/disk/by-id/'+spare['name']] 
+   print('cmd', cmd)
+   res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   print('result', res.stderr.decode())    
+   if res.returncode == 0:
+    put(alldmlst[0][0],dmstup) 
+    broadcasttolocal(alldmlst[0][0],dmstup) 
+    return 0
+   else:
+    return 1
  
 def mustattachold(cmdline,disksallowed,defdisk,myhost):
    print('################################################')
@@ -392,68 +405,6 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
  exit()
  return finalw[0] 
 
-def solvedegradedraids(degradedraids, freedisks,allraids,allhosts,myhost):
- global usedfree
- sparefit={}
- for disk in freedisks:
-  sparefit[disk['actualdisk']]=[]
-  sparefit[disk['actualdisk']].append({'newd':disk['actualdisk'],'oldd':disk['actualdisk'],'w':100000000})
- for raid in degradedraids:
-  sparelist=selectthedisk(freedisks,raid,allraids,allhosts,myhost)
-  print('sparelist',sparelist)
-  if len(sparelist) > 0:
-   sparefit[sparelist['newd']['actualdisk']].append(sparelist)
- for k in sparefit:
-  sparefit[k]=sorted(sparefit[k],key=lambda x:x['w'])
- for k in sparefit:
-  if sparefit[k][0]['w'] > 100000:
-   continue 
-  oldd=sparefit[k][0]['oldd'] 
-  newd=sparefit[k][0]['newd'] 
-  olddpool=sparefit[k][0]['oldd']['pool'] 
-  if 'raid' in oldd['raid']:
-   cmdline=['/sbin/zpool', 'replace', '-f',olddpool]
-   ret=mustattach(cmdline,newd,oldd,myhost)
-  elif 'mirror' in oldd['raid']:
-   cmd=['/sbin/zpool', 'detach', olddpool,oldd['actualdisk']]
-   subprocess.check_call(cmd)
-   cmdline=['/sbin/zpool', 'attach','-f', olddpool]
-   ret=mustattach(cmdline,newd,oldd,myhost)
-   if 'fault' not in ret and 'wait' not in ret:
-    usedfree.append(ret)
- 
-def solveonlineraids(onlineraids,freedisks,allraids,allhosts,myhost):
- global usedfree
- sparefit={}
- for disk in freedisks:
-  sparefit[disk['actualdisk']]=[]
- for raid in onlineraids:
-  sparelist=selectthedisk(freedisks.copy(),raid.copy(),allraids.copy(),allhosts.copy(),myhost)
-  if len(sparelist) > 0:
-   if sparelist['newd']['actualdisk'] not in sparefit.keys():
-    continue 
-   else:
-    sparefit[sparelist['newd']['actualdisk']].append(sparelist)
- for k in sparefit:
-  sparefit[k]=sorted(sparefit[k],key=lambda x:x['w'])
- for k in sparefit:
-  if len(sparefit[k]) < 1:
-   continue 
-  if sparefit[k][0]['w'] > 100000:
-   continue 
-  oldd=sparefit[k][0]['oldd'] 
-  newd=sparefit[k][0]['newd'] 
-  olddpool=sparefit[k][0]['oldd']['pool'] 
-  if 'raid' in oldd['raid']:
-   cmdline=['/sbin/zpool', 'replace', '-f',olddpool]
-   ret=mustattach(cmdline,newd,oldd,myhost)
-  elif 'mirror' in oldd['raid']:
-   cmd=['/sbin/zpool', 'detach', olddpool,oldd['actualdisk']]
-   subprocess.check_call(cmd)
-   cmdline=['/sbin/zpool', 'attach','-f', olddpool]
-   ret=mustattach(cmdline,newd,oldd,myhost)
-   if 'fault' not in ret and 'wait' not in ret:
-    usedfree.append(ret)
  
 def solvestriperaids(striperaids,freedisks,allraids,myhost):
  global usedfree
@@ -483,53 +434,76 @@ def solvedegradedraid(raid,disksfree):
  hosts=[host[0].split('/')[1] for host in hosts]
  raidhosts= set()
  defdisk = [] 
- disksample = ''
+ disksample = []
  sparedisk = []
  for disk in raid['disklist']:
   if 'ONLINE' in disk['changeop']:
-   disksample=disk.copy()
+   disksample.append(levelthis(disk['size']))
    raidhosts.add(disk['host'])
   else:
+   if 'stripe' in raid['name']:
+    cmdline2=['/sbin/zpool', 'detach','-f',raid['pool'], disk['actualdisk']]
+    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print('detaching the faulty disk',forget.stderr.decode())
+    return disksfree
    defdisk.append(disk['name'])
    dmstup = get('dm/'+myhost+'/'+raid['name'],'--prefix')
-   dmstup = [ x for x in dmstup if 'inuse' not in str(x)]
+   dmstuplst = [ x for x in dmstup if 'inuse' not in str(x)]
    print('dmstup:',dmstup)
-   if len(dmstup) < 1:
+   if len(dmstuplst) < 1:
     cmddm= ['/pace/mkdm.sh', raid['name'], myhost ]
     subprocess.run(cmddm,stdout=subprocess.PIPE).stdout.decode()
-    dmstup = get('dm/'+myhost+'/'+raid['name'],'--prefix')
-    dmstup = [ x for x in dmstup if 'inuse' not in str(x)]
-   dmstup = dmstup[0][1]
+    alldms = get('dm/'+myhost+'/'+raid['name'],'--prefix')
+    dmstuplst = [ x for x in alldms if 'inuse' not in str(x)]
+   dmstup = dmstuplst[0][1]
+    
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
-   return 
+   if forget.returncode == 0:
+    put(dmstuplst[0][0],'inuse/'+dmstup)
+    broadcasttolocal(dmstuplst[0][0],'inuse/'+dmstup)
+   else:
+    dels(dmstuplst[0][0], '--prefix')
+    delstolocal(dmstuplst[0][0], '--prefix')
+   return disksfree 
  print('################## start replace in solvedegradedraid')
  if len(disksample) == 0 :
-  return
+  return disksfree
  if len(defdisk):
   print('no def disk')
-  return
+  return disksfree
 ################## put a wrapping condition after the next "for" line for every new feature (disk type, node load, AI analysis,..etc ##########
+ disksamplesize= min(disksample)
  for disk in disksfree:
-  if levelthis(disk['size']) < levelthis(disksample['size']):
-   continue
+  if levelthis(disk['size']) < disksamplesize:
+   continue 
   if disk['host'] not in raidhosts:
    sparedisk.append([disk,10])
   else:
    sparedisk.append([disk,0])
-  if levelthis(disk['size']) ==  levelthis(disksample['size']):
+  if levelthis(disk['size']) ==  levelthis(disksamplesize):
    sparedisk[-1] = [disk,sparedisk[-1][1]+10]
  if len(sparedisk) == 0:
-  return
+  return disksfree
  print('##############################################') 
  print('sparedisk',sparedisk)  
  print('##############################################') 
- sparedisk = max(sparedisk,key=lambda x:x[1])[0]
+ sparedisklst = max(sparedisk,key=lambda x:x[1])
+ sparedisk = sparedisklst[0]
  print('sparedisk',sparedisk)  
  print('##############################################') 
- cmdline=['/sbin/zpool', 'replace', '-f',raid['pool']]
+ if 'stripe' in raid['name']:
+  print('attaching the disk')
+  cmdline=['/sbin/zpool', 'attach', '-f', raid['pool']]
+ else:
+  cmdline=['/sbin/zpool', 'replace', '-f',raid['pool']]
  ret=mustattach(cmdline,sparedisk,raid,myhost)
+ if ret == 0:
+  return sparedisklst[1:]
+ else:
+  return sparedisklst
+  
    
   
 def spare2(*args):
@@ -557,7 +531,6 @@ def spare2(*args):
    else:
     if 'ree' not in sraid['name']:
      allraids.append(sraid)
- print(allraids)
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
@@ -565,56 +538,20 @@ def spare2(*args):
  for raid in degradedraids:
   for disk in raid['disklist']:
    if 'ONLINE' not in disk['changeop']:
-     cmdline2=['/sbin/zpool', 'detach', disk['pool'],disk['actualdisk']]
-     subprocess.run(cmdline2,stdout=subprocess.PIPE)
      dels('disk',disk['actualdisk'])
+     delstolocal('disk',disk['actualdisk'])
  onlinedisks=get('disks','ONLINE')    
  errordisks=get('errdiskpool','--prefix')
  freedisks=[ x for x in newop['disks']  if 'free' in x['raid'] or (x['name'] in str(onlinedisks) and 'OFFLINED' not in x['status'] and 'ONLINE' not in x['changeop']) ]  
    
- ###################### return back a readded disk in the same slot ########################
- onlined = 0
- for disk in freedisks:
-  if 'free' not in disk['pool'] and disk['name']+'/'+disk['pool'] not in str(errordisks):
-   cmdline2=['/sbin/zpool', 'online', disk['pool'],disk['name']]
-   onlinethis = subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-   #print('the error is', onlinethis.stderr.decode(), onlinethis.returncode) 
-   if onlinethis.returncode != 0:
-    put('errdiskpool/'+disk['name']+'/'+disk['pool'], 'true')
-   else:
-    dels('errdiskpool/'+disk['name']+'/'+disk['pool'])
-   
-   put('disks/'+disk['name'],'transition1')
-   onlined = 1
- if onlined == 1:
-  return
- for disk in freedisks:
-  if disk['changeop'] not in 'ONLINE' :
-   diskinfo = diskdata(disk['name'])
-   disk['actualdisk'] = diskinfo['actualdisk']
-   disk['id'] = diskinfo['id']
-   disk['host'] = diskinfo['host'] 
-   disk['size'] = diskinfo['size'] 
-   disk['devname'] = diskinfo['devname']
-
-   
- #############################################################################################
- print('####################')
- print('freedisksprint', freedisks)
- print('####################')
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
- if len(disksfree) > 0 and len(degradedraids) > 0 : 
-  print('degradedraids',degradedraids)
-  print('disksfree',disksfree)
  for raid in degradedraids:
   disksfree = solvedegradedraid(raid, disksfree)
-  #solvedegradedraids(degradedraids, disksfree,allraids,allhosts,myhost)
- exit()
- if len(disksfree) > 0 and len(striperaids) > 0 : 
-  solvestriperaids(striperaids, disksfree,allraids,myhost)
- disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
- if len(disksfree) > 0 and len(onlineraids) > 0 : 
-  solveonlineraids(onlineraids, disksfree,allraids,allhosts,myhost)
+# if len(disksfree) > 0 and len(striperaids) > 0 : 
+#  solvestriperaids(striperaids, disksfree,allraids,myhost)
+# disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
+# if len(disksfree) > 0 and len(onlineraids) > 0 : 
+#  solveonlineraids(onlineraids, disksfree,allraids,allhosts,myhost)
  return
  
  
