@@ -2,8 +2,11 @@
 echo $@ > /root/mkdm
 raid=`echo $@ | awk '{print $1}'`
 host=`echo $@ | awk '{print $2}'`
-dmsetup create $raid  --table '0 195312500000000 zero'
-dmsuff=`ls -lisah /dev/disk/by-id/dm-name-$raid | awk -F'/dm' '{print $NF}'`
+dmname=${raid}$RANDOM
+dmsetup create $dmname  --table '0 195312500000000 zero'
+ 
+dmsuff=`ls -lisah /dev/disk/by-id/dm-name-$dmname | awk -F'/dm' '{print $NF}'`
 echo $host and $raid and $dmsuff >> /root/mkdm
-./etcdput.py dm/$host/$raid dm$dmsuff
-./broadcasttolocal.py dm/$host/$raid dm$dmsuff
+./etcdput.py dm/$host/$dmname dm$dmsuff
+./broadcasttolocal.py dm/$host/$dmname dm$dmsuff
+echo 'dm'$dmsuff

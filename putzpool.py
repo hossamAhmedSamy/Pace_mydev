@@ -31,6 +31,7 @@ lsscsi=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' 
 freepool=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x ]
 periods=get('Snapperiod','--prefix')
 raidtypes=['mirror','raidz','stripe']
+availraid=['mirror','raidz']
 raid2=['log','cache','spare']
 zpool=[]
 stripecount=0
@@ -81,6 +82,9 @@ for a in sty:
   ddict={}
   zfslist=[x for x in zfslistall if b[0] in x ]
   print('zfslist',b[0],zfslist)
+  cmdline=['/sbin/zfs','get','avail:type',b[0], '-H']
+  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  availtype=str(result.stdout)[2:][:-3].split('\\t')[2]
   cmdline=['/sbin/zpool','list',b[0],'-H']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   zlist=str(result.stdout)[2:][:-3].split('\\t')
@@ -95,7 +99,7 @@ for a in sty:
    cachetime='notset'
   #put('pools/'+b[0],myhost)
   poolsstatus.append(('pools/'+b[0],myhost))
-  zdict={ 'name':b[0],'changeop':b[1], 'status':b[1],'host':myhost, 'used':str(zfslist[0].split()[6]),'available':str(zfslist[0].split()[11]), 'alloc': str(zlist[2]), 'empty': zlist[3], 'dedup': zlist[7], 'compressratio': zlist2[2],'timestamp':str(cachetime), 'raidlist': raidlist ,'volumes':volumelist}
+  zdict={ 'name':b[0],'changeop':b[1], 'availtype':availtype, 'status':b[1],'host':myhost, 'used':str(zfslist[0].split()[6]),'available':str(zfslist[0].split()[11]), 'alloc': str(zlist[2]), 'empty': zlist[3], 'dedup': zlist[7], 'compressratio': zlist2[2],'timestamp':str(cachetime), 'raidlist': raidlist ,'volumes':volumelist}
   zpool.append(zdict)
   lpools.append(zdict) 
   for vol in zfslist:
@@ -118,15 +122,21 @@ for a in sty:
  elif any(raid in str(b) for raid in raidtypes):
   spaces=len(a.split(a.split()[0])[0])
   disklist=[]
+  if 'Availability' in zdict['availtype'] and 'stripe' in b[0]: 
+   b[1] = 'DEGRADED' 
   rdict={ 'name':b[0], 'changeop':b[1],'status':b[1],'pool':zdict['name'],'host':myhost,'disklist':disklist }
   raidlist.append(rdict)
   lraids.append(rdict)
  elif any(raid in str(b) for raid in raid2):
   spaces=len(a.split(a.split()[0])[0])
   disklist=[]
-  rdict={ 'name':b[0], 'changeop':'NA','status':'NA','pool':zdict['name'],'host':myhost,'disklist':disklist }
+  b[1] = 'NA'
+  if 'Availability' in zdict['availtype'] and raid not in availraids: 
+   b[1] = 'DEGRADED' 
+  rdict={ 'name':b[0], 'changeop':b[1],'status':b[1],'pool':zdict['name'],'host':myhost,'disklist':disklist }
   raidlist.append(rdict)
   lraids.append(rdict)
+ 
  elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5):
    diskid='-1'
    host='-1'
@@ -135,7 +145,10 @@ for a in sty:
    disknotfound=1
    if  len(a.split('scsi')[0]) < (spaces+2) or (len(raidlist) < 1 and len(zpool)> 0):
     disklist=[]
-    rdict={ 'name':'stripe-'+str(stripecount), 'pool':zdict['name'],'changeop':'NA','status':'NA','host':myhost,'disklist':disklist }
+    b[1] = 'NA'
+    if 'Availability' in zdict['availtype'] : 
+     b[1] = 'DEGRADED' 
+    rdict={ 'name':'stripe-'+str(stripecount), 'pool':zdict['name'],'changeop':b[1],'status':b[1],'host':myhost,'disklist':disklist }
     raidlist.append(rdict)
     lraids.append(rdict)
     stripecount+=1
@@ -161,6 +174,9 @@ for a in sty:
     #else:
     # cmdline='/pace/hostlost.sh '+z[6]
     # subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
+   
+   if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop']:
+    b[1] = 'ONLINE' 
    changeop=b[1]
    if host=='-1':
     raidlist[len(raidlist)-1]['changeop']='Warning'
