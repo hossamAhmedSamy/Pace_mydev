@@ -65,6 +65,7 @@ def checksync(myip='nothing'):
      cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local ll'
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       
+
     print('hi')
     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
     broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
