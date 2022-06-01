@@ -5,6 +5,7 @@ from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
 from broadcasttolocal import broadcasttolocal
 from etcdputlocal import etcdput as putlocal 
+from etcdgetlocal import etcdget as getlocal 
 from Evacuatelocal import setall
 from etcddel import etcddel as dels
 from deltolocal import deltolocal
@@ -37,10 +38,11 @@ def checksync(myip='nothing'):
    maxgsync = max(gsyncs, key=lambda x: float(x[1]))
    mingsync = min(gsyncs, key=lambda x: float(x[1]))
    mysync = [x for x in gsyncs if myhost in str(x) ]
-   print('sync',sync)
+   print('tosync',sync)
    if len(mysync) < 1:
     mysync = [(-1,-1)]
    mysync = float(mysync[0][1])
+   print('mysync', mysync, float(maxgsync[1]))
    if mysync != float(maxgsync[1]):
     if sync == 'user':
      if mysync == -1:
@@ -59,11 +61,9 @@ def checksync(myip='nothing'):
       hosts = get('modified','evacuatehost')
       for hostn in hosts:
        setall()
-    elif sync in ['dataip','tz','ntp','gw','dnsname','dnssearch']:
+    elif sync in ['dataip','tz','ntp','gw','dnsname','dnssearch','alias']:
      cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local ll'
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-    elif sync in collectedsyncs and myip != 'nothing' :
-     put(sync+'/'+myhost,getlocal(myip,sync+'/'+myhost)[0])
       
     print('hi')
     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
