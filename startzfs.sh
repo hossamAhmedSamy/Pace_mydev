@@ -388,19 +388,19 @@ else
   /TopStor/HostManualconfigDNS
  
   cd /pace/
-  myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
+  myalias=`ETCDCTL_API=3 /pace/etcdget.py alias/$myhost`
   if [[ $myalias -ne -1 ]];
   then
    /pace/etcdput.py alias/$myhost $myalias
   else
-   myalias=`ETCDCTL_API=3 /pace/etcdget.py alias/$myhost`
+   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
    if [[ $myalias -eq -1 ]];
    then
     ./etcdput.py alias/$myhost $myhost
    fi
   fi
   #./etcddellocal.py $myip alias --prefix 2>/dev/null
-  ./etcdsync.py $myip alias alias 2>/dev/null
+#  ./etcdsync.py $myip alias alias 2>/dev/null
   systemctl start iscsid &
   systemctl start iscsi &
   systemctl start topstorremote
