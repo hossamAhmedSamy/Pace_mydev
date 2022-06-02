@@ -413,8 +413,16 @@ else
     if [ $? -eq 0 ];
     then
      stillpossible=1
+    else
+     stillpossible=0
+     myalias=`./etcdgetlocal.py $myip alias/$myhost`
+     ./etcdput.py alias/$myhost $myalias
+     stamp=`date +%s%N`
+     ./etcdput.py sync/gw/$myhost $stamp 
+     ./broadcasttolocal.py sync/gw/$myhost $stamp 
     fi
    done 
+  
   ./checksyncs.py
   /bin/crontab /TopStor/plaincron
   /TopStor/etctocron.py
