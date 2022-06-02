@@ -13,7 +13,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','dnsname','dnssearch', 'namespace','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']:
+syncs = ['alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']
 collectedsyncs = ['alias']
 myhost = hostname()
 actives = get('ActivePartners','--prefix')
