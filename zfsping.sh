@@ -327,11 +327,12 @@ do
      leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
      leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
      #/pace/sendhost.py $leaderip 'user' 'recvreq' $myhost &
-     /pace/etcdsync.py $myip pools pools 2>/dev/null
-     /pace/etcdsync.py $myip poolsnxt poolsnxt 2>/dev/null
-     /pace/etcdsync.py $myip nextlead nextlead 2>/dev/null
-     /pace/etcdsync.py $myip namespace namespace 
+     #/pace/etcdsync.py $myip pools pools 2>/dev/null
+     #/pace/etcdsync.py $myip poolsnxt poolsnxt 2>/dev/null
+     #/pace/etcdsync.py $myip nextlead nextlead 2>/dev/null
+     #/pace/etcdsync.py $myip namespace namespace 
      #/pace/sendhost.py $leaderip 'cifs' 'recvreq' $myhost &
+     ./checksync.py
      /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost &
      isknown=$((isknown+1))
     fi
