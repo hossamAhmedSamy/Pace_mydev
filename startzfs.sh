@@ -422,7 +422,7 @@ else
      ./broadcasttolocal.py sync/gw/$myhost $stamp 
     fi
    done 
-  
+  fi 
   ./checksyncs.py
   /bin/crontab /TopStor/plaincron
   /TopStor/etctocron.py
