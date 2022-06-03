@@ -3,7 +3,7 @@ leadername=`echo $@ | awk '{print $1}'`
 myhost=`echo $@ | awk '{print $2}'`
 leaderip=`echo $@ | awk '{print $3}'`
 myip=`echo $@ | awk '{print $4}'`
-echo leader is dead..  >> /root/leaderlost
+echo leader is dead..  > /root/zfspingtmp2
 leaderfail=1
 ./etcdgetlocal.py $myip known --prefix | wc -l | grep 1
 if [ $? -eq 0 ];
@@ -12,7 +12,7 @@ then
  primtostd=0;
 fi
 nextleadip=`ETCDCTL_API=3 ./etcdgetlocal.py $myip nextlead` 
-echo nextlead is $nextleadip  >> /root/zfspingtmp
+echo nextlead is $nextleadip  >> /root/zfspingtmp2
 echo $nextleadip | grep $myip
 if [ $? -eq 0 ];
 then
@@ -20,11 +20,11 @@ then
  if [ $? -eq 0 ]; then
   /TopStor/logqueue.py AddingMePrimary start system 
  fi
- echo hostlostlocal getting all my pools from $leadername >> /root/zfspingtmp
+ echo hostlostlocal getting all my pools from $leadername >> /root/zfspingtmp2
  ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername $myip $leaderip
  systemctl stop etcd 2>/dev/null
  clusterip=`cat /pacedata/clusterip`
- echo starting primary etcd with namespace >> /root/zfspingtmp
+ echo starting primary etcd with namespace >> /root/zfspingtmp2
  ./etccluster.py 'new' $myip 2>/dev/null
  chmod +r /etc/etcd/etcd.conf.yml
  systemctl daemon-reload 2>/dev/null
@@ -41,7 +41,7 @@ then
    sleep 1
   fi
  done
- echo adding me as a leader >> /root/zfspingtmp
+ echo adding me as a leader >> /root/zfspingtmpa2
  rm -rf /etc/chrony.conf
  cp /TopStor/chrony.conf /etc/
  sed -i '/MASTERSERVER/,+1 d' /etc/chrony.conf
@@ -58,15 +58,15 @@ then
  ./broadcasttolocal.py sync/ready/$myhost $stamp 
  ./etcdput.py tosync/$myhost $myip 2>/dev/null &
  /TopStor/logmsg.py Partst02 warning system $leaderall &
- echo creating namespaces >>/root/zfspingtmp
+ echo creating namespaces >>/root/zfspingtmp2
  ./setnamespace.py $enpdev &
  ./setdataip.py &
- echo created namespaces >>/root/zfspingtmp
- echo importing all pools >> /root/zfspingtmp
+ echo created namespaces >>/root/zfspingtmp2
+ echo importing all pools >> /root/zfspingtmp2
  ./etcddel.py toimport/$myhost &
  toimport=1
  #/sbin/zpool import -am &>/dev/null
- echo running putzpool and nfs >> /root/zfspingtmp
+ echo running putzpool and nfs >> /root/zfspingtmp2
  pgrep putzpool 
  if [ $? -ne 0 ];
  then
@@ -89,12 +89,12 @@ then
 else
  ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername $myip $leaderip
  systemctl stop etcd 2>/dev/null 
- echo starting waiting for new leader run >> /root/zfspingtmp
+ echo starting waiting for new leader run >> /root/zfspingtmp2
  waiting=1
  result='nothing'
  while [ $waiting -eq 1 ]
  do
-  echo still looping for new leader run >> /root/zfspingtmp
+  echo still looping for new leader run >> /root/zfspingtmp2
   echo $result | grep nothing 
   if [ $? -eq 0 ];
   then
@@ -105,7 +105,7 @@ else
    if [ $? -eq 0 ]; then
     /TopStor/logqueue.py AddingtoOtherleader start system 
    fi
-   echo found the new leader run $result >> /root/zfspingtmp
+   echo found the new leader run $result >> /root/zfspingtmp2
    waiting=0
    /pace/syncthtistoleader.py $myip pools/ $myhost
    /pace/syncthtistoleader.py $myip volumes/ $myhost
