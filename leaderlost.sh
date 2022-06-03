@@ -55,7 +55,9 @@ then
  ./etcdput.py ready/$myhost $myip 2>/dev/null &
  ./etcddel.py ready $leadername 2>/dev/null &
  ./etcdput.py sync/ready/$myhost $stamp 
- ./broadcasttolocal.py sync/ready/$myhost $stamp 
+ stamp=`date +%s%N`
+ ./etcddel.py known $myhost 2>/dev/null &
+ ./etcdput.py sync/known/$myhost $stamp 
  ./etcdput.py tosync/$myhost $myip 2>/dev/null &
  /TopStor/logmsg.py Partst02 warning system $leaderall &
  echo creating namespaces >>/root/zfspingtmp2

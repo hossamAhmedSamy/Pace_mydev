@@ -26,7 +26,6 @@ def checksync(myip='nothing'):
  for sync in syncs:
 #   gsyncs = [ x for x in allsyncs if sync in x[0] ] 
    gsyncs = [ x for x in allsyncs if sync in x[0] ] 
-   print('loop',sync, myhost, leader,len(gsyncs))
    if myhost == leader and  len(gsyncs) == 0:
      put('sync/'+sync+'/'+leader,'10') 
    if myhost == leader and len(gsyncs) == 1:
@@ -38,11 +37,9 @@ def checksync(myip='nothing'):
    maxgsync = max(gsyncs, key=lambda x: float(x[1]))
    mingsync = min(gsyncs, key=lambda x: float(x[1]))
    mysync = [x for x in gsyncs if myhost in str(x) ]
-   print('tosync',sync)
    if len(mysync) < 1:
     mysync = [(-1,-1)]
    mysync = float(mysync[0][1])
-   print('mysync', mysync, float(maxgsync[1]))
    if mysync != float(maxgsync[1]):
     if sync == 'user':
      if mysync == -1:
@@ -65,7 +62,8 @@ def checksync(myip='nothing'):
      cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local ll'
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     elif sync in [ 'leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']:
-     cmdline='/TopStor/pump.sh etcdsync.py '+sync+' '+sync
+     print('normal known leader..etc')
+     cmdline='/TopStor/pump.sh etcdsync.py '+hostip+' '+sync+' '+sync
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       
 
