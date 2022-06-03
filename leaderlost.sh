@@ -45,11 +45,17 @@ then
  rm -rf /etc/chrony.conf
  cp /TopStor/chrony.conf /etc/
  sed -i '/MASTERSERVER/,+1 d' /etc/chrony.conf
- ./runningetcdnodes.py $myip 2>/dev/null
- ./etcddel.py leader 2>/dev/null &
+ stamp=`date +%s%N`
+ ./etcddel.py leader --prefix 2>/dev/null &
  ./etcdput.py leader/$myhost $myip 2>/dev/null &
- ./etcddel.py ready --prefix 2>/dev/null &
+./etcdput.py sync/leader/$myhost $stamp 
+./broadcasttolocal.py sync/leader/$myhost $stamp 
+ ./runningetcdnodes.py $myip 2>/dev/null
+ stamp=`date +%s%N`
  ./etcdput.py ready/$myhost $myip 2>/dev/null &
+ ./etcddel.py ready $leadername 2>/dev/null &
+ ./etcdput.py sync/ready/$myhost $stamp 
+ ./broadcasttolocal.py sync/ready/$myhost $stamp 
  ./etcdput.py tosync/$myhost $myip 2>/dev/null &
  /TopStor/logmsg.py Partst02 warning system $leaderall &
  echo creating namespaces >>/root/zfspingtmp
