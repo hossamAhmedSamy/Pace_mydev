@@ -46,10 +46,40 @@ then
  cp /TopStor/chrony.conf /etc/
  sed -i '/MASTERSERVER/,+1 d' /etc/chrony.conf
  ./runningetcdnodes.py $myip 2>/dev/null
- ./etcddel.py leader --prefix 2>/dev/null &
+ ./etcddel.py leader 2>/dev/null &
  ./etcdput.py leader/$myhost $myip 2>/dev/null &
  ./etcddel.py ready --prefix 2>/dev/null &
  ./etcdput.py ready/$myhost $myip 2>/dev/null &
+ ./etcdput.py tosync/$myhost $myip 2>/dev/null &
+ /TopStor/logmsg.py Partst02 warning system $leaderall &
+ echo creating namespaces >>/root/zfspingtmp
+ ./setnamespace.py $enpdev &
+ ./setdataip.py &
+ echo created namespaces >>/root/zfspingtmp
+ echo importing all pools >> /root/zfspingtmp
+ ./etcddel.py toimport/$myhost &
+ toimport=1
+ #/sbin/zpool import -am &>/dev/null
+ echo running putzpool and nfs >> /root/zfspingtmp
+ pgrep putzpool 
+ if [ $? -ne 0 ];
+ then
+  /pace/putzpool.py 2 $isprimary $primtostd  &
+  /TopStor/HostgetIPs
+ fi
+ pgrep activeusers 
+ if [ $? -ne 0 ];
+ then
+  /pace/activeusers.py   &
+ fi
+ chgrp apache /var/www/html/des20/Data/* 2>/dev/null
+ chmod g+r /var/www/html/des20/Data/* 2>/dev/null
+ runningcluster=1
+ leadername=$myhost
+ echo $perfmon | grep 1
+ if [ $? -eq 0 ]; then
+  /TopStor/logqueue.py AddinMePrimary stop system 
+ fi
 else
  ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername $myip $leaderip
  systemctl stop etcd 2>/dev/null 

@@ -20,6 +20,7 @@ for pos in possible:
   etcddel('lost',posname)
   etcddel('poss',posname)
   put('known/'+posname,pos[1])
+  broadcasttolocal('known/'+posname,pos[1])
 allow=get('allowedPartners')
 if 'notallowed' in str(allow):
  exit()
@@ -50,6 +51,7 @@ if possible != []:
    newfrstnode=frstnode[0]+'/'+x[0].replace('possible','')
    put('frstnode',newfrstnode)
   put('known/'+x[0].replace('possible',''),x[1])
+  broadcasttolocal('known/'+x[0].replace('possible',''),x[1])
   hostsubnet = getlocal(x[1],'hostipsubnet/'+x[0].replace('possible',''))[0]
   if hostsubnet == -1:
    hostsubnet = "24"

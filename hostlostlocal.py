@@ -17,7 +17,7 @@ def looponhosts(leader,myhost, leaderip, myip):
    cmdline='./leaderlost.sh '+leader+' '+myhost+' '+leaderip+' '+myip
    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    leaderinfo = get('leader','--prefix')[0]
-   leader = leader[0].replace('leader/','')
+   leader = leaderinfo[0].replace('leader/','')
    
    
 
