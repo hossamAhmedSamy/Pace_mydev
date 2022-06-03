@@ -28,7 +28,9 @@ def checksync(myip='nothing'):
    gsyncs = [ x for x in allsyncs if sync in x[0] ] 
    print('loop',sync, myhost, leader,len(gsyncs))
    if myhost == leader and  len(gsyncs) == 0:
-     put('sync/'+sync+'/'+leader,'10') 
+    from time import time as timestamp
+    stamp = int(timestamp() + 3600)
+    put('sync/'+sync+'/'+leader,str(stamp)) 
    if myhost == leader and len(gsyncs) == 1:
      dels('modified',sync)
    if len(gsyncs) == 0:
