@@ -35,6 +35,7 @@ leaderip=` ./etcdget.py leader/$leadername `
 date=`date `
 myhost=`hostname -s`
 myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
+#./hostlostlocal.py $leadername $myhost $myip &
 echo starting in $date >> /root/zfspingtmp
 while true;
 do
@@ -170,10 +171,10 @@ do
    echo $nextleadip | grep $myip
    if [ $? -eq 0 ];
    then
- echo $perfmon | grep 1
- if [ $? -eq 0 ]; then
-    /TopStor/logqueue.py AddingMePrimary start system 
- fi
+    echo $perfmon | grep 1
+    if [ $? -eq 0 ]; then
+     /TopStor/logqueue.py AddingMePrimary start system 
+    fi
     echo hostlostlocal getting all my pools from $leadername >> /root/zfspingtmp
     ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername $myip $leaderip
     systemctl stop etcd 2>/dev/null
@@ -195,8 +196,6 @@ do
       sleep 1
      fi
     done
-   #./etcdput.py clusterip $clusterip 2>/dev/null
-   #pcs resource create clusterip ocf:heartbeat:IPaddr nic="$enpdev" ip=$clusterip cidr_netmask=24 2>/dev/null
     echo adding me as a leader >> /root/zfspingtmp
     rm -rf /etc/chrony.conf
     cp /TopStor/chrony.conf /etc/
@@ -207,14 +206,12 @@ do
     ./etcddel.py ready --prefix 2>/dev/null &
     ./etcdput.py ready/$myhost $myip 2>/dev/null &
     ./etcdput.py tosync/$myhost $myip 2>/dev/null &
-#    ETCDCTL_API=3 /pace/hostlost.sh $leadername &
     /TopStor/logmsg.py Partst02 warning system $leaderall &
     
     echo creating namespaces >>/root/zfspingtmp
     ./setnamespace.py $enpdev &
     ./setdataip.py &
     echo created namespaces >>/root/zfspingtmp
-   # systemctl restart smb 2>/dev/null &
     echo importing all pools >> /root/zfspingtmp
     ./etcddel.py toimport/$myhost &
     toimport=1
@@ -231,20 +228,14 @@ do
     then
      /pace/activeusers.py   &
     fi
-
-#    systemctl status nfs 
-#    if [ $? -ne 0 ];
-#    then
-#     systemctl start nfs 2>/dev/null
-#    fi
     chgrp apache /var/www/html/des20/Data/* 2>/dev/null
     chmod g+r /var/www/html/des20/Data/* 2>/dev/null
     runningcluster=1
     leadername=$myhost
- echo $perfmon | grep 1
- if [ $? -eq 0 ]; then
-    /TopStor/logqueue.py AddinMePrimary stop system 
- fi
+    echo $perfmon | grep 1
+    if [ $? -eq 0 ]; then
+     /TopStor/logqueue.py AddinMePrimary stop system 
+    fi
    else
     ETCDCTL_API=3 /pace/hostlostlocal.sh $leadername $myip $leaderip
     systemctl stop etcd 2>/dev/null 
@@ -260,10 +251,10 @@ do
       sleep 1 
       result=`ETCDCTL_API=3 ./nodesearch.py $myip 2>/dev/null`
      else
- echo $perfmon | grep 1
- if [ $? -eq 0 ]; then
-      /TopStor/logqueue.py AddingtoOtherleader start system 
- fi
+      echo $perfmon | grep 1
+      if [ $? -eq 0 ]; then
+       /TopStor/logqueue.py AddingtoOtherleader start system 
+      fi
       echo found the new leader run $result >> /root/zfspingtmp
       waiting=0
       /pace/syncthtistoleader.py $myip pools/ $myhost
@@ -278,10 +269,10 @@ do
       cp /TopStor/chrony.conf /etc/
       sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
       systemctl restart chronyd
- echo $perfmon | grep 1
- if [ $? -eq 0 ]; then
-      /TopStor/logqueue.py AddingtoOtherleader start system 
- fi
+      echo $perfmon | grep 1
+      if [ $? -eq 0 ]; then
+       /TopStor/logqueue.py AddingtoOtherleader start system 
+      fi
      fi
     done 
     leadername=`./etcdget.py leader --prefix | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`

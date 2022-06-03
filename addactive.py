@@ -24,6 +24,7 @@ if toactivate != []:
    etcddel('toactivate',x[0])
   put('known/'+x[0].replace('toactivate',''),x[1])
   put('nextlead',x[0].replace('toactivate','')+'/'+x[1])
+  broadcasttolocal('nextlead',x[0].replace('toactivate','')+'/'+x[1])
   etcddel('losthost/'+x[0].replace('toactivate',''))
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   frstnode=get('frstnode')
