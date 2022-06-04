@@ -15,7 +15,10 @@ def delall(*args):
   dels('lists/'+args[0])
 
 def getall(*args):
- if len(args) > 1:
+ if len(args) == 0:
+  alls=get('lists','--prefix')
+  return alls
+ elif len(args) > 1:
   alls=get(args[1]+'/lists/'+args[0])
  else:
   alls=get('lists/'+args[0])
