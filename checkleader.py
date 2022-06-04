@@ -31,11 +31,20 @@ def checkleader(key, prefix=''):
  leader = leaderinfo[0].replace('leader/','')
  leaderip = leaderinfo[1]
  myhost = hostname() 
- print(leader, leaderip, myhost, myip)
- cmdline='./leaderlost.sh '+leader+' '+myhost+' '+leaderip+' '+myip
- result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
- cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ x=subprocess.check_output(['pgrep','-c','leaderlost'])
+ x=str(x).replace("b'","").replace("'","").split('\\n')
+ if(x[0]!= '1' ):
+  err = 2
+  while err == 2: 
+   sleep(1)
+   cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
+   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+   err = result.returncode
+ else:
+  cmdline='./leaderlost.sh '+leader+' '+myhost+' '+leaderip+' '+myip
+  result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+  cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
+  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  return result 
 
 if __name__=='__main__':
