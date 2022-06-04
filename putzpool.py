@@ -51,12 +51,14 @@ lvolumes=[]
 lsnapshots=[]
 poolsstatus=[]
 x=list(map(chr,(range(97,123))))
-drives=';sd'.join(x).split(';')
-drives[0]='sd'+drives[0]
-print('dirves',drives)
 cmdline=['fdisk','-l']
 cdisks=subprocess.run(cmdline,stdout=subprocess.PIPE)
-drives=[ x for x in drives if x in str(cdisks)]
+devs=cdisks.stdout.decode().split('Disk /dev/')
+drives = []
+for dev in devs:
+ dsk = dev.split(':')[0]
+ if 'sd' in dsk:
+  drives.append(dsk) 
 cmdline=['/sbin/zfs','list','-t','snapshot,filesystem,volume','-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available,snap:type','-H']
 result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
