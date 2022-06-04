@@ -34,7 +34,9 @@ def checkleader(key, prefix=''):
  print(leader, leaderip, myhost, myip)
  cmdline='./leaderlost.sh '+leader+' '+myhost+' '+leaderip+' '+myip
  result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
- return 'dead'
+ cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ return result 
 
 if __name__=='__main__':
  checkleader(*sys.argv[1:])
