@@ -6,6 +6,13 @@ myhost=`echo $@ | awk '{print $2}'`
 leaderip=`echo $@ | awk '{print $3}'`
 myip=`echo $@ | awk '{print $4}'`
 enpdev='enp0s8'
+echo $leader | grep $myhost
+if [ $? -eq 0 ];
+then
+  echo leader is dead but another process was in the way to fix.  >> /root/zfspingtmp2
+  exit
+fi
+ 
 echo leader is dead..  > /root/zfspingtmp2
 leaderfail=1
 ./etcdgetlocal.py $myip known --prefix | wc -l | grep 1

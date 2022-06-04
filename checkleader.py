@@ -31,10 +31,9 @@ def checkleader(key, prefix=''):
  leader = leaderinfo[0].replace('leader/','')
  leaderip = leaderinfo[1]
  myhost = hostname() 
- x=subprocess.check_output(['pgrep','-c','leaderlost'])
- x=str(x).replace("b'","").replace("'","").split('\\n')
- if(x[0]!= '1' ):
-  err = 2
+ cmdline=['pgrep','-c','leaderlost']
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ if result.returncode == '0':
   while err == 2: 
    sleep(1)
    cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
