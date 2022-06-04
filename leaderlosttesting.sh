@@ -4,6 +4,7 @@ leader=`echo $@ | awk '{print $1}'`
 myhost=`echo $@ | awk '{print $2}'`
 leaderip=`echo $@ | awk '{print $3}'`
 myip=`echo $@ | awk '{print $4}'`
+enpdev='enp0s8'
 echo leader is dead..  > /root/zfspingtmp2
 leaderfail=1
 ./etcdgetlocal.py $myip known --prefix | wc -l | grep 1
@@ -31,10 +32,8 @@ then
  stamp=`date +%s%N`
  ./etcdputlocal.py $myip ready/$myhost $myip  
  ./etcddellocal.py $myip ready $leader  
- stamp=`date +%s%N`
  ./etcddellocal.py $myip known $myhost  
  /TopStor/logmsglocal.py $myip Partst02 warning system $leaderall 
- exit
  echo hostlostlocal getting all my pools from $leader >> /root/zfspingtmp2
  ETCDCTL_API=3 /pace/hostlostlocal.sh $leader $myip $leaderip
  systemctl stop etcd 2>/dev/null
@@ -57,6 +56,7 @@ then
   fi
  done
  ./runningetcdnodes.py $myip 2>/dev/null
+ stamp=`date +%s%N`
  ./etcdput.py sync/ready/$myhost $stamp 
  ./etcdput.py sync/known/$myhost $stamp 
  ./etcdput.py tosync/$myhost $myip  
