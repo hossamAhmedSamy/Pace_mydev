@@ -2,6 +2,7 @@
 import subprocess,sys, os
 import json
 from time import sleep
+from checkleader import checkleader
 
 def etcdget(key, prefix=''):
  os.environ['ETCDCTL_API']= '3'
@@ -11,12 +12,7 @@ def etcdget(key, prefix=''):
   endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
  endpoints = endpoints[:-1]
  cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
- err = 2
- while err == 2:
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-  err = result.returncode
-  if err == 2:
-    sleep(2)
+ result=checkleader(key,prefix)
  z=[]
  try:
   if(prefix =='--prefix'):

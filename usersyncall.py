@@ -30,6 +30,8 @@ def thread_add(user):
   userhash=get('usershash/'+username)[0]
   userhome=userinfo[2]
   cmdline=['/TopStor/UnixAddUser_sync',username,userhash,userid,usergd,userhome]
+  with open('/root/tmpusersync','w') as f:
+   f.write('user: '+str(userhash))
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
 def thread_del(*user):

@@ -119,6 +119,7 @@ then
  echo started etcd as primary>>/root/tmp2
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
  ./runningetcdnodes.py $myip 2>/dev/null
+ ./etcddel.py sync --prefix
  /pace/etcdcmd.py user add root:YN-Password_123
  /pace/etcdcmd.py auth enable
  ./etcddel.py known --prefix 2>/dev/null 
@@ -298,109 +299,134 @@ else
   /pace/etcdcmdlocal.py $myip user add root:YN-Password_123
   /pace/etcdcmdlocal.py $myip auth enable
   ./etcdputlocal.py $myip 'local/'$myhost $myip
-  echo sync leader with local database >>/root/tmp2
-  rm -rf /etc/chrony.conf
-  cp /TopStor/chrony.conf /etc/
-  /TopStor/HostManualconfigTZlocal $myip $leader 
-  /TopStor/HostManualconfigNTP $myip $leader
-  cd /pace
-  systemctl restart chronyd
-  leaderip=` ./etcdget.py leader/$leader `
-  rm -rf /etc/chrony.conf
-  cp /TopStor/chrony.conf /etc/
-  sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
-  cversion=`git branch | grep '*' | awk -F'QS' '{print $2}'`
-  ./etcdput.py versions/$myhost $cversion
-  ./etcdsync.py $myip versions versions
-  ./etcdsync.py $myip primary primary 2>/dev/null
-  ./etcddellocal.py $myip known --prefix 2>/dev/null
-  ./etcddellocal.py $myip activepool --prefix 2>/dev/null
-  ./etcddellocal.py $myip ipaddr --prefix 2>/dev/null
-  ./etcddellocal.py $myip localrun --prefix 2>/dev/null
-  ./etcddellocal.py $myip run --prefix 2>/dev/null
-  ./etcddellocal.py $myip pools --prefix 2>/dev/null
-  ./etcddellocal.py $myip prop --prefix 2>/dev/null
-  ./etcddellocal.py $myip poolsnxt --prefix 2>/dev/null
-  ./etcddellocal.py $myip vol --prefix 2>/dev/null
-  ./etcdsync.py $myip known known 2>/dev/null
-  ./etcdsync.py $myip allowedPartners allowedPartners 2>/dev/null
-  ./etcdsync.py $myip activepool activepool 2>/dev/null
-  ./etcdsync.py $myip ipaddr ipaddr 2>/dev/null
-  ./etcdsync.py $myip pools pools 2>/dev/null
-  ./etcdsync.py $myip poolsnxt poolsnxt 2>/dev/null
-  ./etcdsync.py $myip namespace namespace 2>/dev/null
-  ./etcdsync.py $myip volumes volumes 2>/dev/null
-  ./etcdsync.py $myip dataip dataip 2>/dev/null
-  ./etcdsync.py $myip localrun localrun 2>/dev/null
-  ./etcdsync.py $myip leader known 2>/dev/null
-  ./etcdsync.py $myip logged logged 2>/dev/null
-  ./etcdsync.py $myip updlogged updlogged 2>/dev/null
-  ./etcdsync.py $myip ActivePartners ActivePartners 2>/dev/null
-  ./etcdsync.py $myip Partner Partner 2>/dev/null
-  ./etcdsync.py $myip config config 2>/dev/null
-  ./etcdsync.py $myip ntp ntp 2>/dev/null
-  ./etcdsync.py $myip tz tz 2>/dev/null
-  ./etcdsync.py $myip gw gw 2>/dev/null
-  ./etcdsync.py $myip dnsname dnsname 2>/dev/null
-  ./etcdsync.py $myip dnssearch dnssearch 2>/dev/null
-  ./etcdsync.py $myip pool pool 2>/dev/null
-  /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
-  /bin/crontab /TopStor/plaincron
-  ./etcdsync.py $myip Snapperiod Snapperiod 2>/dev/null
-  /TopStor/etctocron.py
-  ./etcddel.py known/$myhost --prefix 2>/dev/null
-  ./etcddel.py oldhosts/$myhost  --prefix 2>/dev/null
-  ./etcddel.py hosts/$myhost  --prefix 2>/dev/null
+#  echo sync leader with local database >>/root/tmp2
+##  rm -rf /etc/chrony.conf
+#  cp /TopStor/chrony.conf /etc/
+##  /TopStor/HostManualconfigTZlocal $myip $leader 
+#  /TopStor/HostManualconfigNTP $myip $leader
+#  cd /pace
+##  systemctl restart chronyd
+3  leaderip=` ./etcdget.py leader/$leader `
+#  rm -rf /etc/chrony.conf
+#  cp /TopStor/chrony.conf /etc/
+#  sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
+#  cversion=`git branch | grep '*' | awk -F'QS' '{print $2}'`
+#  ./etcdput.py versions/$myhost $cversion
+#  ./etcdsync.py $myip versions versions
+#  ./etcdsync.py $myip primary primary 2>/dev/null
+#  ./etcddellocal.py $myip known --prefix 2>/dev/null
+#  ./etcddellocal.py $myip activepool --prefix 2>/dev/null
+#  ./etcddellocal.py $myip ipaddr --prefix 2>/dev/null
+#  ./etcddellocal.py $myip localrun --prefix 2>/dev/null
+#  ./etcddellocal.py $myip run --prefix 2>/dev/null
+#  ./etcddellocal.py $myip pools --prefix 2>/dev/null
+#  ./etcddellocal.py $myip prop --prefix 2>/dev/null
+#  ./etcddellocal.py $myip poolsnxt --prefix 2>/dev/null
+#  ./etcddellocal.py $myip vol --prefix 2>/dev/null
+#  ./etcdsync.py $myip known known 2>/dev/null
+#  ./etcdsync.py $myip allowedPartners allowedPartners 2>/dev/null
+#  ./etcdsync.py $myip activepool activepool 2>/dev/null
+#  ./etcdsync.py $myip ipaddr ipaddr 2>/dev/null
+#  ./etcdsync.py $myip pools pools 2>/dev/null
+#  ./etcdsync.py $myip poolsnxt poolsnxt 2>/dev/null
+#  ./etcdsync.py $myip namespace namespace 2>/dev/null
+#  ./etcdsync.py $myip volumes volumes 2>/dev/null
+#  ./etcdsync.py $myip dataip dataip 2>/dev/null
+#  ./etcdsync.py $myip localrun localrun 2>/dev/null
+#  ./etcdsync.py $myip leader known 2>/dev/null
+#  ./etcdsync.py $myip logged logged 2>/dev/null
+#  ./etcdsync.py $myip updlogged updlogged 2>/dev/null
+#  ./etcdsync.py $myip ActivePartners ActivePartners 2>/dev/null
+#  ./etcdsync.py $myip Partner Partner 2>/dev/null
+#  ./etcdsync.py $myip config config 2>/dev/null
+#  ./etcdsync.py $myip ntp ntp 2>/dev/null
+#  ./etcdsync.py $myip tz tz 2>/dev/null
+#  ./etcdsync.py $myip gw gw 2>/dev/null
+#  ./etcdsync.py $myip dnsname dnsname 2>/dev/null
+#  ./etcdsync.py $myip dnssearch dnssearch 2>/dev/null
+#  ./etcdsync.py $myip pool pool 2>/dev/null
+#  /TopStor/etcdsyncnext.py $myip nextlead nextlead 2>/dev/null
+#  /bin/crontab /TopStor/plaincron
+#  ./etcdsync.py $myip Snapperiod Snapperiod 2>/dev/null
+#  /TopStor/etctocron.py
+#  ./etcddel.py known/$myhost --prefix 2>/dev/null
+#  ./etcddel.py oldhosts/$myhost  --prefix 2>/dev/null
+#  ./etcddel.py hosts/$myhost  --prefix 2>/dev/null
   /sbin/rabbitmqctl add_user rabb_$leader YousefNadody 2>/dev/null
   /sbin/rabbitmqctl set_permissions -p / rabb_$leader ".*" ".*" ".*" 2>/dev/null
   #./etcddellocal.py $myip users --prefix 2>/dev/null
-  ./checksyncs.py $myip
-  gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw/$leader`
-  oldgw=`ip route |grep default | awk '{print $3}'`
-  echo $gateway | grep '\.'
-  if [ $? -eq 0 ];
-  then
-   route del default gw $oldgw
-   route add default gw $gateway
-   ./etcdput.py gw/$myhost $gateway
-   ./etcdputlocal.py $myip gw/$myhost $gateway
-  else
-   ./etcdput.py gw/$myhost $oldgw
-   ./etcdputlocal.py $myip gw/$myhost $oldgw
-  fi 
-  dnsname=`ETCDCTL_API=3 /TopStor/etcdget.py dnsname/$leader`
-  dnssearch=`ETCDCTL_API=3 /TopStor/etcdget.py dnssearch/$leader`
-  echo $dnsname | grep '\-1'
-  if [ $? -eq 0 ];
-  then
-   dnsname=`cat /etc/resolv.conf | grep name | head -1 | awk '{print $2}'`
-  ./etcdput.py dnsname/$myhost $dnsname 
-  fi
-  echo $dnssearch | grep '\-1'
-  if [ $? -eq 0 ];
-  then
-   dnssearch=`cat /etc/resolv.conf | grep search | head -1 | awk '{print $2}'`
-   ./etcdput.py dnssearch/$myhost $dnssearch 
-  fi
- 
-  ./etcdput.py dnsname/$myhost $dnsname
-  ./etcdput.py dnssearch/$myhost $dnsname
-  /TopStor/HostManualconfigDNS
- 
-  cd /pace/
-  myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
-  if [[ $myalias -ne -1 ]];
-  then
-   /pace/etcdput.py alias/$myhost $myalias
-  else
-   myalias=`ETCDCTL_API=3 /pace/etcdget.py alias/$myhost`
-   if [[ $myalias -eq -1 ]];
-   then
-    ./etcdput.py alias/$myhost $myhost
-   fi
-  fi
+#  ./checksyncs.py $myip
+#  gateway=`ETCDCTL_API=3 /TopStor/etcdget.py gw/$leader`
+#  oldgw=`ip route |grep default | awk '{print $3}'`
+#  echo $gateway | grep '\.'
+#  if [ $? -eq 0 ];
+#  then
+#   route del default gw $oldgw
+#   route add default gw $gateway
+#   ./etcdput.py gw/$myhost $gateway
+#   ./etcdputlocal.py $myip gw/$myhost $gateway
+#  else
+#   ./etcdput.py gw/$myhost $oldgw
+#   ./etcdputlocal.py $myip gw/$myhost $oldgw
+#  fi 
+#  dnsname=`ETCDCTL_API=3 /TopStor/etcdget.py dnsname/$leader`
+#  dnssearch=`ETCDCTL_API=3 /TopStor/etcdget.py dnssearch/$leader`
+#  echo $dnsname | grep '\-1'
+#  if [ $? -eq 0 ];
+#  then
+#   dnsname=`cat /etc/resolv.conf | grep name | head -1 | awk '{print $2}'`
+#  ./etcdput.py dnsname/$myhost $dnsname 
+#  fi
+#  echo $dnssearch | grep '\-1'
+#  if [ $? -eq 0 ];
+#  then
+#   dnssearch=`cat /etc/resolv.conf | grep search | head -1 | awk '{print $2}'`
+#   ./etcdput.py dnssearch/$myhost $dnssearch 
+#  fi
+# 
+#  ./etcdput.py dnsname/$myhost $dnsname
+#  ./etcdput.py dnssearch/$myhost $dnsname
+#  /TopStor/HostManualconfigDNS
+# 
+#  cd /pace/
+#  myalias=`ETCDCTL_API=3 /pace/etcdget.py alias/$myhost`
+#  if [[ $myalias -ne -1 ]];
+#  then
+#   /pace/etcdput.py alias/$myhost $myalias
+#  else
+#   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip alias/$myhost`
+#   if [[ $myalias -eq -1 ]];
+#   then
+#    ./etcdput.py alias/$myhost $myhost
+#   fi
+#  fi
   #./etcddellocal.py $myip alias --prefix 2>/dev/null
-  ./etcdsync.py $myip alias alias 2>/dev/null
+#  ./etcdsync.py $myip alias alias 2>/dev/null
+  ./etcdget.py Active --prefix | grep $myhost
+  if [ $? -ne 0 ];
+  then
+   ./etcdput.py possible$myhost $myip
+   sleep 3
+   stillpossible=1
+   while [ $stillpossible==1 ]:
+   do
+    ./etcdget.py possible --prefix | grep $myhost
+    if [ $? -eq 0 ];
+    then
+     stillpossible=1
+    else
+     stillpossible=0
+     myalias=`./etcdgetlocal.py $myip alias/$myhost`
+     ./etcdput.py alias/$myhost $myalias
+     stamp=`date +%s%N`
+     ./etcdput.py sync/gw/$myhost $stamp 
+     ./broadcasttolocal.py sync/gw/$myhost $stamp 
+    fi
+   done 
+  fi 
+  ./checksyncs.py
+  /bin/crontab /TopStor/plaincron
+  /TopStor/etctocron.py
   systemctl start iscsid &
   systemctl start iscsi &
   systemctl start topstorremote

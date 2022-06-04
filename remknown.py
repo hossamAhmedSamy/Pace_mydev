@@ -20,6 +20,7 @@ nextone=get('nextlead')
 if str(nextone[0]).split('/')[0] not in  str(known):
  print('deleting nextlead')
  etcddel('nextlead')
+ etcddel('sync/nextlead', '--prefix')
  nextone=[]
 if known != []:
  for kno in known:
@@ -32,9 +33,15 @@ if known != []:
    etcddel(kn[0])
    if kn[1] in str(nextone):
     etcddel('nextlead')
+    broadcasttolocal('nextlead','nothing')
    logmsg.sendlog('Partst02','warning','system', kn[0].replace('known/',''))
    etcddel('ready/'+kn[0].replace('known/',''))
+   etcddel('sync/ready', '--prefix')
+   etcddel('sync/known', '--prefix')
+   etcddel('sync/volume', '--prefix')
+   etcddel('sync/pool', '--prefix')
    etcddel('old','--prefix')
+   
    cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
    subprocess.run(cmdline,stdout=subprocess.PIPE)
    etcddel('localrun/'+str(kn[0]))
@@ -43,6 +50,8 @@ if known != []:
   else:
    if nextone == []:
     put('nextlead',kn[0].replace('known/','')+'/'+kn[1])
+    etcddel('nextlead','--prefix')
+    broadcasttolocal('nextlead',kn[0].replace('known/','')+'/'+kn[1])
     broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
 poss = get('pos','--prefix')
 if poss != []:
