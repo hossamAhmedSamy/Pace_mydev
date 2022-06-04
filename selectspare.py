@@ -402,7 +402,6 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
     finalw.append({'newd':diskA,'oldd':diskB,'w':w})
  finalw=sorted(finalw,key=lambda x:x['w'])
  print('finalw',finalw[0])
- exit()
  return finalw[0] 
 
  
@@ -456,17 +455,19 @@ def solvedegradedraid(raid,disksfree):
     alldms = get('dm/'+myhost+'/'+raid['name'],'--prefix')
     dmstuplst = [ x for x in alldms if 'inuse' not in str(x)]
    dmstup = dmstuplst[0][1]
-    
+
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
+   print('returncode',forget.returncode)
    if forget.returncode == 0:
     put(dmstuplst[0][0],'inuse/'+dmstup)
     broadcasttolocal(dmstuplst[0][0],'inuse/'+dmstup)
    else:
-    dels(dmstuplst[0][0], '--prefix')
-    delstolocal(dmstuplst[0][0], '--prefix')
-   return disksfree 
+    if forget.returncode != 255:
+     dels(dmstuplst[0][0], '--prefix')
+     delstolocal(dmstuplst[0][0], '--prefix')
+     return disksfree 
  print('################## start replace in solvedegradedraid')
  if len(disksample) == 0 :
   return disksfree
@@ -511,20 +512,28 @@ def getraidrank(raid, removedisk, adddisk):
  raidrank = (0,0) 
  raidhosts = set()
  raiddsksize = adddisk['size']
+ print('#############################')
+ print('start test:',removedisk['name'],adddisk['name'])
  sizerank = 0
  for disk in (raid['disklist']+list([adddisk])):
-  if disk['name'] == removedisk['name']:
+  if disk['name'] == removedisk['name'] and disk['name'] != adddisk['name']:
    continue
+  if ('F' or 'moved') in disk['changeop'] :
+   print(disk['name'],disk['changeop'])
+   continue
+  print('testing',disk['name'],disk['host'])
   raidhosts.add(disk['host'])
   if raiddsksize != disk['size']:
    sizerank = 1
  ###### ranking: no. of hosts differrence, and 1 for diff disk size found
  hostrank = abs(len(raidhosts)-len(raid['disklist']))
  raid['raidrank'] = (hostrank, sizerank)
+ print(removedisk['name'],adddisk['name'], raid['raidrank'])
+ print('raidhosts',raidhosts)
+ print('disklists',len(raid['disklist']))
+ print('#############################')
  return raid 
 
-def getreplacements(raids, freedisks):
- return
   
 def spare2(*args):
  global newop
@@ -533,6 +542,17 @@ def spare2(*args):
  needtoreplace=get('needtoreplace', myhost) 
  if myhost in str(needtoreplace):
   print('need to replace',needtoreplace)
+  for raidinfo in needtoreplace:
+   poolname = raidinfo[0].split('/')[-1]
+   raidname = raidinfo[0].split('/')[-2]
+   rmdisk = raidinfo[1].split('/')[0]
+   adisk = raidinfo[1].split('/')[1]
+   print('will do:', poolname, raidname, rmdisk, adisk)
+   cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
+   forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   print(" ".join(cmdline2))
+   print('thereuslt',forget.stdout.decode())
+   print('return code',forget.returncode)
  if myhost not in str(get('leader','--prefix')):
   return
  freedisks=[]
@@ -560,7 +580,6 @@ def spare2(*args):
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
- print('degraded',degradedraids)
  for raid in degradedraids:
   for disk in raid['disklist']:
    if 'ONLINE' not in disk['changeop']:
@@ -571,19 +590,31 @@ def spare2(*args):
  freedisks=[ x for x in newop['disks']  if 'free' in x['raid'] or (x['name'] in str(onlinedisks) and 'OFFLINED' not in x['status'] and 'ONLINE' not in x['changeop']) ]  
    
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
+ print('#####################')
+ print('solving degraded raids' )
+ print('degraded raids:',degradedraids)
+ print('#####################')
+ 
  for raid in degradedraids:
   disksfree = solvedegradedraid(raid, disksfree)
+ print('#####################')
+ print('continue to the spare' )
+ print('#####################')
+
 #####################################  set the right replacements for all raids
  newop=getall()
+ getcurrent = get('hosts','current')
  for hostinfo in newop:
   pools = mtuple(hostinfo[1])['pools']
   for spool in pools:
+   if spool['name'] not in str(getcurrent):
+    continue
    for sraid in spool['raidlist']:
     if len(availability) > 0:
      if 'ree' not in sraid['name'] and spool['name'] in str(availability):
       allraids.append(sraid)
     else:
-     if 'ree' not in sraid['name']:
+     if 'ree' not in sraid['name'] and sraid['name'] in str(getcurrent):
       allraids.append(sraid)
  
  diskreplace = {}
@@ -591,13 +622,23 @@ def spare2(*args):
  if len(allraids) == 0:
   print(' no raids in the system')
   return
+ print('raids in the system',allraids)
  for raid in allraids:
-  raid = getraidrank(raid,raid['disklist'][0],raid['disklist'][0])
+  for disk in raid['disklist']:
+   if disk['changeop'] == 'ONLINE':
+    rankdisk = disk
+    break
+  raid = getraidrank(raid,rankdisk,rankdisk)
+ print('ranked raids in the system',allraids)
  replacements = dict() 
+ currentneedtoreplace = get('needtoreplace','--prefix')
  for raid in allraids:
+  
   if (raid['raidrank'][0] | raid['raidrank'][1]) != 0:
    for rdisk in raid['disklist']:
     for fdisk in freedisks:
+     if fdisk['name'] == rdisk['name']:
+      continue
      thisrank = getraidrank(raid,rdisk,fdisk)
      if ( thisrank['raidrank'][0] | thisrank['raidrank'][1] ) == 0 :
       if fdisk['name'] not in replacements:
@@ -609,11 +650,15 @@ def spare2(*args):
  fdisks = []
  for disk in replacements:
   fdisks.append((disk,len(replacements[disk])))
+ for cnt in currentneedtoreplace:
+   if cnt[1] not in str(fdisks):
+    dels('needtorepalce', cnt[1])
  fdisks.sort(key = lambda x:x[1],reverse = True)
  for disk in fdisks:
-  print(disk)
-  print('need to replace',replacements[disk[0]][0][0]['name'],'with', disk[0])
-  put('needtoreplace/'+replacements[disk[0]][0][2]['host']+'/'+replacements[disk[0]][0][2]['name'],replacements[disk[0]][0][0]['name']+'/'+disk[0])
+  print('###################################')
+  print('need to replace',replacements[disk[0]][0][0]['actualdisk'],'with', disk[0])
+  print('###################################')
+  put('needtoreplace/'+replacements[disk[0]][0][2]['host']+'/'+replacements[disk[0]][0][2]['name']+'/'+replacements[disk[0]][0][2]['pool'],replacements[disk[0]][0][0]['actualdisk']+'/'+disk[0])
  print('all raids are assigned proper replacement disk')
  return
  

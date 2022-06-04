@@ -40,6 +40,8 @@ if known != []:
    etcddel('sync/known', '--prefix')
    etcddel('sync/volume', '--prefix')
    etcddel('sync/pool', '--prefix')
+   etcddel('needtoreplace', kn[0].replace('known/',''))
+   etcddel('needtoimport', kn[0].replace('known/',''))
    etcddel('old','--prefix')
    
    cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
