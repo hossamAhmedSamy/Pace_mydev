@@ -57,6 +57,7 @@ then
   fi
  done
  ./runningetcdnodes.py $myip 2>/dev/null
+ ./etcdput.py ready/$myhost $myip  
  stamp=`date +%s%N`
  ./etcdput.py sync/ready/$myhost $stamp 
  ./etcdput.py sync/known/$myhost $stamp 
