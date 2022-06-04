@@ -1,5 +1,6 @@
 #!/bin/sh
 echo $@ > /root/leaderlost
+cd /pace
 leader=`echo $@ | awk '{print $1}'`
 myhost=`echo $@ | awk '{print $2}'`
 leaderip=`echo $@ | awk '{print $3}'`
