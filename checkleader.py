@@ -23,14 +23,15 @@ def checkleader(key, prefix=''):
    return result 
  
  from etcdgetlocal import etcdget as getlocal
+ from socket import gethostname as hostname
  cmdline='./getmyip.sh'
- myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+ myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode().replace('\n','')
+ print('myip',myip)
  leaderinfo = getlocal(myip,'leader','--prefix')[0]
  leader = leaderinfo[0].replace('leader/','')
  leaderip = leaderinfo[1]
- myhost = getlocal(myip,'ready/', myip)[0][0].replace('ready/','')
+ myhost = hostname() 
  print(leader, leaderip, myhost, myip)
- return
  cmdline='./leaderlost.sh '+leader+' '+myhost+' '+leaderip+' '+myip
  result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
  return 'dead'

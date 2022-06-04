@@ -17,7 +17,6 @@ def etcdput(*args):
   err = result.returncode
   if err == 2:
     sleep(2)
- print(result)
 
 if __name__=='__main__':
  etcdput(*sys.argv[1:])
