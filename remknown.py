@@ -16,6 +16,19 @@ with open('/pacedata/perfmon','r') as f:
 if '1' in perfmon:
  queuethis('remknown.py','start','system')
 known=get('known','--prefix')
+ready=get('ready','--prefix')
+leader=get('leader','--prefix')
+knownchange = 0
+if len(ready) > len(known)+1:
+ print('iamhere')
+ for r in ready:
+  if r[0].split('/')[1] not in ( str(known) and str(leader)) :
+   put('known/',r[0].split('/')[1],r[0],r[1])
+   knownchange = 1
+if knownchange == 1:
+ known=get('known','--prefix')
+  
+print(known)
 nextone=get('nextlead')
 if str(nextone[0]).split('/')[0] not in  str(known):
  print('deleting nextlead')
@@ -31,11 +44,15 @@ if known != []:
   if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in kn[1]):
    print('the known ',kn[0].replace('known/',''),' is gone, notfound')
    etcddel(kn[0])
+   etcddel('host',kn[0].replace('known',''))
+   etcddel('list',kn[0].replace('known',''))
    if kn[1] in str(nextone):
     etcddel('nextlead')
     broadcasttolocal('nextlead','nothing')
    logmsg.sendlog('Partst02','warning','system', kn[0].replace('known/',''))
    etcddel('ready/'+kn[0].replace('known/',''))
+
+   etcddel('ipaddr',kn[0].replace('known/',''))
    etcddel('sync/ready', '--prefix')
    etcddel('sync/known', '--prefix')
    etcddel('sync/volume', '--prefix')
@@ -48,6 +65,7 @@ if known != []:
    subprocess.run(cmdline,stdout=subprocess.PIPE)
    etcddel('localrun/'+str(kn[0]))
    broadcast('broadcast','/pace/hostlostfromleader.sh',kn[0].replace('known/',''))
+   broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
    broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
   else:
    if nextone == []:

@@ -33,7 +33,8 @@ def checkleader(key, prefix=''):
  myhost = hostname() 
  cmdline=['pgrep','-c','leaderlost']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
- if result.returncode == '0':
+ if str(result.returncode) == '0':
+  err =  2
   while err == 2: 
    sleep(1)
    endpoints=''
@@ -45,15 +46,23 @@ def checkleader(key, prefix=''):
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    err = result.returncode
  else:
-  cmdline='./leaderlost.sh '+leader+' '+myhost+' '+leaderip+' '+myip
-  result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-  endpoints=''
-  data=json.load(open('/pacedata/runningetcdnodes.txt'));
-  for x in data['members']:
-   endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
-  endpoints = endpoints[:-1]
-  cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  err = 2
+  nextleader = getlocal(myip,'nextlead')[0].split('/')[0]
+  nextleaderip = getlocal(myip,'nextlead')[0].split('/')[1]
+  while err==2:
+   cmdline='/pace/leaderlost.sh '+leader+' '+myhost+' '+leaderip+' '+myip+' '+nextleader+' '+nextleaderip
+   result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+   print('iamhere')
+   endpoints=''
+   data=json.load(open('/pacedata/runningetcdnodes.txt'));
+   for x in data['members']:
+    endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
+   endpoints = endpoints[:-1]
+   cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
+   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+   err = result.returncode
+   if err == 2:
+    sleep(1)
  return result 
 
 if __name__=='__main__':

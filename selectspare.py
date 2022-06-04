@@ -4,6 +4,7 @@ from socket import gethostname as hostname
 from levelthis import levelthis
 from logqueue import queuethis
 import json
+from raidrank import getraidrank
 from ast import literal_eval as mtuple
 from diskdata import diskdata
 from broadcasttolocal import broadcasttolocal
@@ -507,34 +508,6 @@ def solvedegradedraid(raid,disksfree):
  else:
   return sparedisklst
   
-def getraidrank(raid, removedisk, adddisk):
- ####raidraink = (name, location(0 is best), size (0) is best)
- raidrank = (0,0) 
- raidhosts = set()
- raiddsksize = adddisk['size']
- print('#############################')
- print('start test:',removedisk['name'],adddisk['name'])
- sizerank = 0
- for disk in (raid['disklist']+list([adddisk])):
-  if disk['name'] == removedisk['name'] and disk['name'] != adddisk['name']:
-   continue
-  if ('F' or 'moved') in disk['changeop'] :
-   print(disk['name'],disk['changeop'])
-   continue
-  print('testing',disk['name'],disk['host'])
-  raidhosts.add(disk['host'])
-  if raiddsksize != disk['size']:
-   sizerank = 1
- ###### ranking: no. of hosts differrence, and 1 for diff disk size found
- hostrank = abs(len(raidhosts)-len(raid['disklist']))
- raid['raidrank'] = (hostrank, sizerank)
- print(removedisk['name'],adddisk['name'], raid['raidrank'])
- print('raidhosts',raidhosts)
- print('disklists',len(raid['disklist']))
- print('#############################')
- return raid 
-
-  
 def spare2(*args):
  global newop
  global usedfree 
@@ -634,17 +607,18 @@ def spare2(*args):
  currentneedtoreplace = get('needtoreplace','--prefix')
  for raid in allraids:
   
-  if (raid['raidrank'][0] | raid['raidrank'][1]) != 0:
+  if (abs(raid['raidrank'][0]) | raid['raidrank'][1]) != 0:
    for rdisk in raid['disklist']:
     for fdisk in freedisks:
      if fdisk['name'] == rdisk['name']:
       continue
      thisrank = getraidrank(raid,rdisk,fdisk)
-     if ( thisrank['raidrank'][0] | thisrank['raidrank'][1] ) == 0 :
+     if ( abs(thisrank['raidrank'][0]) | thisrank['raidrank'][1] ) == 0 :
       if fdisk['name'] not in replacements:
        replacements[fdisk['name']] = []
       replacements[fdisk['name']].append((rdisk, fdisk, getraidrank(raid, rdisk, fdisk)))
  if len(replacements) == 0:
+  dels('needtoreplace','--prefix')
   print('no need to re- optmize raid groups')
   return  
  fdisks = []

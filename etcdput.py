@@ -14,7 +14,8 @@ def etcdput(key,val):
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   err = result.returncode
   if err == 2:
-    sleep(2)
+    from etcdget import etcdget as get
+    get('any','any')
  #print(result)
  return 1 
 
