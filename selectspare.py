@@ -533,8 +533,8 @@ def spare2(*args):
  needtoreplace=get('needtoreplace', myhost) 
  if myhost in str(needtoreplace):
   print('need to replace',needtoreplace)
-  if myhost not in str(get('leader','--prefix')):
-   return
+ if myhost not in str(get('leader','--prefix')):
+  return
  freedisks=[]
  allraids=[]
  freeraids=[]
