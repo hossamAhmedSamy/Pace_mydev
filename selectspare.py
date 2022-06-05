@@ -478,10 +478,12 @@ def solvedegradedraid(raid,disksfree):
  for disk in disksfree:
   if levelthis(disk['size']) < disksamplesize:
    continue 
+  ######  for best host split
   if disk['host'] not in raidhosts:
    sparedisk.append([disk,10])
   else:
    sparedisk.append([disk,0])
+  ###### then for minimum disk size in the host
   if levelthis(disk['size']) ==  levelthis(disksamplesize):
    sparedisk[-1] = [disk,sparedisk[-1][1]+10]
  if len(sparedisk) == 0:
@@ -504,7 +506,25 @@ def solvedegradedraid(raid,disksfree):
  else:
   return sparedisklst
   
-   
+def getraidrank(raid, removedisk, adddisk):
+ ####raidraink = (name, location(0 is best), size (0) is best)
+ raidrank = (0,0) 
+ raidhosts = set()
+ raiddsksize = adddisk['size']
+ sizerank = 0
+ for disk in (raid['disklist']+list([adddisk])):
+  if disk['name'] == removedisk['name']:
+   continue
+  raidhosts.add(disk['host'])
+  if raiddsksize != disk['size']:
+   sizerank = 1
+ ###### ranking: no. of hosts differrence, and 1 for diff disk size found
+ hostrank = abs(len(raidhosts)-len(raid['disklist']))
+ raid['raidrank'] = (hostrank, sizerank)
+ return raid 
+
+def getreplacements(raids, freedisks):
+ return
   
 def spare2(*args):
  global newop
@@ -514,9 +534,9 @@ def spare2(*args):
  freeraids=[]
  myhost=args[0]
  hosts=get('ready','--prefix')
- allhosts={}
+ allhosts=set()
  for host in hosts:
-  allhosts[host[0].replace('ready/','')]=0
+  allhosts.add(host[0].replace('ready/',''))
  newop=getall(myhost)
  striperaids=[]
  if newop==[-1]:
@@ -547,6 +567,37 @@ def spare2(*args):
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  for raid in degradedraids:
   disksfree = solvedegradedraid(raid, disksfree)
+ diskreplace = {}
+ allraidsranked = []
+ if len(allraids) == 0:
+  print(' no raids in the system')
+  return
+ for raid in allraids:
+  raid = getraidrank(raid,raid['disklist'][0],raid['disklist'][0])
+ replacements = dict() 
+ for raid in allraids:
+  if (raid['raidrank'][0] | raid['raidrank'][1]) != 0:
+   for rdisk in raid['disklist']:
+    for fdisk in freedisks:
+     thisrank = getraidrank(raid,rdisk,fdisk)
+     if ( thisrank['raidrank'][0] | thisrank['raidrank'][1] ) == 0 :
+      if fdisk['name'] not in replacements:
+       replacements[fdisk['name']] = []
+      replacements[fdisk['name']].append((rdisk, fdisk, getraidrank(raid, rdisk, fdisk)))
+ if len(replacements) == 0:
+  print('no need to re- optmize raid groups')
+  return  
+ fdisks = []
+ for disk in replacements:
+  fdisks.append((disk,len(replacements[disk])))
+ fdisks.sort(key = lambda x:x[1],reverse = True)
+ for disk in fdisks:
+  print(disk)
+  print('need to replace',replacements[disk[0]][0][0]['name'],'with', disk[0])
+ print('all raids are assigned proper replacement disk')
+ return
+ 
+  
 # if len(disksfree) > 0 and len(striperaids) > 0 : 
 #  solvestriperaids(striperaids, disksfree,allraids,myhost)
 # disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
