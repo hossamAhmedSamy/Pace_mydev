@@ -573,6 +573,19 @@ def spare2(*args):
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  for raid in degradedraids:
   disksfree = solvedegradedraid(raid, disksfree)
+#####################################  set the right replacements for all raids
+ newop=getall()
+ for hostinfo in newop:
+  pools = mtuple(hostinfo[1])['pools']
+  for spool in pools:
+   for sraid in spool['raidlist']:
+    if len(availability) > 0:
+     if 'ree' not in sraid['name'] and spool['name'] in str(availability):
+      allraids.append(sraid)
+    else:
+     if 'ree' not in sraid['name']:
+      allraids.append(sraid)
+ 
  diskreplace = {}
  allraidsranked = []
  if len(allraids) == 0:
