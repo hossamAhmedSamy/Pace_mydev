@@ -529,6 +529,12 @@ def getreplacements(raids, freedisks):
 def spare2(*args):
  global newop
  global usedfree 
+ myhost = hostname()
+ needtoreplace=get('needtoreplace', myhost) 
+ if myhost in str(needtoreplace):
+  print('need to replace',needtoreplace)
+  if myhost not in str(get('leader','--prefix')):
+   return
  freedisks=[]
  allraids=[]
  freeraids=[]
@@ -594,6 +600,7 @@ def spare2(*args):
  for disk in fdisks:
   print(disk)
   print('need to replace',replacements[disk[0]][0][0]['name'],'with', disk[0])
+  put('needtoreplace/'+replacements[disk[0]][0][2]['host']+'/'+replacements[disk[0]][0][2]['name'],replacements[disk[0]][0][0]['name']+'/'+disk[0])
  print('all raids are assigned proper replacement disk')
  return
  
