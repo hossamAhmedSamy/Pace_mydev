@@ -533,6 +533,11 @@ def spare2(*args):
  needtoreplace=get('needtoreplace', myhost) 
  if myhost in str(needtoreplace):
   print('need to replace',needtoreplace)
+  for raidinfo in needtoreplace:
+   raidname = raidinfo[0].split('/')[-1]
+   rmdisk = raidinfo[1].split('/')[0]
+   adisk = raidinfo[1].split('/')[1]
+   print('will do:', raidname, rmdisk, adisk)
  if myhost not in str(get('leader','--prefix')):
   return
  freedisks=[]
