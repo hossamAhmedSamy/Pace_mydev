@@ -534,10 +534,16 @@ def spare2(*args):
  if myhost in str(needtoreplace):
   print('need to replace',needtoreplace)
   for raidinfo in needtoreplace:
-   raidname = raidinfo[0].split('/')[-1]
+   poolname = raidinfo[0].split('/')[-1]
+   raidname = raidinfo[0].split('/')[-2]
    rmdisk = raidinfo[1].split('/')[0]
    adisk = raidinfo[1].split('/')[1]
-   print('will do:', raidname, rmdisk, adisk)
+   print('will do:', poolname, raidname, rmdisk, adisk)
+   cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
+   forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   print(" ".join(cmdline2))
+   print('thereuslt',forget.stdout.decode())
+   print('return code',forget.returncode)
  if myhost not in str(get('leader','--prefix')):
   return
  freedisks=[]
@@ -620,8 +626,8 @@ def spare2(*args):
  fdisks.sort(key = lambda x:x[1],reverse = True)
  for disk in fdisks:
   print(disk)
-  print('need to replace',replacements[disk[0]][0][0]['name'],'with', disk[0])
-  put('needtoreplace/'+replacements[disk[0]][0][2]['host']+'/'+replacements[disk[0]][0][2]['name']+'/'+replacements[disk[0]][0][2]['pool'],replacements[disk[0]][0][0]['name']+'/'+disk[0])
+  print('need to replace',replacements[disk[0]][0][0]['actualname'],'with', disk[0])
+  put('needtoreplace/'+replacements[disk[0]][0][2]['host']+'/'+replacements[disk[0]][0][2]['actualname']+'/'+replacements[disk[0]][0][2]['pool'],replacements[disk[0]][0][0]['name']+'/'+disk[0])
  print('all raids are assigned proper replacement disk')
  return
  
