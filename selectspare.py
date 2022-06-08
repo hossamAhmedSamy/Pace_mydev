@@ -621,7 +621,7 @@ def spare2(*args):
  for disk in fdisks:
   print(disk)
   print('need to replace',replacements[disk[0]][0][0]['name'],'with', disk[0])
-  put('needtoreplace/'+replacements[disk[0]][0][2]['host']+'/'+replacements[disk[0]][0][2]['name'],replacements[disk[0]][0][0]['name']+'/'+disk[0])
+  put('needtoreplace/'+replacements[disk[0]][0][2]['host']+'/'+replacements[disk[0]][0][2]['name']+'/'+replacements[disk[0]][0][2]['pool'],replacements[disk[0]][0][0]['name']+'/'+disk[0])
  print('all raids are assigned proper replacement disk')
  return
  
