@@ -118,12 +118,12 @@ then
  done
  echo started etcd as primary>>/root/tmp2
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
+ /pace/etcdcmd.py user add root:YN-Password_123
+ /pace/etcdcmd.py auth enable
  ./runningetcdnodes.py $myip 2>/dev/null
  ./etcddel.py sync --prefix
  ./etcddel.py needtoreplace --prefix
  ./etcddel.py needtoimport --prefix
- /pace/etcdcmd.py user add root:YN-Password_123
- /pace/etcdcmd.py auth enable
  ./etcddel.py known --prefix 2>/dev/null 
  /TopStor/HostManualconfigTZ $myip 
  /TopStor/HostManualconfigNTP $myip
