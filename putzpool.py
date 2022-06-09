@@ -136,6 +136,10 @@ for a in sty:
   rdict={ 'name':b[0], 'changeop':b[1],'status':b[1],'pool':zdict['name'],'host':myhost,'disklist':disklist }
   raidlist.append(rdict)
   lraids.append(rdict)
+ elif 'dm' in str(b) and 'corrupted' in str(b):
+  print('@@@@@@@@@@@@@@@@@@@@@@@')
+  print('Iam here', str(b))
+  print('@@@@@@@@@@@@@@@@@@@@@@@')
  
  elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5):
    diskid='-1'

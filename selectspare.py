@@ -456,17 +456,19 @@ def solvedegradedraid(raid,disksfree):
     alldms = get('dm/'+myhost+'/'+raid['name'],'--prefix')
     dmstuplst = [ x for x in alldms if 'inuse' not in str(x)]
    dmstup = dmstuplst[0][1]
-    
+
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
+   print('returncode',forget.returncode)
    if forget.returncode == 0:
     put(dmstuplst[0][0],'inuse/'+dmstup)
     broadcasttolocal(dmstuplst[0][0],'inuse/'+dmstup)
    else:
-    dels(dmstuplst[0][0], '--prefix')
-    delstolocal(dmstuplst[0][0], '--prefix')
-   return disksfree 
+    if forget.returncode != 255:
+     dels(dmstuplst[0][0], '--prefix')
+     delstolocal(dmstuplst[0][0], '--prefix')
+     return disksfree 
  print('################## start replace in solvedegradedraid')
  if len(disksample) == 0 :
   return disksfree
@@ -517,6 +519,8 @@ def getraidrank(raid, removedisk, adddisk):
   print('testing',disk['name'])
   if disk['name'] == removedisk['name'] and disk['name'] != adddisk['name']:
    continue
+  if disk['changeop'] != 'ONLINE':
+   continue
   print('hosting testing',disk['name'])
   raidhosts.add(disk['host'])
   if raiddsksize != disk['size']:
@@ -527,8 +531,6 @@ def getraidrank(raid, removedisk, adddisk):
  raid['raidrank'] = (hostrank, sizerank)
  return raid 
 
-def getreplacements(raids, freedisks):
- return
   
 def spare2(*args):
  global newop
@@ -575,7 +577,6 @@ def spare2(*args):
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
- print('degraded',degradedraids)
  for raid in degradedraids:
   for disk in raid['disklist']:
    if 'ONLINE' not in disk['changeop']:
@@ -588,6 +589,10 @@ def spare2(*args):
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  for raid in degradedraids:
   disksfree = solvedegradedraid(raid, disksfree)
+ print('#####################')
+ print('continue to the spare' )
+ print('#####################')
+
 #####################################  set the right replacements for all raids
  newop=getall()
  getcurrent = get('hosts','current')
@@ -610,8 +615,12 @@ def spare2(*args):
   print(' no raids in the system')
   return
  for raid in allraids:
-  raid = getraidrank(raid,raid['disklist'][0],raid['disklist'][0])
- print('raids', allraids)
+  print('ranking raid:', raid)
+  for disk in raid['disklist']:
+   if disk['changeop'] == 'ONLINE':
+    rankdisk = disk
+    break
+  raid = getraidrank(raid,rankdisk,rankdisk)
  replacements = dict() 
  currentneedtoreplace = get('needtoreplace','--prefix')
  for raid in allraids:
