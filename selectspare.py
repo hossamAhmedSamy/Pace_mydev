@@ -645,6 +645,7 @@ def spare2(*args):
        replacements[fdisk['name']] = []
       replacements[fdisk['name']].append((rdisk, fdisk, getraidrank(raid, rdisk, fdisk)))
  if len(replacements) == 0:
+  dels('needtoreplace','--prefix')
   print('no need to re- optmize raid groups')
   return  
  fdisks = []
