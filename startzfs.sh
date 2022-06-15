@@ -298,8 +298,8 @@ else
     fi
    done
   fi
-  /pace/etcdcmdlocal.py $myip user add root:YN-Password_123
-  /pace/etcdcmdlocal.py $myip auth enable
+  /pace/etcdcmdlocal.py $myip user add root:YN-Password_123  2>/dev/null
+  /pace/etcdcmdlocal.py $myip auth enable 2>/dev/null
   ./etcdputlocal.py $myip 'local/'$myhost $myip
 #  echo sync leader with local database >>/root/tmp2
 ##  rm -rf /etc/chrony.conf
@@ -308,7 +308,7 @@ else
 #  /TopStor/HostManualconfigNTP $myip $leader
 #  cd /pace
 ##  systemctl restart chronyd
-3  leaderip=` ./etcdget.py leader/$leader `
+  leaderip=` ./etcdget.py leader/$leader `
 #  rm -rf /etc/chrony.conf
 #  cp /TopStor/chrony.conf /etc/
 #  sed -i "s/MASTERSERVER/$leaderip/g" /etc/chrony.conf
