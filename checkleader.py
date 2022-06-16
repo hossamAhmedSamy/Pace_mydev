@@ -33,7 +33,8 @@ def checkleader(key, prefix=''):
  myhost = hostname() 
  cmdline=['pgrep','-c','leaderlost']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
- if result.returncode == '0':
+ if str(result.returncode) == '0':
+  err =  2
   while err == 2: 
    sleep(1)
    endpoints=''
