@@ -1,11 +1,13 @@
 #!/bin/sh
-
+echo starting > /root/disklost
 disksphy=(`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -vw sda | grep -v LIO | awk '{print $1}'`)
 diskLIO=`lsscsi -i | grep -v sr0 | grep -vw sda | grep -w LIO | awk '{print $4" "$6" "$NF}'`
 echo "${diskLIO[@]}"
+echo done taking disk lssci lsblk >> /root/disklost
 diskFAULT=`./etcdget.py disks FAULT`
 diskONLINE=`./etcdget.py disks ONLINE`
 disktrans=`./etcdget.py disks transition`
+echo done taking etcdget. it should be ok now >> /root/disklost
 for disk in "${disksphy[@]}"; do
  fdisk -l /dev/$disk >/dev/null 2>/dev/null
  if [ $? -eq 0 ];

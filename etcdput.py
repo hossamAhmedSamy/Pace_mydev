@@ -16,7 +16,6 @@ def etcdput(key,val):
   if err == 2:
     from etcdget import etcdget as get
     get('any','any')
-    sleep(2)
  #print(result)
  return 1 
 
