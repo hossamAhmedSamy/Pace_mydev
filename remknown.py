@@ -36,6 +36,7 @@ if known != []:
     broadcasttolocal('nextlead','nothing')
    logmsg.sendlog('Partst02','warning','system', kn[0].replace('known/',''))
    etcddel('ready/'+kn[0].replace('known/',''))
+
    etcddel('ipaddr',kn[0].replace('known/',''))
    etcddel('sync/ready', '--prefix')
    etcddel('sync/known', '--prefix')
