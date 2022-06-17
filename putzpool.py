@@ -155,7 +155,7 @@ for a in sty:
     b[1] = 'NA'
     if 'Availability' in zdict['availtype'] : 
      b[1] = 'DEGRADED' 
-    rdict={ 'name':'stripe-'+str(stripecount), 'pool':zdict['name'],'changeop':b[1],'status':b[1],'host':myhost,'disklist':disklist }
+    rdict={ 'name':'stripe-'+str(stripecount), 'pool':zdict['name'],'changeop':b[1],'status':b[1],'host':myhost,'disklist':disklist, 'missingdisks':[0] }
     raidlist.append(rdict)
     lraids.append(rdict)
     stripecount+=1
@@ -199,7 +199,7 @@ if len(freepool) > 0:
  zpool.append(zdict)
  lpools.append(zdict)
  disklist=[]
- rdict={ 'name':'free', 'changeop':'free','status':'free','pool':'pree','host':myhost,'disklist':disklist }
+ rdict={ 'name':'free', 'changeop':'free','status':'free','pool':'pree','host':myhost,'disklist':disklist, 'missingdisks':[0] }
  raidlist.append(rdict)
  lraids.append(rdict)
  for lss in freepool:
