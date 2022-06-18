@@ -66,6 +66,7 @@ if known != []:
    etcddel('localrun/'+str(kn[0]))
    broadcast('broadcast','/pace/hostlostfromleader.sh',kn[0].replace('known/',''))
    broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
+   broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
   else:
    if nextone == []:
     put('nextlead',kn[0].replace('known/','')+'/'+kn[1])
