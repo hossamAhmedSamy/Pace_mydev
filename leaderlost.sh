@@ -77,12 +77,12 @@ stamp=`date +%s%N`
 ./etcdput.py  ready/$myhost $myip  
 ./etcddel.py  ready $leader  
 ./etcddel.py  known $myhost  
-/TopStor/logmsg.py Partst02 warning system $leaderall 
+/TopStor/logmsg.py Partst02 warning system $leader 
 ./broadcasttolocal.py sync/leader/$myhost $stamp 
 ./etcdput.py sync/ready/$myhost $stamp 
 ./etcdput.py sync/known/$myhost $stamp 
-./etcdgdel.py ipaddr $leader
-./etcdgdel.py sync/ipaddr/$myhost  $stamp 
+./etcddel.py ipaddr $leader
+./etcddel.py sync/ipaddr/$myhost  $stamp 
 ./etcdput.py sync/leader/$myhost $stamp 
 ./etcdput.py tosync/$myhost $myip  
 echo created namespaces >>/root/zfspingtmp2
