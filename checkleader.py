@@ -50,7 +50,7 @@ def checkleader(key, prefix=''):
   nextleader = getlocal(myip,'nextlead')[0].split('/')[0]
   nextleaderip = getlocal(myip,'nextlead')[0].split('/')[1]
   while err==2:
-   cmdline='./leaderlost.sh '+leader+' '+myhost+' '+leaderip+' '+myip+' '+nextleader+' '+nextleaderip
+   cmdline='/pace/leaderlost.sh '+leader+' '+myhost+' '+leaderip+' '+myip+' '+nextleader+' '+nextleaderip
    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    print('iamhere')
    endpoints=''
