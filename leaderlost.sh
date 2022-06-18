@@ -76,6 +76,8 @@ stamp=`date +%s%N`
 stamp=`date +%s%N`
 ./etcdput.py  ready/$myhost $myip  
 ./etcddel.py  ready $leader  
+./etcddel.py  list $leader  
+./etcddel.py  host $leader  
 ./etcddel.py  known $myhost  
 /TopStor/logmsg.py Partst02 warning system $leader 
 ./broadcasttolocal.py sync/leader/$myhost $stamp 
