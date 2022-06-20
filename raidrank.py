@@ -7,25 +7,18 @@ def getraidrank(raid, removedisk, adddisk):
  raidrank = (0,0) 
  raidhosts = set()
  raiddsksize = adddisk['size']
- print('#############################')
- print('start test:',removedisk['name'],adddisk['name'])
  sizerank = 0
  for disk in (raid['disklist']+list([adddisk])):
   if disk['name'] == removedisk['name'] and disk['name'] != adddisk['name']:
    continue
   if ('F' or 'moved') in disk['changeop'] :
-   print(disk['name'],disk['changeop'])
    continue
-  print('testing',disk['name'],disk['host'])
   raidhosts.add(disk['host'])
   if raiddsksize != disk['size']:
    sizerank = 1
  ###### ranking: no. of hosts differrence, and 1 for diff disk size found
  hostrank = len(raidhosts)-len(raid['disklist'])
  raid['raidrank'] = (hostrank, sizerank)
- print('#############################')
- print('raid',raid)
- print('#############################')
  return raid 
 
   
