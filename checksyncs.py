@@ -13,7 +13,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['ready','leader','alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']
+syncs = ['Snapperiod','ready','leader','alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']
 collectedsyncs = ['alias']
 myhost = hostname()
 actives = get('ActivePartners','--prefix')
@@ -63,7 +63,7 @@ def checksync(myip='nothing'):
     elif sync in ['dataip','tz','ntp','gw','dnsname','dnssearch','alias']:
      cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local ll'
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-    elif sync in [ 'ready','leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']:
+    elif sync in [ 'Snapperiod','ready','leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']:
      print('normal known leader..etc')
      cmdline='/TopStor/pump.sh etcdsync.py '+hostip+' '+sync+' '+sync
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
