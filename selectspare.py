@@ -595,45 +595,51 @@ def spare2(*args):
  if len(allraids) == 0:
   print(' no raids in the system')
   return
- print('raids in the system',allraids)
  for raid in allraids:
   for disk in raid['disklist']:
    if disk['changeop'] == 'ONLINE':
     rankdisk = disk
     break
   raid = getraidrank(raid,rankdisk,rankdisk)
- print('ranked raids in the system',allraids)
  replacements = dict() 
+ foundranks = [] 
  currentneedtoreplace = get('needtoreplace','--prefix')
  for raid in allraids:
-  
-  if (abs(raid['raidrank'][0]) | raid['raidrank'][1]) != 0:
+  combinedrank = abs(raid['raidrank'][0])*1000 + raid['raidrank'][1]
+  if combinedrank == 0:
+   continue
+  bestrank = (0,0,0,combinedrank)
+  for fdisk in freedisks:
+   replacements[fdisk['name']] = []
    for rdisk in raid['disklist']:
-    for fdisk in freedisks:
-     if fdisk['name'] == rdisk['name']:
-      continue
-     thisrank = getraidrank(raid,rdisk,fdisk)
-     if ( abs(thisrank['raidrank'][0]) | thisrank['raidrank'][1] ) == 0 :
-      if fdisk['name'] not in replacements:
-       replacements[fdisk['name']] = []
-      replacements[fdisk['name']].append((rdisk, fdisk, getraidrank(raid, rdisk, fdisk)))
- if len(replacements) == 0:
+    if fdisk['name'] == rdisk['name']:
+     continue
+    thisrank = getraidrank(raid,rdisk,fdisk)
+    thiscombinedrank = abs(thisrank['raidrank'][0])*1000 + thisrank['raidrank'][1]
+    if thiscombinedrank < combinedrank:
+     bestrank = (rdisk,fdisk,raid,thiscombinedrank)
+     foundranks.append(bestrank)
+ if len(foundranks) == 0:
   dels('needtoreplace','--prefix')
   print('no need to re- optmize raid groups')
   return  
- fdisks = []
- for disk in replacements:
-  fdisks.append((disk,len(replacements[disk])))
  for cnt in currentneedtoreplace:
-   if cnt[1] not in str(fdisks):
+   if cnt[1].split('/')[1] not in str(foundranks):
     dels('needtorepalce', cnt[1])
- fdisks.sort(key = lambda x:x[1],reverse = True)
- for disk in fdisks:
-  print('###################################')
-  print('need to replace',replacements[disk[0]][0][0]['actualdisk'],'with', disk[0])
-  print('###################################')
-  put('needtoreplace/'+replacements[disk[0]][0][2]['host']+'/'+replacements[disk[0]][0][2]['name']+'/'+replacements[disk[0]][0][2]['pool'],replacements[disk[0]][0][0]['actualdisk']+'/'+disk[0])
- print('all raids are assigned proper replacement disk')
+ foundranks = sorted(foundranks, key = lambda x: x[3], reverse = True)
+ diskraids = set() 
+ ranks = set()
+   
+ print('foundrank sort',len(foundranks))
+ for rank in foundranks:
+  if rank[1]['name'] not in diskraids and rank[2]['name'] not in diskraids:
+   print('needtoreplace/'+rank[0]['actualdisk'],'with',rank[0]['name'],'for raid',rank[2]['name'], 'combined rank = ',rank[3])
+   dels('neeedtoreplace',rank[1]['name'])
+   dels('neeedtoreplace',rank[2]['name'])
+   diskraids.add(rank[1]['name'])
+   diskraids.add(rank[2]['name'])
+   print(rank[0])
+  put('needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['actualdisk']+'/'+rank[1]['name'])
  return
  
   
