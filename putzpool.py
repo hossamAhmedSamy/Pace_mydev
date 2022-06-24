@@ -59,7 +59,7 @@ for dev in devs:
  dsk = dev.split(':')[0]
  if 'sd' in dsk:
   drives.append(dsk) 
-cmdline=['/sbin/zfs','list','-t','snapshot,filesystem,volume','-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available,snap:type','-H']
+cmdline=['/sbin/zfs','list','-t','snapshot,filesystem,volume','-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available,snap:type,partner:receiver,partner:sender','-H']
 result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
 #lists=[lpools,ldisks,ldefdisks,lavaildisks,lfreedisks,lsparedisks,lraids,lvolumes,lsnapshots]
@@ -117,7 +117,13 @@ for a in sty:
    elif '@' in vol and b[0] in vol:
     snapshot=vol.split()
     snapname=snapshot[0].split('@')[1]
-    sdict={'fullname':snapshot[0],'name':snapname, 'volume':volname, 'pool': b[0], 'host':myhost, 'creation':' '.join(snapshot[1:4]+volume[5:6]), 'time':snapshot[4], 'used':snapshot[6], 'quota':snapshot[7], 'usedbysnapshots':snapshot[8], 'refcompressratio':snapshot[9], 'prot':snapshot[10], 'snaptype':snapshot[12]}
+    partnerr=''
+    partners=''
+    if len(snapshot) >= 15:
+     partners = snapshot[14]
+    if len(snapshot) >= 14:
+     partnerr = snapshot[13]
+    sdict={'fullname':snapshot[0],'name':snapname, 'volume':volname, 'pool': b[0], 'host':myhost, 'creation':' '.join(snapshot[1:4]+volume[5:6]), 'time':snapshot[4], 'used':snapshot[6], 'quota':snapshot[7], 'usedbysnapshots':snapshot[8], 'refcompressratio':snapshot[9], 'prot':snapshot[10], 'snaptype':snapshot[12], 'partnerR': partnerr, 'partnerS': partners}
     snaplist.append(sdict)
     lsnapshots.append(sdict['name'])
     
@@ -141,11 +147,8 @@ for a in sty:
   raidlist.append(rdict)
   lraids.append(rdict)
  elif 'dm-' in str(b) and 'corrupted' in str(b):
-  print('@@@@@@@@@@@@@@@@@@@@@@@')
   missingdisks[0] += 1
-  print('Iam here', str(b))
-  print('@@@@@@@@@@@@@@@@@@@@@@@')
- 
+   
  elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5):
    diskid='-1'
    host='-1'
@@ -183,7 +186,7 @@ for a in sty:
     #else:
     # cmdline='/pace/hostlost.sh '+z[6]
     # subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
-   
+    
    if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop']:
     b[1] = 'ONLINE' 
    changeop=b[1]
@@ -208,10 +211,6 @@ if len(freepool) > 0:
   z=lss.split()
   devname=z[5].replace('/dev/','')
   if devname not in drives:
-   print('hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
-   print('lss',lss)
-   print(drives)
-   print('hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
    continue
   diskid=lsscsi.index(lss)
   host=z[3].split('-')[1]
@@ -223,12 +222,6 @@ if len(freepool) > 0:
   ddict={'name':'scsi-'+z[6],'actualdisk':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname}
   if z[6] in str(zpool):
    continue
-  if '0cca' in z[6]:
-    
-   print('#######################################################################################')
-   print(zpool)
-   print(ddict)
-   print('#######################################################################################')
   disklist.append(ddict)
   ldisks.append(ddict)
 if len(lhosts)==0:
