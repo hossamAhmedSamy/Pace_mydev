@@ -13,7 +13,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['Snapperioddel','Snapperiod','ready','leader','alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']
+syncs = ['PartnerAdd','Snapperioddel','Snapperiod','ready','leader','alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']
 collectedsyncs = ['alias']
 myhost = hostname()
 actives = get('ActivePartners','--prefix')
@@ -68,6 +68,9 @@ def checksync(myip='nothing'):
      userreq=maxgsync[0].split('perioddel')[2]
      cmdline='/TopStor/pump.sh PartnerDel '+partner+' yes '+userreq 
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+    elif 'PartnerAdd' in sync:
+     cmdline='/TopStor/pump.sh PartnerSync '+maxgsync[0].split('_')[1] 
+     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
      
     elif sync in [ 'Snapperiod','ready','leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']:
      print('normal known leader..etc')
@@ -75,7 +78,6 @@ def checksync(myip='nothing'):
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       
 
-    print('hi')
     put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
     broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
   
