@@ -69,7 +69,10 @@ def checksync(myip='nothing'):
      cmdline='/TopStor/pump.sh PartnerDel '+partner+' yes '+userreq 
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     elif 'PartnerAdd' in sync:
-     cmdline='/TopStor/pump.sh PartnerSync '+maxgsync[0].split('_')[1] 
+     cmdline='/TopStor/pump.sh PartnerSync.py '+maxgsync[0].split('/')[1].split('_')[1] 
+     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+    elif 'repliPartnerDel' in sync:
+     cmdline='/TopStor/pump.sh repliPartnerDel '+maxgsync[0]split('/')[1].split('_')[1]+' yes '+maxgsync[0].split('/')[1].split('_')[2] +  
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
      
     elif sync in [ 'Snapperiod','ready','leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']:
@@ -77,9 +80,9 @@ def checksync(myip='nothing'):
      cmdline='/TopStor/pump.sh etcdsync.py '+hostip+' '+sync+' '+sync
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       
-
-    put('sync/'+sync+'/'+myhost, str(maxgsync[1]))
-    broadcasttolocal('sync/'+sync+'/'+myhost, str(maxgsync[1]))
+    newsync=maxgsync[0].split('/')[1]
+    put('sync/'+newsync+'/'+myhost, str(maxgsync[1]))
+    broadcasttolocal('sync/'+newsync+'/'+myhost, str(maxgsync[1]))
   
       
  
