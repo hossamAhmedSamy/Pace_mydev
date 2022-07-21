@@ -59,7 +59,7 @@ for dev in devs:
  dsk = dev.split(':')[0]
  if 'sd' in dsk:
   drives.append(dsk) 
-cmdline=['/sbin/zfs','list','-t','snapshot,filesystem,volume','-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available,snap:type,partner:receiver,partner:sender','-H']
+cmdline=['/sbin/zfs','list','-t','snapshot,filesystem,volume','-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available,referenced,snap:type,partner:receiver,partner:sender','-H']
 result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
 #lists=[lpools,ldisks,ldefdisks,lavaildisks,lfreedisks,lsparedisks,lraids,lvolumes,lsnapshots]
@@ -111,7 +111,7 @@ for a in sty:
     snaplist=[]
     snapperiod=[]
     snapperiod=[[x[0],x[1]] for x in periods if volname in x[0]]
-    vdict={'fullname':volume[0],'name':volname, 'pool': b[0], 'host':myhost, 'creation':' '.join(volume[1:4]+volume[5:6]),'time':volume[4], 'used':volume[6], 'quota':volume[7], 'usedbysnapshots':volume[8], 'refcompressratio':volume[9], 'prot':volume[10],'snapshots':snaplist, 'snapperiod':snapperiod}
+    vdict={'fullname':volume[0],'name':volname, 'pool': b[0], 'host':myhost, 'creation':' '.join(volume[1:4]+volume[5:6]),'time':volume[4], 'used':volume[6], 'quota':volume[7], 'usedbysnapshots':volume[8], 'refcompressratio':volume[9], 'prot':volume[10],'available':volume[11], 'referenced':volume[12], 'snapshots':snaplist, 'snapperiod':snapperiod}
     volumelist.append(vdict)
     lvolumes.append(vdict['name'])
    elif '@' in vol and b[0] in vol:
@@ -119,11 +119,11 @@ for a in sty:
     snapname=snapshot[0].split('@')[1]
     partnerr=''
     partners=''
+    if len(snapshot) >= 16:
+     partners = snapshot[15]
     if len(snapshot) >= 15:
-     partners = snapshot[14]
-    if len(snapshot) >= 14:
-     partnerr = snapshot[13]
-    sdict={'fullname':snapshot[0],'name':snapname, 'volume':volname, 'pool': b[0], 'host':myhost, 'creation':' '.join(snapshot[1:4]+volume[5:6]), 'time':snapshot[4], 'used':snapshot[6], 'quota':snapshot[7], 'usedbysnapshots':snapshot[8], 'refcompressratio':snapshot[9], 'prot':snapshot[10], 'snaptype':snapshot[12], 'partnerR': partnerr, 'partnerS': partners}
+     partnerr = snapshot[14]
+    sdict={'fullname':snapshot[0],'name':snapname, 'volume':volname, 'pool': b[0], 'host':myhost, 'creation':' '.join(snapshot[1:4]+volume[5:6]), 'time':snapshot[4], 'used':snapshot[6], 'quota':snapshot[7], 'usedbysnapshots':snapshot[8], 'refcompressratio':snapshot[9], 'prot':snapshot[10],'referenced':snapshot[12], 'snaptype':snapshot[13], 'partnerR': partnerr, 'partnerS': partners}
     snaplist.append(sdict)
     lsnapshots.append(sdict['name'])
     
