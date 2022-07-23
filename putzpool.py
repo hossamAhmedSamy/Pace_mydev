@@ -7,7 +7,6 @@ from etcdget import etcdget as get
 from etcddel import etcddel as dels 
 from os.path import getmtime
 
-
 with open('/pacedata/perfmon','r') as f:
  perfmon = f.readline() 
 if '1' in perfmon:
