@@ -235,7 +235,7 @@ for disk in ldisks:
   lsparedisks.append(disk)
  elif disk['changeop'] != 'ONLINE': 
   ldefdisks.append(disk)
-put('lists/'+myhost,str(lists))
+put('lists/'+myhost,json.dumps(lists))
 xall=get('pools/','--prefix')
 x=[y for y in xall if myhost in str(y)]
 xnotfound=[y for y in x if y[0].replace('pools/','') not in str(poolsstatus)]
