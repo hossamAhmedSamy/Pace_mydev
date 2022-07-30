@@ -4,6 +4,7 @@ from etcddel import etcddel as etcddel
 from deltolocal import deltolocal 
 from logqueue import queuethis
 from broadcast import broadcast as broadcast 
+from time import time as stamp
 from broadcasttolocal import broadcasttolocal as broadcasttolocal
 from etcdget import etcdget as get
 from etcdgetlocal import etcdget as getlocal
@@ -20,6 +21,7 @@ for pos in possible:
   etcddel('lost',posname)
   etcddel('poss',posname)
   put('known/'+posname,pos[1])
+  put('sync/known/'+myhost,str(stamp()))
   broadcasttolocal('known/'+posname,pos[1])
 allow=get('allowedPartners')
 if 'notallowed' in str(allow):
@@ -51,6 +53,7 @@ if possible != []:
    newfrstnode=frstnode[0]+'/'+x[0].replace('possible','')
    put('frstnode',newfrstnode)
   put('known/'+x[0].replace('possible',''),x[1])
+  put('sync/known/'+myhost,str(stamp()))
   broadcasttolocal('known/'+x[0].replace('possible',''),x[1])
   hostsubnet = getlocal(x[1],'hostipsubnet/'+x[0].replace('possible',''))[0]
   if hostsubnet == -1:
@@ -60,12 +63,15 @@ if possible != []:
   deltolocal('sync',x[0].replace('possible',''))
   deltolocal('modified',x[0].replace('possible',''))
   put('ActivePartners/'+x[0].replace('possible',''),x[1])
+  put('sync/ActivePartners/'+myhost,str(stamp()))
   put('hostipsubnet/'+x[0].replace('possible',''),hostsubnet)
+  put('sync/hostipsubnet/'+myhost,str(stamp()))
   put('configured/'+x[0].replace('possible',''),'yes')
   broadcasttolocal('hostipsubnet/'+x[0].replace('possible',''),hostsubnet)
   broadcasttolocal('ActivePartners/'+x[0].replace('possible',''),x[1])
   broadcasttolocal('configured/'+x[0].replace('possible',''),'yes')
   put('nextlead',x[0].replace('possible','')+'/'+x[1])
+  put('sync/nextlead/'+myhost,str(stamp()))
   broadcasttolocal('nextlead',x[0].replace('possible','')+'/'+x[1])
   cmdline=['/sbin/rabbitmqctl','add_user','rabb_'+x[0].replace('possible',''),'YousefNadody']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)

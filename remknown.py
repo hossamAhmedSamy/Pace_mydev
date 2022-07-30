@@ -7,6 +7,7 @@ from broadcast import broadcast as broadcast
 from broadcasttolocal import broadcasttolocal as broadcasttolocal
 from etcdget import etcdget as get
 from etcdgetlocal import etcdget as getlocal
+from time import time as stamp
 from etcdput import etcdput as put 
 import json
 
@@ -24,6 +25,7 @@ if len(ready) > len(known)+1:
  for r in ready:
   if r[0].split('/')[1] not in ( str(known) and str(leader)) :
    put('known/',r[0].split('/')[1],r[0],r[1])
+   put('sync/known/'+myhost,str(stamp()))
    knownchange = 1
 if knownchange == 1:
  known=get('known','--prefix')
@@ -51,15 +53,19 @@ if known != []:
     broadcasttolocal('nextlead','nothing')
    logmsg.sendlog('Partst02','warning','system', kn[0].replace('known/',''))
    etcddel('ready/'+kn[0].replace('known/',''))
+   put('sync/known/'+myhost,str(stamp()))
 
    etcddel('ipaddr',kn[0].replace('known/',''))
-   etcddel('sync/ready', '--prefix')
-   etcddel('sync/known', '--prefix')
-   etcddel('sync/volume', '--prefix')
-   etcddel('sync/pool', '--prefix')
-   etcddel('needtoreplace', kn[0].replace('known/',''))
-   etcddel('needtoimport', kn[0].replace('known/',''))
-   etcddel('old','--prefix')
+   put('sync/known/'+myhost,str(stamp()))
+   put('sync/pool/'+myhost,str(stamp()))
+   put('sync/volume/'+myhost,str(stamp()))
+
+#   etcddel('sync/known', '--prefix')
+#   etcddel('sync/volume', '--prefix')
+#   etcddel('sync/pool', '--prefix')
+#   etcddel('needtoreplace', kn[0].replace('known/',''))
+#   etcddel('needtoimport', kn[0].replace('known/',''))
+#   etcddel('old','--prefix')
    
    cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
    subprocess.run(cmdline,stdout=subprocess.PIPE)
@@ -73,6 +79,7 @@ if known != []:
     etcddel('nextlead','--prefix')
     broadcasttolocal('nextlead',kn[0].replace('known/','')+'/'+kn[1])
     broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
+    put('sync/nextlead/'+myhost,str(stamp()))
 poss = get('pos','--prefix')
 if poss != []:
  for pos in poss:
