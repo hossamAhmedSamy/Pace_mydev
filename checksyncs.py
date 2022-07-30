@@ -8,82 +8,136 @@ from etcdputlocal import etcdput as putlocal
 from etcdgetlocal import etcdget as getlocal 
 from Evacuatelocal import setall
 from etcddel import etcddel as dels
+from etcddellocal import etcddel as dellocal
 from deltolocal import deltolocal
-from usersyncall import usersyncall
-from groupsyncall import groupsyncall
+from usersyncall import usersyncall, oneusersync
+from groupsyncall import groupsyncall, onegroupsync
 from socket import gethostname as hostname
 
-syncs = ['sizevol','Partnernode','PartnerAdd','PartnerDel','Snapperioddel','Snapperiod','ready','leader','alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','hostipsubnet','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged', 'ActivePartners', 'config', 'pool', 'nextlead', 'snapperiod']
-collectedsyncs = ['alias']
+syncanitem = ['replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
+forReceivers = [ 'user', 'group' ]
+special1 = [ 'passwd' ]
+etcdonly = [ 'sizevol', 'Partnr','ready','alias', ,'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
+syncs = etcdonly + syncanitem + special1
 myhost = hostname()
-actives = get('ActivePartners','--prefix')
-hostip = get('ActivePartners/'+myhost)[0]
-allsyncs = get('sync','--prefix') 
-leader = get('leader','--prefix')[0][0].replace('leader/','')
+##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
+##### sync request syncanitem with bash script: sync/Operation/commandline_oper1_oper2_../request Operation_stamp###########
+##### sync request syncanitem with python script: sync/Operation/syncfn_commandline_oper1_oper2_../request Operation_stamp###########
+##### synced template for request sync[0]/+node stamp #####################
+##### initial sync for known nodes : sync/Operation/initial Operation_stamp #######################
+##### synced template for initial sync for known nodes : sync/Operation/initial/node Operation_stamp #######################
+##### delete request of same sync if ActivePartners qty reached #######################
 
-def checksync(myip='nothing'):
- global syncs, myhost, allsyncs, hostip, actives
+def checksync(hostip='request'):
+ global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
+ synctypes[hostip]()
+
+def syncinit():
+ global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
+ from time import time as timestamp
+ stamp = int(timestamp() + 3600)
  for sync in syncs:
-#   gsyncs = [ x for x in allsyncs if sync in x[0] ] 
-   gsyncs = [ x for x in allsyncs if sync in x[0] ]
-   if myhost == leader and  len(gsyncs) == 0 and sync not in ['Partnernode','Partner','PartnerAdd','PartnerDel' ]:
-    from time import time as timestamp
-    stamp = int(timestamp() + 3600)
-    put('sync/'+sync+'/'+leader,str(stamp)) 
-#   if myhost == leader and len(gsyncs) == 1:
-#     dels('modified',sync)
-   if len(gsyncs) == 0:
-    continue 
-   if myip != 'nothing':
-    hostip = myip
-   maxgsync = max(gsyncs, key=lambda x: float(x[1]))
-   mingsync = min(gsyncs, key=lambda x: float(x[1]))
-   mysync = [x for x in gsyncs if myhost in str(x) ]
-   if len(mysync) < 1:
-    mysync = [(-1,-1)]
-   mysync = float(mysync[0][1])
-   if mysync != float(maxgsync[1]):
-    if sync == 'user':
-     if mysync == -1:
-      usersyncall(hostip)
+  put('sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/request/'+myhost,sync+'_'+str(stamp)) 
+  print('initial sync:',sync)
+ return
+
+def syncall():
+ global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
+ actives = get('ActivePartners','--prefix')
+ Partners = get('Partners/','--prefix')
+ myip = get('ActivePartners/'+myhost)[0]
+ allsyncs = get('sync','request') 
+ donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
+ mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
+ myrequests = [ x for x in allsyncs if x[1] not in mysyncs ] 
+ leader = get('leader','--prefix')[0][0].replace('leader/','')
+
+ myinitials = [ x[1] for x in allsyncs if 'initial' in str(x)  and 'dhcp' not in str(x) ] 
+ for syncinfo in myinitials:
+   syncleft = syncinfo[0]
+   syncright = syncinfo[1]
+   sync = syncleft.split('/')[1]
+   cmdinfo = syncleft.split('/')(2).split('_')
+   if sync in etcdonly:
+     if cmdline[0] == 'Add':
+      syncitem=get(sync,cmdline[1])
+      putlocal(myip,syncitem[0],syncitem[1])
      else:
-      usersyncall(hostip,'check')
-     adminuser = get('usershash/admin')[0]
-     if myhost != leader:
-      putlocal(hostip,'usershash/admin',adminuser)
-    elif sync == 'group':
-     if mysync == -1:
-      groupsyncall(hostip)
-     else: 
-      groupsyncall(hostip,'check')
-    elif sync == 'evacuatehost':
-      hosts = get('modified','evacuatehost')
-      for hostn in hosts:
-       setall()
-    elif sync in ['dataip','tz','ntp','gw','dnsname','dnssearch','alias']:
-     cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local ll'
-     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-    elif 'Snapperioddel' in sync:
-     cmdline='/TopStor/pump.sh SnapShotPeriodDelete '
-     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-    elif 'PartnerAdd' in sync:
-     #cmdline='/TopStor/pump.sh PartnerSync.py '+maxgsync[0].split('/')[1].split('_')[1] 
-     cmdline='/TopStor/pump.sh PartnerSync.py ' 
-     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-    elif 'PartnerDel' in sync:
-     cmdline='/TopStor/pump.sh PartnerDel '+maxgsync[0].split('/')[1].split('_')[1]+' yes '+maxgsync[0].split('/')[1].split('_')[2]
-     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-     
-    elif sync in ['sizevol', 'hostipsubnet','Snapperiod','ready','alias','leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged', 'ActivePartners', 'config',  'pool', 'nextlead', 'snapperiod']:
-     print('normal known leader..etc')
-     cmdline='/TopStor/pump.sh etcdsync.py '+hostip+' '+sync+' '+sync
-     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      dellocal(myip,sync,cmdline[1])
+   elif sync == 'user':
+     oneusersync(cmdinfo[0],cmdinfo[1])
+   elif sync == 'group':
+     onegroupsync(cmdinfo[0],cmdinfo[1])
+   elif sync in nodeprops:
+    cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local '
+    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+   else:
+    print('there is a sync that is not defined:',sync)
+    return
       
-    newsync=maxgsync[0].split('/')[1]
-    put('sync/'+newsync+'/'+myhost, str(maxgsync[1]))
-    broadcasttolocal('sync/'+newsync+'/'+myhost, str(maxgsync[1]))
-  
-      
+   put(syncleft+'/'+myhost, syncright)
+   if myhost != leader:
+    putlocal(myip, syncleft+'/'+myhost, syncright)
+    putlocal(syncleft, syncright)
+   if myhost != leader:
+    donerequests = [ x for x in donerequests if '/request/'+myhost not in str(x) ] 
+    localdones = getlocal(myip, 'sync', '/request/dhcp')
+    for done in donerequests:
+     if done not in str(localdones):
+      putlocal(myip, done[0],done[1])
  
+
+
+def syncrequest():
+ global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
+ actives = get('ActivePartners','--prefix')
+ Partners = get('Partners/','--prefix')
+ myip = get('ActivePartners/'+myhost)[0]
+ allsyncs = get('sync','request') 
+ donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
+ mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
+ myrequests = [ x for x in allsyncs if x[1] not in mysyncs ] 
+ for syncinfo in myrequests:
+   syncleft = syncinfo[0]
+   stamp = syncinfo[1]
+   sync = syncleft.split('/')[1]
+   opers= syncleft.split('/')(2).split('_')
+   if sync in etcdonly:
+     if pers[0] == 'Add':
+      putlocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
+     else:
+      dellocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
+   if sync in syncanitem:
+      if 'syncfn' in opers[0]:
+       globals()[opers[1]](opers[2:])
+      else:
+       cmdline='/TopStor/pump.sh '+opers[0]+' '+opers[1]
+       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+   if sync in special1    
+      cmdline='/TopStor/'+opers[0].split(':')[0]+' '+oper[1]+' '+oper[2]
+      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+oper[1] + 'system'
+      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+   elif sync in nodeprops:
+    cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local '
+    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+   else:
+    print('there is a sync that is not defined:',sync)
+    return
+      
+   put(syncleft+'/'+myhost, syncright)
+   if myhost != leader:
+    putlocal(myip, syncleft+'/'+myhost, syncright)
+    putlocal(syncleft, syncright)
+   if myhost != leader:
+    donerequests = [ x for x in donerequests if '/request/'+myhost not in str(x) ] 
+    localdones = getlocal(myip, 'sync', '/request/dhcp')
+    for done in donerequests:
+     if done not in str(localdones):
+      putlocal(myip, done[0],done[1])
+      
+runcmd={'cron':'etctocron'} 
+synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
 if __name__=='__main__':
- checksync(*sys.argv[1:])
+ synctypes[sys.argv[1]]()

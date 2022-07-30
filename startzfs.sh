@@ -122,7 +122,13 @@ then
  /pace/etcdcmd.py user add root:YN-Password_123
  /pace/etcdcmd.py auth enable
  ./runningetcdnodes.py $myip 2>/dev/null
- ./etcddel.py sync --prefix
+ issync=`./etcdget.py sync initial`
+ echo $issync | grep '\-1' 
+ if [ $? -eq 0 ];
+ then
+  ./checksyncs.py syncinit
+ fi
+ #./etcddel.py sync --prefix
  ./etcddel.py needtoreplace --prefix
  ./etcddel.py needtoimport --prefix
  ./etcddel.py known --prefix 2>/dev/null 
@@ -150,7 +156,7 @@ then
   route del default
   route add default gw $gateway
  fi 
- /TopStor/HostaManualconfigDNS
+ /TopStor/HostManualconfigDNS
  tzone=`ETCDCTL_API=3 /TopStor/etcdget.py tz/$myhost`
  echo $tzone | grep '\/'
  if [ $? -ne 0 ];
@@ -413,26 +419,23 @@ else
    stillpossible=1
    while [ $stillpossible==1 ]:
    do
-    stamp=`date +%s%N`
-    myalias=`./etcdgetlocal.py $myip $aliast/$myhost`
-    ./etcdput.py $aliast/$myhost $myalias
-    ./etcdput.py sync/$aliast/$myhost $stamp 
     ./etcdget.py possible --prefix | grep $myhost
     if [ $? -eq 0 ];
     then
      stillpossible=1
     else
      stillpossible=0
-     ./etcdput.py sync/gw/$myhost $stamp 
-     ./broadcasttolocal.py sync/gw/$myhost $stamp 
     fi
    done 
   fi 
   stamp=`date +%s%N`
-  myalias=`ETCDCTL_API=3 /pace/etcdget.py $aliast/$myhost`
+  myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip $aliast/$myhost`
   ./etcdput.py $aliast/$myhost $myalias
-  ./etcdput.py sync/$aliast/$myhost $stamp 
-  ./checksyncs.py
+  ./etcdput.py sync/$aliast/nothing_nothing/request ${aliast}_$stamp.
+  ./etcdput.py sync/$aliast/nothing_nothing/request/$leader ${aliast}_$stamp.
+  ./etcdput.py sync/$aliast/nothing_nothing/request/$myhost ${aliast}_$stamp.
+  issync=`./etcdget.py sync initial | grep $myhost`
+  ./checksyncs.py syncrequest
   /bin/crontab /TopStor/plaincron
   /TopStor/etctocron.py
   systemctl start iscsid &
