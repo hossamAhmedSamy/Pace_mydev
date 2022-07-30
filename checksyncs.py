@@ -14,10 +14,10 @@ from usersyncall import usersyncall, oneusersync
 from groupsyncall import groupsyncall, onegroupsync
 from socket import gethostname as hostname
 
-syncanitem = ['replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
+syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-etcdonly = [ 'sizevol', 'Partnr','ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','configured','pool','nextlead']
+etcdonly = [ 'cleanlost','sizevol', 'Partnr','ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','configured','pool','nextlead']
 syncs = etcdonly + syncanitem + special1
 myhost = hostname()
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
@@ -36,8 +36,8 @@ def syncinit(*args):
  from time import time as timestamp
  stamp = int(timestamp() + 3600)
  for sync in syncs:
-  put('sync/'+sync+'/'+'initial/reqeust',sync+'_'+str(stamp)) 
-  put('sync/'+sync+'/'+'initial/reauest/'+myhost,sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/request/'+myhost,sync+'_'+str(stamp)) 
  return
 
 def syncall(thisip,*args):
@@ -56,11 +56,13 @@ def syncall(thisip,*args):
       if 'cron' in sync:
        etctocron()
       if sync in 'user':
+       print('syncing all users')
        usersyncall(myip) 
       if sync in 'group':
+       print('syncing all groups')
        groupsyncall(myip)
       if sync in ['tz','ntp','gw','dns']: 
-       cmdline='/TopStor/pump.sh HotManualConfig'+sync.upper()
+       cmdline='/TopStor/pump.sh HostManualconfig'+sync.upper()
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in syncs:
     print('sycs',sync, myip)
@@ -90,6 +92,7 @@ def syncrequest(*args):
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
  myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
+ myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
  for syncinfo in myrequests:
    syncleft = syncinfo[0]
@@ -125,14 +128,17 @@ def syncrequest(*args):
     putlocal(myip, syncleft, stamp)
  if myhost != leader:
   dones = get('sync','/request/dhcp')
-  otherdones = [ x for x in dones if '/request/'+myhost not in str(x) ] 
-  localdones = getlocal(myip, 'sync', '/request/dhcp')
+  otherdones = [ x for x in dones if '/request/dhcp' in str(x) ] 
+  localdones = getlocal(myip, 'sync', '--prefix')
   for done in otherdones:
    if str(done) not in str(localdones):
     putlocal(myip, done[0],done[1])
+    putlocal(myip, '/'.join(done[0].split('/')[:-1]), done[1])
+  deleted = set()
   for done in localdones:
-   if str(done) not in str(otherdones):
-    dellocal(myip, done[0],done[1])
+   if done[1] not in str(otherdones) and done[1] not in deleted:
+    dellocal(myip, 'sync', done[1])
+    deleted.add(done[1])
      
 runcmd={'cron':'etctocron'} 
 synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }

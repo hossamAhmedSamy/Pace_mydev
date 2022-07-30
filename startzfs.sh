@@ -333,8 +333,10 @@ else
   stamp=`date +%s%N`
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip $aliast/$myhost`
   ./etcdput.py $aliast/$myhost $myalias
-  ./etcdput.py sync/$aliast/Add_nothing_nothing/request ${aliast}_$stamp.
-  ./etcdput.py sync/$aliast/Add_nothing_nothing/request/$leader ${aliast}_$stamp.
+  myalias=`echo $myalias | sed 's/\_/\:\:\:/g'`
+  myalias=`echo $myalias | sed 's/\//\:\:\:/g'`
+  ./etcdput.py sync/$aliast/Add_${myhost}_$myalias/request ${aliast}_$stamp.
+  ./etcdput.py sync/$aliast/Add_${myhost}_$myalias/request/$myhost ${aliast}_$stamp.
   issync=`./etcdgetlocal.py $myip sync initial`initial
   echo $issync | grep $myhost
   if [ $? -eq 0 ];

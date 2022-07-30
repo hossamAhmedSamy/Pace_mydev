@@ -25,13 +25,14 @@ if toactivate != []:
   if x[0].replace('toactivate','') in str(Active):
    etcddel('toactivate',x[0])
   put('known/'+x[0].replace('toactivate',''),x[1])
-  put('sync/known/'+myhost,str(stamp()))
-  broadcasttolocal('known/'+x[0].replace('toactivate',''),x[1])
+  put('sync/known/Add_'+x[0].replace('toactivate','')+'_'+x[1]+'/request','known_'+str(stamp()))
+  put('sync/known/Add_'+x[0].replace('toactivate','')+'_'+x[1]+'/request/'+myhost,'known_'+str(stamp()))
   put('nextlead',x[0].replace('toactivate','')+'/'+x[1])
-  put('sync/nextlead/'+myhost,str(stamp()))
-  broadcasttolocal('nextlead',x[0].replace('toactivate','')+'/'+x[1])
+  put('sync/nextlead/Add_'+x[0].replace('toactivate','')+'_'+x[1]+'/request','nextlead_'+str(stamp()))
+  put('sync/nextlead/Add_'+x[0].replace('toactivate','')+'_'+x[1]+'/request/'+myhost,'nextlead_'+str(stamp()))
   etcddel('losthost/'+x[0].replace('toactivate',''))
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  put('sync/losthost/Del_'+x[0].replace('toactivate','')+'_--prefix/request','losthost_'+str(stamp()))
+  put('sync/losthost/Del_'+x[0].replace('toactivate','')+'_--prefix/request/'+myhost,'losthost_'+str(stamp()))
   frstnode=get('frstnode')
   print('frst',frstnode[0])
   if x[0].replace('toactivate','') not in frstnode[0]:
@@ -39,15 +40,7 @@ if toactivate != []:
    put('frstnode',newfrstnode)
   put('change/'+x[0].replace('toactivate','')+'/booted',x[1])
   put('tosync','yes')
-  broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
-  #cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
-  #subprocess.run(cmdline,stdout=subprocess.PIPE)
-#  cmdline=['/bin/sleep','5']
-#  subprocess.run(cmdline,stdout=subprocess.PIPE)
-#  cmdline=['/pace/iscsiwatchdog.sh','2>/dev/null']
-#  subprocess.run(cmdline,stdout=subprocess.PIPE)
-#  cmdline=['/bin/sleep','5']
-#  subprocess.run(cmdline,stdout=subprocess.PIPE)
+  #broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
 else:
  print('toactivate is empty')
 if '1' in perfmon:

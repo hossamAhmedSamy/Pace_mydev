@@ -82,6 +82,8 @@ do
    /pace/etcdput.py $aliast/$myhost $myalias
    /pace/etcdput.py ActivePartners/$myhost $myip
    stamp=`date +%s`
+   myalias=`echo $myalias | sed 's/\_/\:\:\:/g'`
+   myalias=`echo $myalias | sed 's/\//\:\:\:/g'`
    /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request ActivePartners_$stamp
    /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/$myhost ActivePartners_$stamp
    /pace/etcdput.py sync/$aliast/Add_${myhost}_$myalias/request/$myhost alias_$stamp
