@@ -20,12 +20,20 @@ known=get('known','--prefix')
 ready=get('ready','--prefix')
 leader=get('leader','--prefix')
 knownchange = 0
+
+def dosync(*args):
+ if myhost in string(leader):
+  put(*args)
+ return 
+
+
 if len(ready) > len(known)+1:
  print('iamhere')
  for r in ready:
   if r[0].split('/')[1] not in ( str(known) and str(leader)) :
-   put('known/',r[0].split('/')[1],r[0],r[1])
-   put('sync/known/'+myhost,str(stamp()))
+   put('known/'+r[0].split('/')[1],r[1])
+   dosync('sync/known/Add_'+r[0].split('/')+'_'+r[1]+'/request',str(stamp()))
+   dosync('sync/known/Add_'+r[0].split('/')[1]+'_'+r[1]+'/request/'+myhost,str(stamp()))
    knownchange = 1
 if knownchange == 1:
  known=get('known','--prefix')
@@ -35,7 +43,6 @@ nextone=get('nextlead')
 if str(nextone[0]).split('/')[0] not in  str(known):
  print('deleting nextlead')
  etcddel('nextlead')
- etcddel('sync/nextlead', '--prefix')
  nextone=[]
 if known != []:
  for kno in known:
@@ -53,20 +60,11 @@ if known != []:
     broadcasttolocal('nextlead','nothing')
    logmsg.sendlog('Partst02','warning','system', kn[0].replace('known/',''))
    etcddel('ready/'+kn[0].replace('known/',''))
-   put('sync/known/'+myhost,str(stamp()))
+   dosync('sync/ready/Del_'+kn[0].split('/')[1]+'_'+kn[1]+'/request',str(stamp()))
+   dosync('sync/ready/Del_'+kn[0].split('/')[1]+'_'+kn[1]+'/request/'+myhost,str(stamp()))
 
    etcddel('ipaddr',kn[0].replace('known/',''))
-   put('sync/known/'+myhost,str(stamp()))
-   put('sync/pool/'+myhost,str(stamp()))
-   put('sync/volume/'+myhost,str(stamp()))
 
-#   etcddel('sync/known', '--prefix')
-#   etcddel('sync/volume', '--prefix')
-#   etcddel('sync/pool', '--prefix')
-#   etcddel('needtoreplace', kn[0].replace('known/',''))
-#   etcddel('needtoimport', kn[0].replace('known/',''))
-#   etcddel('old','--prefix')
-   
    cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
    subprocess.run(cmdline,stdout=subprocess.PIPE)
    etcddel('localrun/'+str(kn[0]))
@@ -76,10 +74,11 @@ if known != []:
   else:
    if nextone == []:
     put('nextlead',kn[0].replace('known/','')+'/'+kn[1])
-    etcddel('nextlead','--prefix')
-    broadcasttolocal('nextlead',kn[0].replace('known/','')+'/'+kn[1])
-    broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
-    put('sync/nextlead/'+myhost,str(stamp()))
+    dosync('sync/nextlead/Add_Split_'+kn[0].split('/')[1]+'::'+kn[1]+'/request',str(stamp()))
+    dosync('sync/nextlead/Add_Split_'+kn[0].split('/')[1]+'::'+kn[1]+'/request/'+myhost,str(stamp()))
+    #etcddel('nextlead','--prefix')
+   # broadcasttolocal('nextlead',kn[0].replace('known/','')+'/'+kn[1])
+   # broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
 poss = get('pos','--prefix')
 if poss != []:
  for pos in poss:
@@ -88,6 +87,8 @@ if poss != []:
   if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in pos[1]):
    print(pos[0].replace('possible',''))
    etcddel('ready/'+pos[0].replace('possible',''))
+   dosync('sync/ready/Del_'+pos[0].replace('possible','')+'_'+'--prefix'+'/request',str(stamp()))
+   dosync('sync/ready/Del_'+pos[0].replace('possible','')+'_'+'--prefix'+'/request/'+myhost,str(stamp()))
    etcddel(pos[0])
   
   

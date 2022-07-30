@@ -29,22 +29,22 @@ myhost = hostname()
 ##### delete request of same sync if ActivePartners qty reached #######################
 
 def checksync(hostip='request',*args):
- synctypes[hostip]()
+ synctypes[hostip](*args)
 
 def syncinit(*args):
  global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
  from time import time as timestamp
  stamp = int(timestamp() + 3600)
  for sync in syncs:
-  put('sync/'+sync+'/'+'initial/',sync+'_'+str(stamp)) 
-  put('sync/'+sync+'/'+'initial/'+myhost,sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/reqeust',sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/reauest/'+myhost,sync+'_'+str(stamp)) 
  return
 
 def syncall(thisip,*args):
  global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
  from etctocron import etctocron 
  from etcdsync import synckeys
- myip = thisip[0]
+ myip = thisip
  noinit = [ 'replipart' , 'evacuatehost' ]
  allinitials = get('sync','initial')
  myinitials = [ x for x in allinitials if 'initial' in str(x)  and '/request/dhcp' not in str(x) ] 
@@ -63,6 +63,7 @@ def syncall(thisip,*args):
        cmdline='/TopStor/pump.sh HotManualConfig'+sync.upper()
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in syncs:
+    print('sycs',sync, myip)
     synckeys(myip, sync,sync)
        
    if sync not in syncs:
@@ -88,7 +89,7 @@ def syncrequest(*args):
  allsyncs = get('sync','request') 
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
- myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and 'dhcp' not in x[0] ] 
+ myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
  print('myrequests', myrequests)
  for syncinfo in myrequests:
    syncleft = syncinfo[0]
@@ -97,12 +98,16 @@ def syncrequest(*args):
    opers= syncleft.split('/')[2].split('_')
    if sync in etcdonly and myhost != leader:
      if opers[0] == 'Add':
-      putlocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
+      if 'Split' in opers[1]:
+       putlocal(myip,sync,opers[2].replace(':::','_').replace('::','/'))
+      else:
+       putlocal(myip,sync+'/'+opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
      else:
       dellocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
       if 'syncfn' in opers[0]:
-       globals()[opers[1]](opers[2:])
+       print('opers',opers)
+       globals()[opers[1]](*opers[2:])
       else:
        cmdline='/TopStor/pump.sh '+opers[0]+' '+opers[1]
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
@@ -120,13 +125,16 @@ def syncrequest(*args):
     putlocal(myip, syncleft, stamp)
  if myhost != leader:
   dones = get('sync','/request/dhcp')
-  otherdones = [ x for x in dones if myhost not in str(x) ] 
+  otherdones = [ x for x in dones if '/request/'+myhost not in str(x) ] 
   localdones = getlocal(myip, 'sync', '/request/dhcp')
   for done in otherdones:
    if str(done) not in str(localdones):
     putlocal(myip, done[0],done[1])
+  for done in localdones:
+   if str(done) not in str(otherdones):
+    dellocal(myip, done[0],done[1])
      
 runcmd={'cron':'etctocron'} 
 synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
 if __name__=='__main__':
- synctypes[sys.argv[1]](sys.argv[2:])
+ synctypes[sys.argv[1]](*sys.argv[2:])
