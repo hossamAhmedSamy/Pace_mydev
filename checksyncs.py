@@ -13,7 +13,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['sizevol','Partnernode','PartnerAdd','Snapperioddel','Snapperiod','ready','leader','alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','hostipsubnet','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']
+syncs = ['sizevol','Partnernode','PartnerAdd','PartnerDel','Snapperioddel','Snapperiod','ready','leader','alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','hostipsubnet','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged', 'ActivePartners', 'config', 'pool', 'nextlead', 'snapperiod']
 collectedsyncs = ['alias']
 myhost = hostname()
 actives = get('ActivePartners','--prefix')
@@ -25,13 +25,13 @@ def checksync(myip='nothing'):
  global syncs, myhost, allsyncs, hostip, actives
  for sync in syncs:
 #   gsyncs = [ x for x in allsyncs if sync in x[0] ] 
-   gsyncs = [ x for x in allsyncs if sync in x[0] ] 
-   if myhost == leader and  len(gsyncs) == 0:
+   gsyncs = [ x for x in allsyncs if sync in x[0] ]
+   if myhost == leader and  len(gsyncs) == 0 and sync not in ['Partnernode','Partner','PartnerAdd','ParnerDel' ]:
     from time import time as timestamp
     stamp = int(timestamp() + 3600)
     put('sync/'+sync+'/'+leader,str(stamp)) 
-   if myhost == leader and len(gsyncs) == 1:
-     dels('modified',sync)
+#   if myhost == leader and len(gsyncs) == 1:
+#     dels('modified',sync)
    if len(gsyncs) == 0:
     continue 
    if myip != 'nothing':
@@ -64,18 +64,17 @@ def checksync(myip='nothing'):
      cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local ll'
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     elif 'Snapperioddel' in sync:
-     partner=maxgsync[0].split('/')[1].split('_')[1]
-     userreq=maxgsync[0].split('/')[1].split('_')[2]
-     cmdline='/TopStor/pump.sh PartnerDel '+partner+' yes '+userreq 
+     cmdline='/TopStor/pump.sh SnapShotPeriodDelete '
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     elif 'PartnerAdd' in sync:
-     cmdline='/TopStor/pump.sh PartnerSync.py '+maxgsync[0].split('/')[1].split('_')[1] 
+     #cmdline='/TopStor/pump.sh PartnerSync.py '+maxgsync[0].split('/')[1].split('_')[1] 
+     cmdline='/TopStor/pump.sh PartnerSync.py ' 
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-    elif 'repliPartnerDel' in sync:
-     cmdline='/TopStor/pump.sh repliPartnerDel '+maxgsync[0].split('/')[1].split('_')[1]+' yes '+maxgsync[0].split('/')[1].split('_')[2]
+    elif 'PartnerDel' in sync:
+     cmdline='/TopStor/pump.sh PartnerDel '+maxgsync[0].split('/')[1].split('_')[1]+' yes '+maxgsync[0].split('/')[1].split('_')[2]
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
      
-    elif sync in ['sizevol', 'hostipsubnet','Snapperiod','ready','alias','leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']:
+    elif sync in ['sizevol', 'hostipsubnet','Snapperiod','ready','alias','leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged', 'ActivePartners', 'config',  'pool', 'nextlead', 'snapperiod']:
      print('normal known leader..etc')
      cmdline='/TopStor/pump.sh etcdsync.py '+hostip+' '+sync+' '+sync
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')

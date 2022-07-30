@@ -75,15 +75,17 @@ do
   if [ $isprimary -eq 3 ];
   then
    echo for $isprimary sending info Partsu03 booted with ip >> /root/zfspingtmp
-   myalias=`/pace/etcdget.py alias/$myhost`
+   aliast='alias'
+   myalias=`/pace/etcdget.py $aliast/$myhost`
+   aliast='alias'
    /pace/etcdput.py ready/$myhost $myip
-   /pace/etcdput.py alias/$myhost $myalias
+   /pace/etcdput.py $aliast/$myhost $myalias
    /pace/etcdput.py y/$myhost $myip
    /pace/etcdput.py ActivePartners/$myhost $myip
    stamp=`date +%s`
    /pace/etcdput.py sync/ActivePartners/$myhost $stamp
    /pace/etcdput.py sync/ready/$myhost $stamp
-   /pace/etcdput.py sync/alias/$myhost $stamp
+   /pace/etcdput.py sync/$aliast/$myhost $stamp
    partnersync=0
    /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
    touch /pacedata/addiscsitargets 
