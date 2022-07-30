@@ -118,10 +118,12 @@ then
   fi
  done
  echo started etcd as primary>>/root/tmp2
+ echo started etcd as primary
  datenow=`date +%m/%d/%Y`; timenow=`date +%T`;
  /pace/etcdcmd.py user add root:YN-Password_123
  /pace/etcdcmd.py auth enable
  ./runningetcdnodes.py $myip 2>/dev/null
+ echo check syncinit 
  issync=`./etcdget.py sync initial`
  echo $issync | grep '\-1' 
  if [ $? -eq 0 ];
@@ -431,11 +433,20 @@ else
   stamp=`date +%s%N`
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip $aliast/$myhost`
   ./etcdput.py $aliast/$myhost $myalias
-  ./etcdput.py sync/$aliast/nothing_nothing/request ${aliast}_$stamp.
-  ./etcdput.py sync/$aliast/nothing_nothing/request/$leader ${aliast}_$stamp.
-  ./etcdput.py sync/$aliast/nothing_nothing/request/$myhost ${aliast}_$stamp.
-  issync=`./etcdget.py sync initial | grep $myhost`
+  ./etcdput.py sync/$aliast/Add_nothing_nothing/request ${aliast}_$stamp.
+  ./etcdput.py sync/$aliast/Add_nothing_nothing/request/$leader ${aliast}_$stamp.
+  issync=`./etcdgetlocal.py $myip sync initial`initial
+  echo $issync | grep $myhost
+  if [ $? -eq 0 ];
+  then
+   echo syncrequests only 
   ./checksyncs.py syncrequest
+  else
+   echo have to syncall 
+  ./checksyncs.py syncall
+  fi 
+
+  echo requesting syncrequest
   /bin/crontab /TopStor/plaincron
   /TopStor/etctocron.py
   systemctl start iscsid &

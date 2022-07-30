@@ -185,13 +185,14 @@ do
      echo running sendhost.py $leaderip 'user' 'recvreq' $myhost >>/root/tmp2
      leaderall=` ./etcdget.py leader --prefix `
      leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
-     lea  issync=`./etcdget.py sync initial | grep $myhost`
-  echo $syncinit | grep $myhost
+     issync=`./etcdget.py sync initial | grep $myhost`
+  echo $issync | grep $myhost
   if [ $? -eq 0 ];
   then
   ./checksyncs.py syncrequest
   else
-   ./checksyncs.py syncall
+   /pace/etcddellocal.py $myip sync --prefix
+   /pace/checksyncs syncall &
    syncinit=$myhost
   fi 
 derip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
