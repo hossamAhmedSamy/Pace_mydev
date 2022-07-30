@@ -122,7 +122,7 @@ for a in sty:
      partners = snapshot[16]
     if len(snapshot) >= 16:
      partnerr = snapshot[15]
-    sdict={'fullname':snapshot[0],'name':snapname, 'volume':volname, 'pool': b[0], 'host':myhost, 'creation':' '.join(snapshot[1:4]+volume[5:6]), 'time':snapshot[4], 'used':snapshot[6], 'quota':snapshot[7], 'usedbysnapshots':snapshot[8], 'refcompressratio':snapshot[9], 'prot':snapshot[10],'referenced':snapshot[12], 'statusmount':snapshot[13],'snaptype':snapshot[13], 'partnerR': partnerr, 'partnerS': partners}
+    sdict={'fullname':snapshot[0],'name':snapname, 'volume':volname, 'pool': b[0], 'host':myhost, 'creation':' '.join(snapshot[1:4]+volume[5:6]), 'time':snapshot[4], 'used':snapshot[6], 'quota':snapshot[7], 'usedbysnapshots':snapshot[8], 'refcompressratio':snapshot[9], 'prot':snapshot[10],'referenced':snapshot[12], 'statusmount':snapshot[13],'snaptype':snapshot[14], 'partnerR': partnerr, 'partnerS': partners}
     snaplist.append(sdict)
     lsnapshots.append(sdict['name'])
     
