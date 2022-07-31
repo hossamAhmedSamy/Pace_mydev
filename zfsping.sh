@@ -75,7 +75,8 @@ do
   if [ $isprimary -eq 3 ];
   then
    echo for $isprimary sending info Partsu03 booted with ip >> /root/zfspingtmp
-   myalias=`/pace/etcdget.py alias/$myhost`
+   aliast='alias'
+   myalias=`/pace/etcdget.py $aliast/$myhost`
    aliast='alias'
    /pace/etcdput.py ready/$myhost $myip
    /pace/etcdput.py $aliast/$myhost $myalias
