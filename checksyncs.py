@@ -25,7 +25,7 @@ def checksync(myip='nothing'):
  global syncs, myhost, allsyncs, hostip, actives
  for sync in syncs:
 #   gsyncs = [ x for x in allsyncs if sync in x[0] ] 
-   gsyncs = [ x for x in allsyncs if sync in x[0] ] 
+   gsyncs = [ x for x in allsyncs if sync in x[0] and 'Partner' not in sync ] 
    if myhost == leader and  len(gsyncs) == 0:
     from time import time as timestamp
     stamp = int(timestamp() + 3600)
@@ -69,7 +69,8 @@ def checksync(myip='nothing'):
      cmdline='/TopStor/pump.sh PartnerDel '+partner+' yes '+userreq 
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     elif 'PartnerAdd' in sync:
-     cmdline='/TopStor/pump.sh PartnerSync.py '+maxgsync[0].split('/')[1].split('_')[1] 
+     #cmdline='/TopStor/pump.sh PartnerSync.py '+maxgsync[0].split('/')[1].split('_')[1] 
+     cmdline='/TopStor/pump.sh PartnerSync.py ' 
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     elif 'repliPartnerDel' in sync:
      cmdline='/TopStor/pump.sh repliPartnerDel '+maxgsync[0].split('/')[1].split('_')[1]+' yes '+maxgsync[0].split('/')[1].split('_')[2]
