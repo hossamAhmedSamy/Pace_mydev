@@ -315,6 +315,8 @@ do
    pgrep  selectimport 
    if [ $? -ne 0 ];
    then
+    stamp=`date +%s`
+    ETCDCTL_API=3 /pace/etcdput.py sync/poolsnxt/$myhost $stamp 
     /TopStor/selectimport.py $myhost &
    fi
  fi 
