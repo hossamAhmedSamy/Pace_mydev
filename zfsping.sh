@@ -75,8 +75,15 @@ do
   if [ $isprimary -eq 3 ];
   then
    echo for $isprimary sending info Partsu03 booted with ip >> /root/zfspingtmp
+   myalias=`/pace/etcdget.py alias/$myhost`
    /pace/etcdput.py ready/$myhost $myip
+   /pace/etcdput.py alias/$myhost $myalias
+   /pace/etcdput.py y/$myhost $myip
    /pace/etcdput.py ActivePartners/$myhost $myip
+   stamp=`date +%s`
+   /pace/etcdput.py sync/ActivePartners/$myhost $stamp
+   /pace/etcdput.py sync/ready/$myhost $stamp
+   /pace/etcdput.py sync/alias/$myhost $stamp
    partnersync=0
    /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
    touch /pacedata/addiscsitargets 
@@ -107,6 +114,8 @@ do
    ./runningetcdnodes.py $myip 2>/dev/null
    ./etcddel.py leader --prefix 2>/dev/null &
    ./etcdput.py leader/$myhost $myip 2>/dev/null &
+   stamp=`date +%s`
+   ./etcdput.py sync/leader/$myhost $stamp 2>/dev/null &
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
    /TopStor/logqueue.py FixIamleader stop system 
@@ -146,9 +155,8 @@ do
     needlocal=2
    fi
    echo checking if I am known host >> /root/zfspingtmp
-   known=` ./etcdget.py known --prefix 2>/dev/null`
+   known=`./etcdget.py known --prefix`
    myconfig=` ./etcdgetlocal.py $myip configured/$myhost 2>/dev/null`
-
    echo $known | grep $myhost  &>/dev/null
    if [ $? -ne 0 ];
    then
@@ -174,7 +182,7 @@ do
      leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
      leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
      ./checksync.py
-     /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost &
+     /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost 
      isknown=$((isknown+1))
     fi
     if [[ $isknown -le 10 ]];
@@ -183,8 +191,9 @@ do
     fi
     if [[ $isknown -eq 3 ]];
     then
-     /pace/etcdput.py ready/$myhost $myip &
-     /pace/etcdput.py ActivePartners/$myhost $myip &
+     /pace/etcdput.py ready/$myhost $myip 
+     /pace/etcdput.py ActivePartners/$myhost $myip 
+     /pace/etcdput.py sync/ActivePartners/$myhost $stamp
      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
      #targetcli clearconfig True
      #targetcli saveconfig
@@ -312,6 +321,8 @@ do
    pgrep  selectimport 
    if [ $? -ne 0 ];
    then
+    stamp=`date +%s`
+    ETCDCTL_API=3 /pace/etcdput.py sync/poolsnxt/$myhost $stamp 
     /TopStor/selectimport.py $myhost &
    fi
  fi 

@@ -13,7 +13,7 @@ from usersyncall import usersyncall
 from groupsyncall import groupsyncall
 from socket import gethostname as hostname
 
-syncs = ['Partnernode','PartnerAdd','Snapperioddel','Snapperiod','ready','leader','alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']
+syncs = ['sizevol','Partnernode','PartnerAdd','Snapperioddel','Snapperiod','ready','leader','alias', 'user','group','evacuatehost','dataip','tz','ntp','gw','hostipsubnet','dnsname','dnssearch', 'namespace', 'known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']
 collectedsyncs = ['alias']
 myhost = hostname()
 actives = get('ActivePartners','--prefix')
@@ -72,10 +72,10 @@ def checksync(myip='nothing'):
      cmdline='/TopStor/pump.sh PartnerSync.py '+maxgsync[0].split('/')[1].split('_')[1] 
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     elif 'repliPartnerDel' in sync:
-     cmdline='/TopStor/pump.sh repliPartnerDel '+maxgsync[0].split('/')[1].split('_')[1]+' yes '+maxgsync[0].split('/')[1].split('_')[2] +  
+     cmdline='/TopStor/pump.sh repliPartnerDel '+maxgsync[0].split('/')[1].split('_')[1]+' yes '+maxgsync[0].split('/')[1].split('_')[2]
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
      
-    elif sync in [ 'Snapperiod','ready','leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged','uplogged', 'uplogged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']:
+    elif sync in ['sizevol', 'hostipsubnet','Snapperiod','ready','alias','leader','known', 'allowedPartners', 'activepool', 'ipaddr', 'pools', 'poolsnxt', 'namespace', 'volumes', 'dataip', 'localrun', 'logged', 'ActivePartners', 'config', 'Parnter', 'pool', 'nextlead', 'snapperiod']:
      print('normal known leader..etc')
      cmdline='/TopStor/pump.sh etcdsync.py '+hostip+' '+sync+' '+sync
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
