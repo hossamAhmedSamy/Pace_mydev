@@ -1,9 +1,10 @@
 #!/bin/python3.6
-import subprocess,sys, logmsg
+import subprocess,sys, logmsg, socket
 from logqueue import queuethis
 from ast import literal_eval as mtuple
 from etcddel import etcddel as etcddel
 from broadcast import broadcast as broadcast 
+from time import time as stamp
 from broadcasttolocal import broadcasttolocal as broadcasttolocal
 from etcdget import etcdget as get
 from etcdgetlocal import etcdget as getlocal
@@ -12,6 +13,7 @@ from etcdputlocal import etcdput as putlocal
 import json
 
 
+myhost=socket.gethostname()
 with open('/pacedata/perfmon','r') as f:
  perfmon = f.readline() 
 if '1' in perfmon:
@@ -23,8 +25,10 @@ if toactivate != []:
   if x[0].replace('toactivate','') in str(Active):
    etcddel('toactivate',x[0])
   put('known/'+x[0].replace('toactivate',''),x[1])
+  put('sync/known/'+myhost,str(stamp()))
   broadcasttolocal('known/'+x[0].replace('toactivate',''),x[1])
   put('nextlead',x[0].replace('toactivate','')+'/'+x[1])
+  put('sync/known/'+myhost,str(stamp()))
   broadcasttolocal('nextlead',x[0].replace('toactivate','')+'/'+x[1])
   etcddel('losthost/'+x[0].replace('toactivate',''))
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)

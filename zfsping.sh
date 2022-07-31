@@ -77,6 +77,8 @@ do
    echo for $isprimary sending info Partsu03 booted with ip >> /root/zfspingtmp
    /pace/etcdput.py ready/$myhost $myip
    /pace/etcdput.py ActivePartners/$myhost $myip
+   stamp=`date +%s`
+   /pace/etcdput.py sync/ActivePartners/$myhost $stamp
    partnersync=0
    /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
    touch /pacedata/addiscsitargets 
@@ -174,7 +176,7 @@ do
      leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
      leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
      ./checksync.py
-     /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost &
+     /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost 
      isknown=$((isknown+1))
     fi
     if [[ $isknown -le 10 ]];
@@ -183,8 +185,9 @@ do
     fi
     if [[ $isknown -eq 3 ]];
     then
-     /pace/etcdput.py ready/$myhost $myip &
-     /pace/etcdput.py ActivePartners/$myhost $myip &
+     /pace/etcdput.py ready/$myhost $myip 
+     /pace/etcdput.py ActivePartners/$myhost $myip 
+     /pace/etcdput.py sync/ActivePartners/$myhost $stamp
      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
      #targetcli clearconfig True
      #targetcli saveconfig
