@@ -14,15 +14,15 @@ from usersyncall import usersyncall, oneusersync
 from groupsyncall import groupsyncall, onegroupsync
 from socket import gethostname as hostname
 
-syncanitem = ['Partner','Snapperiod','user','group','host','passwd']
+syncanitem = ['Snapperiod','user','group','host','passwd']
 forReceivers = [ 'user', 'group' ]
 nodeprops =  ['dataip','tz','ntp','gw','dns']
-etcdonly = ['sizevol','ready','alias', 'dataip','hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
+etcdonly = [ 'Snapperiod','sizevol', 'Partner','ready','alias', 'dataip','hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
 syncs = etcdonly + syncanitem + nodeprops
 myhost = hostname()
 actives = get('ActivePartners','--prefix')
 Partners = get('Partners/','--prefix')
-hostip = get('ActivePartners/'+myhost)[0]
+myip = get('ActivePartners/'+myhost)[0]
 allsyncs = get('sync','request') 
 donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
 mysyncs = [ x for x in allsyncs if '/request/'+myhost in str(x) ] 
@@ -36,19 +36,28 @@ leader = get('leader','--prefix')[0][0].replace('leader/','')
 
 def checksync(myip='nothing'):
  global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, hostip, actives
- if myip='initial':
-  for sync in syncs:
+ for sync in syncs:
+  if hostip='initial':
    from time import time as timestamp
    stamp = int(timestamp() + 3600)
-   put('sync/'+sync+'/'+'initial',str(stamp)) 
-   put('sync/'+sync+'/'+'initial/'+myhost,str(stamp)) 
+   put('sync/'+sync+'/'+'initial/request',str(stamp)) 
+   put('sync/'+sync+'/'+'initial/request/'+myhost,str(stamp)) 
   return
  for syncinfo in myrequests:
    syncleft = syncinfo[0]
    syncright = syncinfo[1]
    sync = syncleft.split('/')[1]
    cmdinfo = syncleft.split('/')(2).split('_')
-   if sync == 'user':
+   if sync in etcdonly:
+     if cmdline[0] == 'Add':
+      syncitem=get(sync,cmdline[1])
+      putlocal(myip,syncitem[0],syncitem[1])
+     else:
+      dellocal(myip,sync,cmdline[1])
+     if 'Snapperiod' in sync:
+      from etctocron import etctocron
+      etctocron()
+   elif sync == 'user':
      oneusersync(cmdinfo[0],cmdinfo[1])
    elif sync == 'group':
      onegroupsync(cmdinfo[0],cmdinfo[1])
@@ -57,31 +66,20 @@ def checksync(myip='nothing'):
    elif sync in nodeprops:
     cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local '
     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-   elif 'Snapperiod' in sync:
-     from etctocron import etctocron
-     if myhost != leader:
-      if cmdline[0] == 'Add':
-       syncitem=get('Snapperiod',cmdline[1])
-       putlocal(myip,syncitem[0],syncitem[1])
-      else:
-       dellocal('Snapperiod',cmdline[1])
-     etctocron()
-    elif 'Partner' in sync:
-     #cmdline='/TopStor/pump.sh PartnerSync.py '+maxgsync[0].split('/')[1].split('_')[1] 
-     cmdline='/TopStor/pump.sh PartnerSync.py ' 
-     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-    elif 'PartnerDel' in sync:
-     cmdline='/TopStor/pump.sh PartnerDel '+maxgsync[0].split('/')[1].split('_')[1]+' yes '+maxgsync[0].split('/')[1].split('_')[2]
-     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-     
-    elif sync in etcdonly:
-     cmdline='/TopStor/pump.sh etcdsync.py '+hostip+' '+sync+' '+sync
-     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+   else:
+    print('there is a sync that is not defined:',sync)
+    return
       
-    newsync=maxgsync[0].split('/')[1]
-    put('sync/'+newsync+'/'+myhost, str(maxgsync[1]))
-    broadcasttolocal('sync/'+newsync+'/'+myhost, str(maxgsync[1]))
-  
+   put(syncleft+'/'+myhost, syncright)
+   if myhost != leader:
+    putlocal(myip, syncleft+'/'+myhost, syncright)
+    putlocal(syncleft, syncright)
+   if myhost != leader
+    donerequests = [ x for x in donerequests if '/request/'+myhost not in str(x) ] 
+    localdones = getlocal(myip, 'sync', '/request/dhcp')
+    for done in donerequests:
+     if done not in str(localdones):
+      putlocal(myip, done[0],done[1])
       
  
 if __name__=='__main__':
