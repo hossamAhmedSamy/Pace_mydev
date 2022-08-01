@@ -7,6 +7,7 @@ echo finish > /TopStordata/rebootstatus
 /sbin/pcs resource disable  ip-all  2>/dev/null
 /sbin/pcs resource disable  dataip  2>/dev/null
 /sbin/zpool export -a 2>/dev/null
+aliast='alias'
 #yes | cp /TopStor/smb.conf /etc/samba/
 #yes | cp /TopStor/exports /etc/
 ln -f /etc/passwd  /opt/passwds/passwd
@@ -188,10 +189,10 @@ then
   ./etcdput.py allowedPartners notallowed 
   echo started setting allowedPartners to allow >>/root/tmp2
  fi 
- myalias=`ETCDCTL_API=3 /pace/etcdget.py alias/$myhost`
+ myalias=`ETCDCTL_API=3 /pace/etcdget.py $aliast/$myhost`
  if [[ $myalias -eq -1 ]];
  then
-   /pace/etcdput.py alias/$myhost $myhost
+   /pace/etcdput.py $aliast/$myhost $myhost
  fi
  rm -rf /var/lib/iscsi/nodes/* 2>/dev/null
  echo creating namespaces >>/root/tmp2
@@ -418,9 +419,11 @@ else
      stillpossible=1
     else
      stillpossible=0
-     myalias=`./etcdgetlocal.py $myip alias/$myhost`
-     ./etcdput.py alias/$myhost $myalias
+     myalias=`./etcdgetlocal.py $myip $aliast/$myhost`
+     ./etcdput.py $aliast/$myhost $myalias
      stamp=`date +%s%N`
+     ./etcdput.py sync/gw/$myhost $stamp 
+     ./etcdput.py sync/$aliast/$myhost $stamp 
      ./etcdput.py sync/gw/$myhost $stamp 
      ./broadcasttolocal.py sync/gw/$myhost $stamp 
     fi
