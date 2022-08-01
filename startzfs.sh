@@ -414,6 +414,7 @@ else
    while [ $stillpossible==1 ]:
    do
     stamp=`date +%s%N`
+    myalias=`./etcdgetlocal.py $myip $aliast/$myhost`
     ./etcdput.py $aliast/$myhost $myalias
     ./etcdput.py sync/$aliast/$myhost $stamp 
     ./etcdget.py possible --prefix | grep $myhost
@@ -422,16 +423,15 @@ else
      stillpossible=1
     else
      stillpossible=0
-     myalias=`./etcdgetlocal.py $myip $aliast/$myhost`
-     stamp=`date +%s%N`
-     ./etcdput.py $aliast/$myhost $myalias
-     ./etcdput.py sync/$aliast/$myhost $stamp 
-     ./etcdput.py sync/gw/$myhost $stamp 
      ./etcdput.py sync/gw/$myhost $stamp 
      ./broadcasttolocal.py sync/gw/$myhost $stamp 
     fi
    done 
   fi 
+  stamp=`date +%s%N`
+  myalias=`ETCDCTL_API=3 /pace/etcdget.py $aliast/$myhost`
+  ./etcdput.py $aliast/$myhost $myalias
+  ./etcdput.py sync/$aliast/$myhost $stamp 
   ./checksyncs.py
   /bin/crontab /TopStor/plaincron
   /TopStor/etctocron.py
