@@ -80,7 +80,7 @@ do
    aliast='alias'
    /pace/etcdput.py ready/$myhost $myip
    /pace/etcdput.py $aliast/$myhost $myalias
-   /pace/etcdput.py y/$myhost $myip
+   /pace/etcdput.py sync/$aliast/$myhost $myip
    /pace/etcdput.py ActivePartners/$myhost $myip
    stamp=`date +%s`
    /pace/etcdput.py sync/ActivePartners/$myhost $stamp
