@@ -25,7 +25,8 @@ for pos in possible:
   broadcasttolocal('known/'+posname,pos[1])
   aliast = getlocal(pos[1],'alias/'+posname)[0]
   print('pos',pos[1],posname,str(aliast))
-  put('alias/'+posname,aliast)
+  put('alias/'+posname,str(aliast))
+  print('############')
   put('sync/alias/'+myhost,str(stamp()))
 allow=get('allowedPartners')
 if 'notallowed' in str(allow):
