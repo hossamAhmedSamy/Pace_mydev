@@ -26,7 +26,7 @@ def checksync(myip='nothing'):
  for sync in syncs:
 #   gsyncs = [ x for x in allsyncs if sync in x[0] ] 
    gsyncs = [ x for x in allsyncs if sync in x[0] ]
-   if myhost == leader and  len(gsyncs) == 0 and sync not in ['Partnernode','Partner','PartnerAdd','ParnerDel' ]:
+   if myhost == leader and  len(gsyncs) == 0 and sync not in ['Partnernode','Partner','PartnerAdd','PartnerDel' ]:
     from time import time as timestamp
     stamp = int(timestamp() + 3600)
     put('sync/'+sync+'/'+leader,str(stamp)) 
