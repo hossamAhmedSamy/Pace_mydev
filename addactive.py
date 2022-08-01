@@ -28,7 +28,7 @@ if toactivate != []:
   put('sync/known/'+myhost,str(stamp()))
   broadcasttolocal('known/'+x[0].replace('toactivate',''),x[1])
   put('nextlead',x[0].replace('toactivate','')+'/'+x[1])
-  put('sync/known/'+myhost,str(stamp()))
+  put('sync/nextlead/'+myhost,str(stamp()))
   broadcasttolocal('nextlead',x[0].replace('toactivate','')+'/'+x[1])
   etcddel('losthost/'+x[0].replace('toactivate',''))
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
