@@ -413,6 +413,9 @@ else
    stillpossible=1
    while [ $stillpossible==1 ]:
    do
+    stamp=`date +%s%N`
+    ./etcdput.py $aliast/$myhost $myalias
+    ./etcdput.py sync/$aliast/$myhost $stamp 
     ./etcdget.py possible --prefix | grep $myhost
     if [ $? -eq 0 ];
     then
@@ -420,10 +423,10 @@ else
     else
      stillpossible=0
      myalias=`./etcdgetlocal.py $myip $aliast/$myhost`
-     ./etcdput.py $aliast/$myhost $myalias
      stamp=`date +%s%N`
-     ./etcdput.py sync/gw/$myhost $stamp 
+     ./etcdput.py $aliast/$myhost $myalias
      ./etcdput.py sync/$aliast/$myhost $stamp 
+     ./etcdput.py sync/gw/$myhost $stamp 
      ./etcdput.py sync/gw/$myhost $stamp 
      ./broadcasttolocal.py sync/gw/$myhost $stamp 
     fi

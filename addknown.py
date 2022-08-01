@@ -23,6 +23,10 @@ for pos in possible:
   put('known/'+posname,pos[1])
   put('sync/known/'+myhost,str(stamp()))
   broadcasttolocal('known/'+posname,pos[1])
+  aliast = getlocal(pos[1],'alias/'+posname)[0]
+  print('pos',pos[1],posname,str(aliast))
+  put('alias/'+posname,aliast)
+  put('sync/alias/'+myhost,str(stamp()))
 allow=get('allowedPartners')
 if 'notallowed' in str(allow):
  exit()
@@ -73,7 +77,7 @@ if possible != []:
   put('nextlead',x[0].replace('possible','')+'/'+x[1])
   put('sync/nextlead/'+myhost,str(stamp()))
   aliast = getlocal(x[1],'alias/'+x[0].replace('possible',''))[0]
-  put('alias/'+x[0].replace('possible',''),aliast)
+  put('alias/'+x[0].replace('possible',''),str(aliast))
   put('sync/alias/'+myhost,str(stamp()))
   broadcasttolocal('nextlead',x[0].replace('possible','')+'/'+x[1])
   cmdline=['/sbin/rabbitmqctl','add_user','rabb_'+x[0].replace('possible',''),'YousefNadody']
