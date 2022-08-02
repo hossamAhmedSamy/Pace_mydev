@@ -80,12 +80,14 @@ do
    aliast='alias'
    /pace/etcdput.py ready/$myhost $myip
    /pace/etcdput.py $aliast/$myhost $myalias
-   /pace/etcdput.py sync/$aliast/$myhost $myip
    /pace/etcdput.py ActivePartners/$myhost $myip
    stamp=`date +%s`
-   /pace/etcdput.py sync/ActivePartners/$myhost $stamp
-   /pace/etcdput.py sync/ready/$myhost $stamp
-   /pace/etcdput.py sync/$aliast/$myhost $stamp
+   /pace/etcdput.py sync/ActivePartners/${myhost}_$myip/request/ ActivePartners_$stamp
+   /pace/etcdput.py sync/ActivePartners/${myhost}_$myip/request/$myhost ActivePartners_$stamp
+   /pace/etcdput.py sync/$aliast/${myhost}_$myalias/request/$myhost alias_$stamp
+   /pace/etcdput.py sync/$aliast/${myhost}_$myalias/request alias_$stamp
+   /pace/etcdput.py sync/ready/${myhost}_$myip/request ready_$stamp
+   /pace/etcdput.py sync/ready/${myhost}_$myip/request/$myhost ready_$stamp
    partnersync=0
    /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
    touch /pacedata/addiscsitargets 
@@ -114,10 +116,11 @@ do
  fi
    echo no leader although I am primary node >> /root/zfspingtmp
    ./runningetcdnodes.py $myip 2>/dev/null
-   ./etcddel.py leader --prefix 2>/dev/null &
-   ./etcdput.py leader/$myhost $myip 2>/dev/null &
+   ./etcddel.py leader --prefix 2>/dev/null 
+   ./etcdput.py leader/$myhost $myip 2>/dev/null 
    stamp=`date +%s`
-   ./etcdput.py sync/leader/$myhost $stamp 2>/dev/null &
+    /pace/etcdput.py sync/leader/${myhost}_$myip/request leader_$stamp
+    /pace/etcdput.py sync/ready/${myhost}_$myip/request/$myhost leader_$stamp
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
    /TopStor/logqueue.py FixIamleader stop system 
@@ -182,7 +185,16 @@ do
      echo running sendhost.py $leaderip 'user' 'recvreq' $myhost >>/root/tmp2
      leaderall=` ./etcdget.py leader --prefix `
      leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
-     leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
+     lea  issync=`./etcdget.py sync initial | grep $myhost`
+  echo $syncinit | grep $myhost
+  if [ $? -eq 0 ];
+  then
+  ./checksyncs.py syncrequest
+  else
+   ./checksyncs.py syncall
+   syncinit=$myhost
+  fi 
+derip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
      ./checksync.py
      /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost 
      isknown=$((isknown+1))
@@ -261,8 +273,8 @@ do
   ./etcddellocal.py $myip localrun --prefix 2>/dev/null &
   ./etcddellocal.py $myip run --prefix 2>/dev/null &
   ./etcdsync.py $myip known known 2>/dev/null &
-  ./etcdsync.py $myip localrun localrun 2>/dev/null &
-  ./etcdsync.py $myip leader known 2>/dev/null &
+  #./etcdsync.py $myip localrun localrun 2>/dev/null &
+  ./etcdsync.py $myip leader leader 2>/dev/null &
   echo /TopStor/syncq.py $leaderip $myhost >>/root/tmp2
   /TopStor/syncq.py $leaderip $myhost 2>/root/syncqerror
 #   ./etcddellocal.py $myip known/$myhost --prefix 2>/dev/null
@@ -290,7 +302,7 @@ do
   pgrep checksyncs 
   if [ $? -ne 0 ];
   then
-   /pace/checksyncs.py
+   /pace/checksyncs.py syncrequest
   fi
 
  fi
@@ -324,7 +336,6 @@ do
    if [ $? -ne 0 ];
    then
     stamp=`date +%s`
-    ETCDCTL_API=3 /pace/etcdput.py sync/poolsnxt/_${leader}_hello/$myhost $stamp 
     /TopStor/selectimport.py $myhost $leader &
    fi
  fi 
@@ -412,7 +423,7 @@ do
  pgrep checksyncs 
  if [ $? -ne 0 ];
  then
-  /pace/checksyncs.py
+  /pace/checksyncs.py syncrequest
  fi
 
   echo Collecting a change in system occured >> /root/zfspingtmp

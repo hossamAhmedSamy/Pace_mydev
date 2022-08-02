@@ -17,18 +17,9 @@ from socket import gethostname as hostname
 syncanitem = ['Snapperiod','user','group','host','passwd']
 forReceivers = [ 'user', 'group' ]
 nodeprops =  ['dataip','tz','ntp','gw','dns']
-etcdonly = [ 'Snapperiod','sizevol', 'Partner','ready','alias', 'dataip','hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
+etcdonly = [ 'cron','Snapperiod','sizevol', 'Partner','ready','alias', 'dataip','hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
 syncs = etcdonly + syncanitem + nodeprops
 myhost = hostname()
-actives = get('ActivePartners','--prefix')
-Partners = get('Partners/','--prefix')
-myip = get('ActivePartners/'+myhost)[0]
-allsyncs = get('sync','request') 
-donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
-mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
-myrequests = [ x for x in allsyncs if x[1] not in mysyncs ] 
-leader = get('leader','--prefix')[0][0].replace('leader/','')
-
 ##### sync request template: sync/Operation/commandline_op1_op2_../request Operation_stamp###########
 ##### synced template for request sync[0]/+node stamp #####################
 ##### initial sync for known nodes : sync/Operation/initial Operation_stamp #######################
@@ -51,6 +42,15 @@ def syncinit():
 
 def syncall():
  global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
+ actives = get('ActivePartners','--prefix')
+ Partners = get('Partners/','--prefix')
+ myip = get('ActivePartners/'+myhost)[0]
+ allsyncs = get('sync','request') 
+ donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
+ mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
+ myrequests = [ x for x in allsyncs if x[1] not in mysyncs ] 
+ leader = get('leader','--prefix')[0][0].replace('leader/','')
+
  myinitials = [ x[1] for x in allsyncs if 'initial' in str(x)  and 'dhcp' not in str(x) ] 
  for syncinfo in myinitials:
    syncleft = syncinfo[0]
@@ -94,6 +94,13 @@ def syncall():
 
 def syncrequest():
  global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
+ actives = get('ActivePartners','--prefix')
+ Partners = get('Partners/','--prefix')
+ myip = get('ActivePartners/'+myhost)[0]
+ allsyncs = get('sync','request') 
+ donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
+ mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
+ myrequests = [ x for x in allsyncs if x[1] not in mysyncs ] 
  for syncinfo in myrequests:
    syncleft = syncinfo[0]
    syncright = syncinfo[1]
@@ -105,7 +112,7 @@ def syncrequest():
       putlocal(myip,syncitem[0],syncitem[1])
      else:
       dellocal(myip,sync,cmdline[1])
-     if 'Snapperiod' in sync:
+     if ('Snapperiod' or 'cron') in sync:
       from etctocron import etctocron
       etctocron()
    elif sync == 'user':
