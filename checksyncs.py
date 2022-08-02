@@ -14,13 +14,14 @@ from usersyncall import usersyncall, oneusersync
 from groupsyncall import groupsyncall, onegroupsync
 from socket import gethostname as hostname
 
-syncanitem = ['Snapperiod','user','group','host','passwd']
+syncanitem = ['Snapperiod','cron','Snapperiod', 'user','group','host','passwd' ]
 forReceivers = [ 'user', 'group' ]
 nodeprops =  ['dataip','tz','ntp','gw','dns']
-etcdonly = [ 'cron','Snapperiod','sizevol', 'Partner','ready','alias', 'dataip','hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
+etcdonly = [ 'sizevol', ,'Partner','ready','alias', 'dataip','hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
 syncs = etcdonly + syncanitem + nodeprops
 myhost = hostname()
-##### sync request template: sync/Operation/commandline_op1_op2_../request Operation_stamp###########
+##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
+##### sync request addanitem: sync/Operation/commandline_oper1_oper2_../request Operation_stamp###########
 ##### synced template for request sync[0]/+node stamp #####################
 ##### initial sync for known nodes : sync/Operation/initial Operation_stamp #######################
 ##### synced template for initial sync for known nodes : sync/Operation/initial/node Operation_stamp #######################
@@ -103,18 +104,23 @@ def syncrequest():
  myrequests = [ x for x in allsyncs if x[1] not in mysyncs ] 
  for syncinfo in myrequests:
    syncleft = syncinfo[0]
-   syncright = syncinfo[1]
+   stamp = syncinfo[1]
    sync = syncleft.split('/')[1]
-   cmdinfo = syncleft.split('/')(2).split('_')
+   opers= syncleft.split('/')(2).split('_')
    if sync in etcdonly:
-     if cmdline[0] == 'Add':
-      syncitem=get(sync,cmdline[1])
-      putlocal(myip,syncitem[0],syncitem[1])
+     if pers[0] == 'Add':
+      putlocal(myip,opers[1],opers[2])
      else:
-      dellocal(myip,sync,cmdline[1])
+      dellocal(myip,oper[1], opers[2])
      if ('Snapperiod' or 'cron') in sync:
       from etctocron import etctocron
       etctocron()
+     if 'passwd' in sync:
+      cmdline='/TopStor/UnixChkUser '+cmdinfo[1]+' '+cmdn[1]
+      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      cmdline='/TopStor/UnixChangePass '+result+' '+syncitem[0]+' '+'system'
+      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+
    elif sync == 'user':
      oneusersync(cmdinfo[0],cmdinfo[1])
    elif sync == 'group':
