@@ -101,7 +101,7 @@ then
  /pace/putzpool.py 2 $isprimary $primtostd  &
  /TopStor/HostgetIPs
 fi
- /TopStor/selectimport.py $myhost &
+ /TopStor/selectimport.py $myhost $myhost &
  /TopStor/zpooltoimport.py all 
  /TopStor/zpooltoimport.py all &
  /pace/selectspare.py $myhost &

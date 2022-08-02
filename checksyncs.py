@@ -25,24 +25,75 @@ Partners = get('Partners/','--prefix')
 myip = get('ActivePartners/'+myhost)[0]
 allsyncs = get('sync','request') 
 donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
-mysyncs = [ x for x in allsyncs if '/request/'+myhost in str(x) ] 
-myrequests = [ x for x in allsyncs if x not in mysyncs ] 
+mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
+myrequests = [ x for x in allsyncs if x[1] not in mysyncs ] 
 leader = get('leader','--prefix')[0][0].replace('leader/','')
+
 ##### sync request template: sync/Operation/commandline_op1_op2_../request Operation_stamp###########
 ##### synced template for request sync[0]/+node stamp #####################
 ##### initial sync for known nodes : sync/Operation/initial Operation_stamp #######################
 ##### synced template for initial sync for known nodes : sync/Operation/initial/node Operation_stamp #######################
 ##### delete request of same sync if ActivePartners qty reached #######################
 
-def checksync(myip='nothing'):
- global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, hostip, actives
+def checksync(hostip='request'):
+ global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
+ synctypes[hostip]()
+
+def syncinit():
+ global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
+ from time import time as timestamp
+ stamp = int(timestamp() + 3600)
  for sync in syncs:
-  if hostip='initial':
-   from time import time as timestamp
-   stamp = int(timestamp() + 3600)
-   put('sync/'+sync+'/'+'initial/request',str(stamp)) 
-   put('sync/'+sync+'/'+'initial/request/'+myhost,str(stamp)) 
-  return
+  put('sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/request/'+myhost,sync+'_'+str(stamp)) 
+  print('initial sync:',sync)
+ return
+
+def syncall():
+ global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
+ myinitials = [ x[1] for x in allsyncs if 'initial' in str(x)  and 'dhcp' not in str(x) ] 
+ for syncinfo in myinitials:
+   syncleft = syncinfo[0]
+   syncright = syncinfo[1]
+   sync = syncleft.split('/')[1]
+   cmdinfo = syncleft.split('/')(2).split('_')
+   if sync in etcdonly:
+     if cmdline[0] == 'Add':
+      syncitem=get(sync,cmdline[1])
+      putlocal(myip,syncitem[0],syncitem[1])
+     else:
+      dellocal(myip,sync,cmdline[1])
+     if 'Snapperiod' in sync:
+      from etctocron import etctocron
+      etctocron()
+   elif sync == 'user':
+     oneusersync(cmdinfo[0],cmdinfo[1])
+   elif sync == 'group':
+     onegroupsync(cmdinfo[0],cmdinfo[1])
+   elif sync == 'evacuatehost':
+    setall(cmdinfo[0],cmdinfo[1],cmdinfo[2])
+   elif sync in nodeprops:
+    cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local '
+    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+   else:
+    print('there is a sync that is not defined:',sync)
+    return
+      
+   put(syncleft+'/'+myhost, syncright)
+   if myhost != leader:
+    putlocal(myip, syncleft+'/'+myhost, syncright)
+    putlocal(syncleft, syncright)
+   if myhost != leader:
+    donerequests = [ x for x in donerequests if '/request/'+myhost not in str(x) ] 
+    localdones = getlocal(myip, 'sync', '/request/dhcp')
+    for done in donerequests:
+     if done not in str(localdones):
+      putlocal(myip, done[0],done[1])
+ 
+
+
+def syncrequest():
+ global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs, actives
  for syncinfo in myrequests:
    syncleft = syncinfo[0]
    syncright = syncinfo[1]
@@ -74,7 +125,7 @@ def checksync(myip='nothing'):
    if myhost != leader:
     putlocal(myip, syncleft+'/'+myhost, syncright)
     putlocal(syncleft, syncright)
-   if myhost != leader
+   if myhost != leader:
     donerequests = [ x for x in donerequests if '/request/'+myhost not in str(x) ] 
     localdones = getlocal(myip, 'sync', '/request/dhcp')
     for done in donerequests:
@@ -82,5 +133,6 @@ def checksync(myip='nothing'):
       putlocal(myip, done[0],done[1])
       
  
+synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
 if __name__=='__main__':
- checksync(*sys.argv[1:])
+ synctypes[sys.argv[1]]()

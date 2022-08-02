@@ -324,8 +324,8 @@ do
    if [ $? -ne 0 ];
    then
     stamp=`date +%s`
-    ETCDCTL_API=3 /pace/etcdput.py sync/poolsnxt/$myhost $stamp 
-    /TopStor/selectimport.py $myhost &
+    ETCDCTL_API=3 /pace/etcdput.py sync/poolsnxt/_${leader}_hello/$myhost $stamp 
+    /TopStor/selectimport.py $myhost $leader &
    fi
  fi 
  echo toimport = $toimport >> /root/zfspingtmp
@@ -374,7 +374,7 @@ do
    pgrep zpooltoimport
    if [ $? -ne 0 ];
    then
-    /TopStor/zpooltoimport.py all &
+    /TopStor/zpooltoimport.py all 2>/dev/null &  
     oldlsscsi=$lsscsi
    fi
    pgrep  VolumeCheck 
