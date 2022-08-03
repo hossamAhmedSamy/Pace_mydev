@@ -433,7 +433,6 @@ else
   ./etcdput.py $aliast/$myhost $myalias
   ./etcdput.py sync/$aliast/nothing_nothing/request ${aliast}_$stamp.
   ./etcdput.py sync/$aliast/nothing_nothing/request/$leader ${aliast}_$stamp.
-  ./etcdput.py sync/$aliast/nothing_nothing/request/$myhost ${aliast}_$stamp.
   issync=`./etcdget.py sync initial | grep $myhost`
   ./checksyncs.py syncrequest
   /bin/crontab /TopStor/plaincron
