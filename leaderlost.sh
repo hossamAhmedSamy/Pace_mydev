@@ -66,27 +66,21 @@ do
  fi
 done
 echo adding me as a leader >> /root/zfspingtmpa2
+ stamp=`date +%s%N`
 ./runningetcdnodes.py $myip 2>/dev/null
  /TopStor/logmsg.py Partst05 info system $myhost &
 ./etcdput.py ready/$myhost $myip  
-stamp=`date +%s%N`
+/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
 ./etcddel.py  leader --prefix  
 ./etcdput.py  leader/$myhost $myip 
-./etcdput.py  sync/leader/$myhost $stamp 
-stamp=`date +%s%N`
-./etcdput.py  ready/$myhost $myip  
-./etcddel.py  ready $leader  
-./etcddel.py  list $leader  
+/pace/etcdput.py sync/leader/Add_${myhost}_$myip/request leader_$stamp
 ./etcddel.py  host $leader  
 ./etcddel.py  known $myhost  
+/pace/etcdput.py sync/known/Del_known_${myhost}/request known_$stamp
 /TopStor/logmsg.py Partst02 warning system $leader 
-./broadcasttolocal.py sync/leader/$myhost $stamp 
-./etcdput.py sync/ready/$myhost $stamp 
-./etcdput.py sync/known/$myhost $stamp 
+#./broadcasttolocal.py sync/leader/$myhost $stamp 
 ./etcddel.py ipaddr $leader
 ./etcddel.py sync/ipaddr/$myhost  $stamp 
-./etcdput.py sync/leader/$myhost $stamp 
-./etcdput.py tosync/$myhost $myip  
 echo created namespaces >>/root/zfspingtmp2
 ./setnamespace.py $enpdev &
 ./setdataip.py &
@@ -101,7 +95,7 @@ then
  /pace/putzpool.py 2 $isprimary $primtostd  &
  /TopStor/HostgetIPs
 fi
- /TopStor/selectimport.py $myhost &
+ /TopStor/selectimport.py $myhost $myhost &
  /TopStor/zpooltoimport.py all 
  /TopStor/zpooltoimport.py all &
  /pace/selectspare.py $myhost &
