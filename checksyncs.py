@@ -14,12 +14,11 @@ from usersyncall import usersyncall, oneusersync
 from groupsyncall import groupsyncall, onegroupsync
 from socket import gethostname as hostname
 
-syncanitem = ['Snapperiod', 'cron','user','group' ]
+syncanitem = ['replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-nodeprops =  ['dataip','tz','ntp','gw','dns']
-etcdonly = [ 'sizevol', 'Partner','ready','alias', 'dataip','hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
-syncs = etcdonly + syncanitem + nodeprops + special1
+etcdonly = [ 'sizevol', 'Partnr','ready','alias', ,'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
+syncs = etcdonly + syncanitem + special1
 myhost = hostname()
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with bash script: sync/Operation/commandline_oper1_oper2_../request Operation_stamp###########
@@ -70,8 +69,6 @@ def syncall():
      oneusersync(cmdinfo[0],cmdinfo[1])
    elif sync == 'group':
      onegroupsync(cmdinfo[0],cmdinfo[1])
-   elif sync == 'evacuatehost':
-    setall(cmdinfo[0],cmdinfo[1],cmdinfo[2])
    elif sync in nodeprops:
     cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local '
     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
@@ -108,9 +105,9 @@ def syncrequest():
    opers= syncleft.split('/')(2).split('_')
    if sync in etcdonly:
      if pers[0] == 'Add':
-      putlocal(myip,opers[1].replace('::','/'),opers[2].replace('::','/'))
+      putlocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
      else:
-      dellocal(myip,opers[1].replace('::','/'),opers[2].replace('::','/'))
+      dellocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
       if 'syncfn' in opers[0]:
        globals()[opers[1]](opers[2:])
@@ -122,9 +119,6 @@ def syncrequest():
       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+oper[1] + 'system'
       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-   if sync in nodeprops:
-   elif sync == 'evacuatehost':
-    setall(cmdinfo[0],cmdinfo[1],cmdinfo[2])
    elif sync in nodeprops:
     cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local '
     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')

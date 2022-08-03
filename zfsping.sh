@@ -82,12 +82,12 @@ do
    /pace/etcdput.py $aliast/$myhost $myalias
    /pace/etcdput.py ActivePartners/$myhost $myip
    stamp=`date +%s`
-   /pace/etcdput.py sync/ActivePartners/${myhost}_$myip/request/ ActivePartners_$stamp
-   /pace/etcdput.py sync/ActivePartners/${myhost}_$myip/request/$myhost ActivePartners_$stamp
-   /pace/etcdput.py sync/$aliast/${myhost}_$myalias/request/$myhost alias_$stamp
-   /pace/etcdput.py sync/$aliast/${myhost}_$myalias/request alias_$stamp
-   /pace/etcdput.py sync/ready/${myhost}_$myip/request ready_$stamp
-   /pace/etcdput.py sync/ready/${myhost}_$myip/request/$myhost ready_$stamp
+   /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/ ActivePartners_$stamp
+   /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/$myhost ActivePartners_$stamp
+   /pace/etcdput.py sync/$aliast/Add_${myhost}_$myalias/request/$myhost alias_$stamp
+   /pace/etcdput.py sync/$aliast/Add_${myhost}_$myalias/request alias_$stamp
+   /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
+   /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
    partnersync=0
    /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
    touch /pacedata/addiscsitargets 
@@ -119,8 +119,8 @@ do
    ./etcddel.py leader --prefix 2>/dev/null 
    ./etcdput.py leader/$myhost $myip 2>/dev/null 
    stamp=`date +%s`
-    /pace/etcdput.py sync/leader/${myhost}_$myip/request leader_$stamp
-    /pace/etcdput.py sync/ready/${myhost}_$myip/request/$myhost leader_$stamp
+    /pace/etcdput.py sync/leader/Add_${myhost}_$myip/request leader_$stamp
+    /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost leader_$stamp
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
    /TopStor/logqueue.py FixIamleader stop system 
@@ -195,7 +195,7 @@ do
    syncinit=$myhost
   fi 
 derip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
-     ./checksync.py
+     ./checksync.py syncrequest
      /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost 
      isknown=$((isknown+1))
     fi
@@ -205,9 +205,13 @@ derip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
     fi
     if [[ $isknown -eq 3 ]];
     then
+     stamp=`date +%s`
      /pace/etcdput.py ready/$myhost $myip 
      /pace/etcdput.py ActivePartners/$myhost $myip 
-     /pace/etcdput.py sync/ActivePartners/$myhost $stamp
+     /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/$myhost ActivePartners_$stamp
+     /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request ActivePartners_$stamp
+     /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
+     /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
      #targetcli clearconfig True
      #targetcli saveconfig
