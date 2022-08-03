@@ -17,7 +17,7 @@ from socket import gethostname as hostname
 syncanitem = ['replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-etcdonly = [ 'sizevol', 'Partnr','ready','alias', ,'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
+etcdonly = [ 'sizevol', 'Partnr','ready','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
 syncs = etcdonly + syncanitem + special1
 myhost = hostname()
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
@@ -114,7 +114,7 @@ def syncrequest():
       else:
        cmdline='/TopStor/pump.sh '+opers[0]+' '+opers[1]
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-   if sync in special1    
+   if sync in special1:
       cmdline='/TopStor/'+opers[0].split(':')[0]+' '+oper[1]+' '+oper[2]
       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+oper[1] + 'system'
@@ -129,7 +129,6 @@ def syncrequest():
    put(syncleft+'/'+myhost, syncright)
    if myhost != leader:
     putlocal(myip, syncleft+'/'+myhost, syncright)
-    putlocal(syncleft, syncright)
    if myhost != leader:
     donerequests = [ x for x in donerequests if '/request/'+myhost not in str(x) ] 
     localdones = getlocal(myip, 'sync', '/request/dhcp')
