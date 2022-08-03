@@ -37,8 +37,8 @@ def syncinit():
  from time import time as timestamp
  stamp = int(timestamp() + 3600)
  for sync in syncs:
-  put('sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
-  put('sync/'+sync+'/'+'initial/request/'+myhost,sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/',sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/'+myhost,sync+'_'+str(stamp)) 
   print('initial sync:',sync)
  return
 

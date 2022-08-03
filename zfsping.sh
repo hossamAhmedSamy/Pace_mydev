@@ -212,6 +212,8 @@ derip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
      /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request ActivePartners_$stamp
      /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
      /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
+     /pace/etcddel.py $myip sync --prefix
+     /pace/checksyncs syncall &
      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
      #targetcli clearconfig True
      #targetcli saveconfig
