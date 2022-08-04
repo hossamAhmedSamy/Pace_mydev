@@ -17,7 +17,7 @@ from socket import gethostname as hostname
 syncanitem = ['replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-etcdonly = [ 'sizevol', 'Partnr','ready','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','config','pool','nextlead']
+etcdonly = [ 'sizevol', 'Partnr','ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','configured','pool','nextlead']
 syncs = etcdonly + syncanitem + special1
 myhost = hostname()
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
@@ -29,21 +29,19 @@ myhost = hostname()
 ##### delete request of same sync if ActivePartners qty reached #######################
 
 def checksync(hostip='request',*args):
- global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs
  synctypes[hostip]()
 
 def syncinit(*args):
- global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs
+ global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
  from time import time as timestamp
  stamp = int(timestamp() + 3600)
  for sync in syncs:
   put('sync/'+sync+'/'+'initial/',sync+'_'+str(stamp)) 
   put('sync/'+sync+'/'+'initial/'+myhost,sync+'_'+str(stamp)) 
-  print('initial sync:',sync)
  return
 
 def syncall(thisip,*args):
- global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs
+ global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
  from etctocron import etctocron 
  from etcdsync import synckeys
  myip = thisip[0]
@@ -84,19 +82,20 @@ def syncall(thisip,*args):
 
 
 def syncrequest(*args):
- global syncs, syncanitem, forReceivers, nodeprops, etcdony, myhost, allsyncs
+ global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
  myip = get('ActivePartners/'+myhost)[0]
+ leader = get('leader','--prefix')[0][0].replace('leader/','')
  allsyncs = get('sync','request') 
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
- myrequests = [ x for x in allsyncs if x[1] not in mysyncs ] 
+ myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and 'dhcp' not in x[0] ] 
  for syncinfo in myrequests:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]
    sync = syncleft.split('/')[1]
-   opers= syncleft.split('/')(2).split('_')
-   if sync in etcdonly:
-     if pers[0] == 'Add':
+   opers= syncleft.split('/')[2].split('_')
+   if sync in etcdonly and myhost != leader:
+     if opers[0] == 'Add':
       putlocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
      else:
       dellocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
@@ -106,18 +105,14 @@ def syncrequest(*args):
       else:
        cmdline='/TopStor/pump.sh '+opers[0]+' '+opers[1]
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-   if sync in special1:
+   if sync in special1 and myhost != leader :
       cmdline='/TopStor/'+opers[0].split(':')[0]+' '+oper[1]+' '+oper[2]
       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+oper[1] + 'system'
       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-   if sync in nodeprops:
-    cmdline='/TopStor/pump.sh HostManualconfig'+sync+'local '
-    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
-   leader = get('leader','--prefix')[0][0].replace('leader/','')
    put(syncleft+'/'+myhost, stamp)
    if myhost != leader:
     putlocal(myip, syncleft+'/'+myhost, stamp)
