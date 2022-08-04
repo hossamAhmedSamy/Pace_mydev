@@ -29,7 +29,7 @@ myhost = hostname()
 ##### delete request of same sync if ActivePartners qty reached #######################
 
 def checksync(hostip='request',*args):
- synctypes[hostip]()
+ synctypes[hostip](*args)
 
 def syncinit(*args):
  global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
@@ -44,7 +44,7 @@ def syncall(thisip,*args):
  global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
  from etctocron import etctocron 
  from etcdsync import synckeys
- myip = thisip[0]
+ myip = thisip
  noinit = [ 'replipart' , 'evacuatehost' ]
  allinitials = get('sync','initial')
  myinitials = [ x for x in allinitials if 'initial' in str(x)  and '/request/dhcp' not in str(x) ] 
@@ -63,6 +63,7 @@ def syncall(thisip,*args):
        cmdline='/TopStor/pump.sh HotManualConfig'+sync.upper()
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in syncs:
+    print('sycs',sync, myip)
     synckeys(myip, sync,sync)
        
    if sync not in syncs:
@@ -130,4 +131,4 @@ def syncrequest(*args):
 runcmd={'cron':'etctocron'} 
 synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
 if __name__=='__main__':
- synctypes[sys.argv[1]](sys.argv[2:])
+ synctypes[sys.argv[1]](*sys.argv[2:])

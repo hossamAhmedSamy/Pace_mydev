@@ -192,10 +192,10 @@ do
   ./checksyncs.py syncrequest
   else
    /pace/etcddellocal.py $myip sync --prefix
-   /pace/checksyncs syncall &
+   /pace/checksyncs.py syncall $myip 
    syncinit=$myhost
   fi 
-derip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
+     leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
      ./checksync.py syncrequest
      /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost 
      isknown=$((isknown+1))
@@ -206,6 +206,14 @@ derip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
     fi
     if [[ $isknown -eq 3 ]];
     then
+     issync=`./etcdgetlocal.py $myip sync initial`initial
+     then
+      echo syncrequests only 
+      ./checksyncs.py syncrequest
+     else
+      echo have to syncall 
+      ./checksyncs.py syncall $myip
+     fi 
      stamp=`date +%s`
      /pace/etcdput.py ready/$myhost $myip 
      /pace/etcdput.py ActivePartners/$myhost $myip 
@@ -213,6 +221,7 @@ derip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
      /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request ActivePartners_$stamp
      /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
      /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
+
      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
      #targetcli clearconfig True
      #targetcli saveconfig
