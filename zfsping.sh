@@ -185,7 +185,7 @@ do
      echo running sendhost.py $leaderip 'user' 'recvreq' $myhost >>/root/tmp2
      leaderall=` ./etcdget.py leader --prefix `
      leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
-     issync=`./etcdget.py sync initial | grep $myhost`
+     issync=`./etcdget.py sync initial | grep $myhost`initial
   echo $issync | grep $myhost
   if [ $? -eq 0 ];
   then
@@ -207,6 +207,8 @@ do
     if [[ $isknown -eq 3 ]];
     then
      issync=`./etcdgetlocal.py $myip sync initial`initial
+     echo $issync | grep $myhost
+     if [ $? -eq 0 ]
      then
       echo syncrequests only 
       ./checksyncs.py syncrequest
