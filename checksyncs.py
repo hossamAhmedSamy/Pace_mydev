@@ -36,8 +36,8 @@ def syncinit(*args):
  from time import time as timestamp
  stamp = int(timestamp() + 3600)
  for sync in syncs:
-  put('sync/'+sync+'/'+'initial/',sync+'_'+str(stamp)) 
-  put('sync/'+sync+'/'+'initial/'+myhost,sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/reqeust',sync+'_'+str(stamp)) 
+  put('sync/'+sync+'/'+'initial/reauest/'+myhost,sync+'_'+str(stamp)) 
  return
 
 def syncall(thisip,*args):
@@ -88,7 +88,7 @@ def syncrequest(*args):
  allsyncs = get('sync','request') 
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
- myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and 'dhcp' not in x[0] ] 
+ myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
  print('myrequests', myrequests)
  for syncinfo in myrequests:
    syncleft = syncinfo[0]
@@ -120,7 +120,7 @@ def syncrequest(*args):
     putlocal(myip, syncleft, stamp)
  if myhost != leader:
   dones = get('sync','/request/dhcp')
-  otherdones = [ x for x in dones if myhost not in str(x) ] 
+  otherdones = [ x for x in dones if '/request/'+myhost not in str(x) ] 
   localdones = getlocal(myip, 'sync', '/request/dhcp')
   for done in otherdones:
    if str(done) not in str(localdones):
