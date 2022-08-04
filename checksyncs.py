@@ -127,6 +127,9 @@ def syncrequest(*args):
   for done in otherdones:
    if str(done) not in str(localdones):
     putlocal(myip, done[0],done[1])
+  for done in localdones:
+   if str(done) not in str(otherdones):
+    dellocal(myip, done[0],done[1])
      
 runcmd={'cron':'etctocron'} 
 synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
