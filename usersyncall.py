@@ -85,7 +85,10 @@ def usersyncall(hostip,tosync='usersinfo'):
 def oneusersync(oper,usertosync):
  global allusers
  global myusers
+ print('args',oper,usertosync)
  user=get('usersinfo', usertosync)[0]
+ if user == -1:
+  return
  if oper == 'Add':
   thread_add(user)
  else:

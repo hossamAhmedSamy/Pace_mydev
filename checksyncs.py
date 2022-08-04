@@ -102,7 +102,8 @@ def syncrequest(*args):
       dellocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
       if 'syncfn' in opers[0]:
-       globals()[opers[1]](opers[2:])
+       print('opers',opers)
+       globals()[opers[1]](*opers[2:])
       else:
        cmdline='/TopStor/pump.sh '+opers[0]+' '+opers[1]
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
