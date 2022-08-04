@@ -98,7 +98,10 @@ def syncrequest(*args):
    opers= syncleft.split('/')[2].split('_')
    if sync in etcdonly and myhost != leader:
      if opers[0] == 'Add':
-      putlocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
+      if 'Split' in opers[1]:
+       putlocal(myip,sync,opers[2].replace(':::','_').replace('::','/'))
+      else:
+       putlocal(myip,sync+'/'+opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
      else:
       dellocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
