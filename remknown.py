@@ -24,7 +24,7 @@ knownchange = 0
 def dosync(*args):
  if myhost in string(leader):
   put(*args)
-return 
+ return 
 
 
 if len(ready) > len(known)+1:
@@ -43,7 +43,6 @@ nextone=get('nextlead')
 if str(nextone[0]).split('/')[0] not in  str(known):
  print('deleting nextlead')
  etcddel('nextlead')
- etcddel('sync/nextlead', '--prefix')
  nextone=[]
 if known != []:
  for kno in known:
@@ -88,6 +87,8 @@ if poss != []:
   if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in pos[1]):
    print(pos[0].replace('possible',''))
    etcddel('ready/'+pos[0].replace('possible',''))
+   dosync('sync/ready/Del_'+pos[0].replace('possible','')+'_'+'--prefix'+'/request',str(stamp()))
+   dosync('sync/ready/Del_'+pos[0].replace('possible','')+'_'+'--prefix'+'/request/'+myhost,str(stamp()))
    etcddel(pos[0])
   
   
