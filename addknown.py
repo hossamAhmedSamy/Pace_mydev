@@ -88,8 +88,8 @@ if possible != []:
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   cmdline=['/sbin/rabbitmqctl','set_permissions','-p','/','rabb_'+x[0].replace('possible',''),'.*','.*','.*']
   etcddel('losthost/'+x[0].replace('possible',''))
-  put('sync/losthost/Del_'+x[0].replace('possible','')+'_--prefix/request','losthost_'+str(stamp()))
-  put('sync/losthost/Del_'+x[0].replace('possible','')+'_--prefix/request/'+myhost,'losthost_'+str(stamp()))
+  put('sync/cleanlost/Del_'+x[0].replace('possible','')+'_--prefix/request','cleanlost_'+str(stamp()))
+  put('sync/cleanlost/Del_'+x[0].replace('possible','')+'_--prefix/request/'+myhost,'cleanlost_'+str(stamp()))
   put('change/'+x[0].replace('possible','')+'/booted',x[1])
 #  put('tosync','yes')
 #  broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
