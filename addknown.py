@@ -66,9 +66,9 @@ if possible != []:
   hostsubnet = getlocal(x[1],'hostipsubnet/'+x[0].replace('possible',''))[0]
   if hostsubnet == -1:
    hostsubnet = "24"
-  etcddel('sync',x[0].replace('possible',''))
+  #etcddel('sync',x[0].replace('possible',''))
   etcddel('modified',x[0].replace('possible',''))
-  deltolocal('sync',x[0].replace('possible',''))
+  #deltolocal('sync',x[0].replace('possible',''))
   deltolocal('modified',x[0].replace('possible',''))
   put('ActivePartners/'+x[0].replace('possible',''),x[1])
   put('sync/ActivePartners/'+x[0].replace('possible','')+'_'+x[1]+'/request','ActivePartners_'+str(stamp()))
