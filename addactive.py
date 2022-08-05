@@ -32,7 +32,7 @@ if toactivate != []:
   put('sync/nextlead/Add_'+x[0].replace('toactivate','')+'_'+x[1]+'/request/'+myhost,'nextlead_'+str(stamp()))
   etcddel('losthost/'+x[0].replace('toactivate',''))
   put('sync/losthost/Del_'+x[0].replace('toactivate','')+'_--prefix/request','losthost_'+str(stamp()))
-  put('sync/losthost/Del_'+x[0].replace('toactivate','')+'_--prefix/requesti/'+myhost,'losthost_'+str(stamp()))
+  put('sync/losthost/Del_'+x[0].replace('toactivate','')+'_--prefix/request/'+myhost,'losthost_'+str(stamp()))
   frstnode=get('frstnode')
   print('frst',frstnode[0])
   if x[0].replace('toactivate','') not in frstnode[0]:
