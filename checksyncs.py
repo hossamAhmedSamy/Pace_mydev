@@ -127,21 +127,14 @@ def syncrequest(*args):
     putlocal(myip, syncleft, stamp)
  if myhost != leader:
   dones = get('sync','/request/dhcp')
-  otherdones = [ x for x in dones if '/request/'+myhost not in str(x) ] 
+  otherdones = [ x for x in dones if '/request/dhcp' in str(x) ] 
   localdones = getlocal(myip, 'sync', '--prefix')
   for done in otherdones:
    if str(done) not in str(localdones):
     putlocal(myip, done[0],done[1])
-  print('hihihi')
-  print(localdones)
-  print('hihihi')
   deleted = set()
   for done in localdones:
-   if 'lost' in str(done):
-    print(done)
-   print(otherdones)
-   if 'request/dhcp' not in done[0] and 'initial' not in done[0] and done[1] not in str(otherdones) and done[1] not in deleted:
-    print(done[0],done[1])
+   if done[1] not in str(otherdones) and done[1] not in deleted:
     dellocal(myip, 'sync', done[1])
     deleted.add(done[1])
      
