@@ -132,6 +132,7 @@ def syncrequest(*args):
   for done in otherdones:
    if str(done) not in str(localdones):
     putlocal(myip, done[0],done[1])
+    putlocal(myip, '/'.join(done[0].split('/')[:-1]), done[1])
   deleted = set()
   for done in localdones:
    if done[1] not in str(otherdones) and done[1] not in deleted:
