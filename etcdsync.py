@@ -8,7 +8,6 @@ def synckeys(thehost, key, tokey):
  print('thehost',thehost,tokey)
  mylist=get(key,'--prefix')
  dellocal(thehost,tokey,'--prefix')
- print('mylist:',mylist)
  if '-1' in mylist:
   print('-1')
   exit()

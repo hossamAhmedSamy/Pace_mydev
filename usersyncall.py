@@ -80,7 +80,7 @@ def usersyncall(hostip,tosync='usersinfo'):
    gethosts = get('modified/user/'+user)[0]
    if myhost not in gethosts:
     put('modified/user/'+user,gethosts+'/'+myhost)
-    broadcasttolocal('modified/user/'+user,gethosts+'/'+myhost)
+  #  broadcasttolocal('modified/user/'+user,gethosts+'/'+myhost)
 
 def oneusersync(oper,usertosync):
  global allusers
