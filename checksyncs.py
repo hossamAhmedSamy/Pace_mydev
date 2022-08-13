@@ -92,7 +92,7 @@ def syncrequest(*args):
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
  myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
- myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=True)
+ myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
  for syncinfo in myrequests:
    syncleft = syncinfo[0]
