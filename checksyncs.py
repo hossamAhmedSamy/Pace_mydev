@@ -62,7 +62,7 @@ def syncall(thisip,*args):
        print('syncing all groups')
        groupsyncall(myip)
       if sync in ['tz','ntp','gw','dns']: 
-       cmdline='/TopStor/pump.sh HotManualConfig'+sync.upper()
+       cmdline='/TopStor/pump.sh HostManualconfig'+sync.upper()
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in syncs:
     print('sycs',sync, myip)
