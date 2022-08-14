@@ -62,7 +62,7 @@ def syncall(thisip,*args):
        print('syncing all groups')
        groupsyncall(myip)
       if sync in ['tz','ntp','gw','dns']: 
-       cmdline='/TopStor/pump.sh HotManualConfig'+sync.upper()
+       cmdline='/TopStor/pump.sh HostManualconfig'+sync.upper()
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in syncs:
     print('sycs',sync, myip)
@@ -115,10 +115,10 @@ def syncrequest(*args):
        cmdline='/TopStor/pump.sh '+opers[0]+' '+opers[1]
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in special1 and myhost != leader :
-      cmdline='/TopStor/'+opers[0].split(':')[0]+' '+oper[1]+' '+oper[2]
+      cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-      cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+oper[1] + 'system'
-      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      #cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+opers[2] +' '+ opers[3]
+      #result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
