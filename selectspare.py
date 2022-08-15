@@ -612,7 +612,7 @@ def spare2(*args):
   for fdisk in freedisks:
    replacements[fdisk['name']] = []
    for rdisk in raid['disklist']:
-    if fdisk['name'] == rdisk['name']:
+    if fdisk['name'] == rdisk['name'] or levelthis(fdisk['size']) < levelthis(rdisk['size']):
      continue
     thisrank = getraidrank(raid,rdisk,fdisk)
     thiscombinedrank = abs(thisrank['raidrank'][0])*1000 + thisrank['raidrank'][1]

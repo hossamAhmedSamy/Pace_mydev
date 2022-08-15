@@ -30,8 +30,10 @@ cd /pace
 rm -rf /pacedata/addiscsitargets 2>/dev/null
 rm -rf /pacedata/startzfsping 2>/dev/null
 /pace/startzfs.sh
-leadername=` ./etcdget.py leader --prefix | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
-leaderip=` ./etcdget.py leader/$leadername `
+leaderall=` ./etcdget.py leader --prefix `
+leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
+leadername=$leader
+leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
 date=`date `
 myhost=`hostname -s`
 myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
@@ -39,6 +41,10 @@ myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | 
 echo starting in $date >> /root/zfspingtmp
 while true;
 do
+ leaderall=` ./etcdget.py leader --prefix `
+ leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
+ leadername=$leader
+ leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
  pgrep fixpool 
  if [ $? -ne 0 ];
  then
@@ -85,13 +91,13 @@ do
    myalias=`echo $myalias | sed 's/\_/\:\:\:/g'`
    myalias=`echo $myalias | sed 's/\//\:\:\:/g'`
    /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request ActivePartners_$stamp
-   /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/$myhost ActivePartners_$stamp
-   /pace/etcdput.py sync/$aliast/Add_${myhost}_$myalias/request/$myhost alias_$stamp
+   /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/$leadername ActivePartners_$stamp
+   /pace/etcdput.py sync/$aliast/Add_${myhost}_$myalias/request/$leadername alias_$stamp
    /pace/etcdput.py sync/$aliast/Add_${myhost}_$myalias/request alias_$stamp
    /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
-   /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
+   /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$leadername ready_$stamp
    partnersync=0
-   /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
+   #/TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
    touch /pacedata/addiscsitargets 
    pgrep putzpool 
    if [ $? -ne 0 ];
@@ -221,9 +227,9 @@ do
      stamp=`date +%s`
      /pace/etcdput.py ready/$myhost $myip 
      /pace/etcdput.py ActivePartners/$myhost $myip 
-     /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/$myhost ActivePartners_$stamp
+     /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/$leadername ActivePartners_$stamp
      /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request ActivePartners_$stamp
-     /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
+     /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$leadername ready_$stamp
      /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
 
      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
@@ -285,6 +291,7 @@ do
   done
   leaderall=` ./etcdget.py leader --prefix `
   leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
+  leadername=$leader
   leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
   ./etcdsync.py $myip primary primary 2>/dev/null &
   ./etcddellocal.py $myip known --prefix 2>/dev/null &
