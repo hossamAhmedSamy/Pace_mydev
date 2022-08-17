@@ -17,7 +17,7 @@ from socket import gethostname as hostname
 syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-etcdonly = [ 'cleanlost','sizevol', 'Partnr','ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolnsnxt','volumes','localrun','logged','ActivePartners','configured','pool','nextlead']
+etcdonly = [ 'cleanlost','balancedtype','sizevol', 'Partnr','ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool','ipaddr','pools','poolsnxt','volumes','localrun','logged','ActivePartners','configured','pool','nextlead']
 syncs = etcdonly + syncanitem + special1
 myhost = hostname()
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
