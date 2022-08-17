@@ -78,9 +78,9 @@ if possible != []:
   put('configured/'+x[0].replace('possible',''),'yes')
   put('sync/configured/Add_'+x[0].replace('possible','')+'_yes/request','configured_'+stampit)
   put('sync/configured/Add_'+x[0].replace('possible','')+'_yes/request/'+myhost,'configured_'+stampit)
-  put('nextlead',x[0].replace('possible','')+'/'+x[1])
-  put('sync/nextlead/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request/'+myhost,'nextlead_'+stampit)
-  put('sync/nextlead/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','nextlead_'+stampit)
+  put('nextlead/er',x[0].replace('possible','')+'/'+x[1])
+  put('sync/nextlead/Add_er_'+x[0].replace('possible','')+'::'+x[1]+'/request/'+myhost,'nextlead_'+stampit)
+  put('sync/nextlead/Add_er_'+x[0].replace('possible','')+'::'+x[1]+'/request','nextlead_'+stampit)
   aliast = getlocal(x[1],'alias/'+x[0].replace('possible',''))[0]
   put('alias/'+x[0].replace('possible',''),str(aliast))
   put('sync/alias/Add_'+x[0].replace('possible','')+'_'+x[1].replace('_',':::').replace('/',':::')+'/request/'+myhost,'alias_'+stampit)
