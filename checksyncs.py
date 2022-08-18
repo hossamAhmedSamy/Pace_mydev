@@ -111,6 +111,9 @@ def syncrequest(*args):
    sync = syncleft.split('/')[1]
    opers= syncleft.split('/')[2].split('_')
    if sync in etcdonly and myhost != leader:
+    if 'volumes' in sync:
+     synckeys(myip, sync,sync)
+    else:
      if opers[0] == 'Add':
       if 'Split' in opers[1]:
        putlocal(myip,sync,opers[2].replace(':::','_').replace('::','/'))
