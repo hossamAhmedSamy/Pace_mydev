@@ -61,8 +61,12 @@ if known != []:
    etcddel('list',thelost)
    print('thlost'+thelost)
    etcddel('sync/known','_'+thelost)
+   dosync('sync/known/Del_known::'+thelost+'/request','known_'+stamp)
+   dosync('sync/known/Del_known::'+thelost+'/request/'+myhost,'known_'+stamp)
    etcddel('sync/ready','_'+thelost)
    etcddel('sync/volumes','_'+thelost)
+   etcddel('volumes',thelost)
+   etcddel('pools',thelost)
    etcddel('sync/pools','_'+thelost)
    etcddel('sync/nextlead',thelost)
    if kn[1] in str(nextone):
@@ -72,8 +76,8 @@ if known != []:
     #broadcasttolocal('nextlead','nothing')
    logmsg.sendlog('Partst02','warning','system', kn[0].replace('known/',''))
    etcddel('ready/'+kn[0].replace('known/',''))
-   dosync('sync/ready/Del_ready/'+thelost+'_'+kn[1]+'/request','ready_'+stamp)
-   dosync('sync/ready/Del_ready/'+thelost+'_'+kn[1]+'/request/'+myhost,'ready_'+stamp)
+   dosync('sync/ready/Del_ready::'+thelost+'/request','ready_'+stamp)
+   dosync('sync/ready/Del_ready::'+thelost+'/request/'+myhost,'ready_'+stamp)
    etcddel('ipaddr',kn[0].replace('known/',''))
    print('hostlost ###########################################33333')
    #cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
@@ -98,8 +102,8 @@ if poss != []:
   if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in pos[1]):
    print(pos[0].replace('possible',''))
    etcddel('ready/'+pos[0].replace('possible',''))
-   dosync('sync/ready/Del_ready/'+pos[0].replace('possible','')+'_--prefix/request','ready_'+stamp)
-   dosync('sync/ready/Del_ready/'+pos[0].replace('possible','')+'_--prefix/request/'+myhost,'ready_'+stamp)
+   dosync('sync/ready/Del_ready::_'+pos[0].replace('possible','')+'/request','ready_'+stamp)
+   dosync('sync/ready/Del_ready::_'+pos[0].replace('possible','')+'/request/'+myhost,'ready_'+stamp)
    etcddel(pos[0])
   
   
