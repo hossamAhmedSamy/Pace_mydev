@@ -10,7 +10,9 @@ from etcdgetlocal import etcdget as getlocal
 from time import time as stamp
 from etcdput import etcdput as put 
 import json
+from socket import gethostname as hostname
 
+myhost = hostname()
 
 with open('/pacedata/perfmon','r') as f:
  perfmon = f.readline() 
@@ -22,7 +24,7 @@ leader=get('leader','--prefix')
 knownchange = 0
 
 def dosync(*args):
- if myhost in string(leader):
+ if myhost in str(leader):
   put(*args)
  return 
 
@@ -32,8 +34,8 @@ if len(ready) > len(known)+1:
  for r in ready:
   if r[0].split('/')[1] not in ( str(known) and str(leader)) :
    put('known/'+r[0].split('/')[1],r[1])
-   dosync('sync/known/Add_'+r[0].split('/')+'_'+r[1]+'/request','known_'+stamp)
-   dosync('sync/known/Add_'+r[0].split('/')+'_'+r[1]+'/request/'+myhost,'known_'+stamp)
+   dosync('sync/known/Add_'+r[0].split('/')[1]+'_'+r[1]+'/request','known_'+stamp)
+   dosync('sync/known/Add_'+r[0].split('/')[1]+'_'+r[1]+'/request/'+myhost,'known_'+stamp)
    knownchange = 1
 if knownchange == 1:
  known=get('known','--prefix')
@@ -52,10 +54,17 @@ if known != []:
   print('heartbeat=',heart, kn[1])
   print(type(heart),heart)
   if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in kn[1]):
-   print('the known ',kn[0].replace('known/',''),' is gone, notfound')
+   thelost = kn[0].split('/')[1]
+   print('the known',thelost,'is gone, notfound')
    etcddel(kn[0])
-   etcddel('host',kn[0].replace('known',''))
-   etcddel('list',kn[0].replace('known',''))
+   etcddel('host',thelost)
+   etcddel('list',thelost)
+   print('thlost'+thelost)
+   etcddel('sync/known','_'+thelost)
+   etcddel('sync/ready','_'+thelost)
+   etcddel('sync/volumes','_'+thelost)
+   etcddel('sync/pools','_'+thelost)
+   etcddel('sync/nextlead',thelost)
    if kn[1] in str(nextone):
     etcddel('nextlead/er')
     dosync('sync/nextlead/Del_nextlead_--prefix/request','nextlead_'+stamp)
@@ -63,13 +72,12 @@ if known != []:
     #broadcasttolocal('nextlead','nothing')
    logmsg.sendlog('Partst02','warning','system', kn[0].replace('known/',''))
    etcddel('ready/'+kn[0].replace('known/',''))
-   dosync('sync/ready/Del_ready/'+kn[0].split('/')[1]+'_'+kn[1]+'/request','ready_'+stamp)
-   dosync('sync/ready/Del_ready/'+kn[0].split('/')[1]+'_'+kn[1]+'/request/'+myhost,'ready_'+stamp)
-
+   dosync('sync/ready/Del_ready/'+thelost+'_'+kn[1]+'/request','ready_'+stamp)
+   dosync('sync/ready/Del_ready/'+thelost+'_'+kn[1]+'/request/'+myhost,'ready_'+stamp)
    etcddel('ipaddr',kn[0].replace('known/',''))
-
-   cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
-   subprocess.run(cmdline,stdout=subprocess.PIPE)
+   print('hostlost ###########################################33333')
+   #cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
+   #subprocess.run(cmdline,stdout=subprocess.PIPE)
    etcddel('localrun/'+str(kn[0]))
    #broadcast('broadcast','/pace/hostlostfromleader.sh',kn[0].replace('known/',''))
    #broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
