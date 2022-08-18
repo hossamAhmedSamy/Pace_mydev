@@ -332,6 +332,11 @@ else
   fi 
   stamp=`date +%s%N`
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip $aliast/$myhost`
+  ./etcddel.py pools $myhost 2>/dev/null
+  ./etcddel.py sync/pools $myhost 2>/dev/null
+  ./etcddellocal.py 10.11.11.242 pools --prefix 2>/dev/null
+  ./etcddellocal.py 10.11.11.242 sync/pools Add_ 2>/dev/null
+  ./etcddellocal.py 10.11.11.242 sync/pools Del_ 2>/dev/null
   ./etcdput.py $aliast/$myhost $myalias
   myalias=`echo $myalias | sed 's/\_/\:\:\:/g'`
   myalias=`echo $myalias | sed 's/\//\:\:\:/g'`
