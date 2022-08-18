@@ -68,6 +68,10 @@ if known != []:
    etcddel('volumes',thelost)
    etcddel('pools',thelost)
    etcddel('sync/pools','_'+thelost)
+   dosync('sync/poolsnxt/Del_poolsnxt_'+thelost+'/request','poolsnxt_'+stamp)
+   dosync('sync/poolsnxt/Del_poolsnxt_'+thelost+'/request/'+myhost,'poolsnxt_'+stamp)
+   dosync('sync/pools/Del_pools_'+thelost+'/request','pools_'+stamp)
+   dosync('sync/pools/Del_pools_'+thelost+'/request/'+myhost,'pools_'+stamp)
    etcddel('sync/nextlead',thelost)
    if kn[1] in str(nextone):
     etcddel('nextlead/er')
