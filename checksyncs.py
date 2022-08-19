@@ -13,6 +13,7 @@ from deltolocal import deltolocal
 from usersyncall import usersyncall, oneusersync
 from groupsyncall import groupsyncall, onegroupsync
 from socket import gethostname as hostname
+from etcdsync import synckeys
 
 syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
@@ -43,7 +44,6 @@ def syncinit(*args):
 def doinitsync(myip, syncinfo):
  global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
  from etctocron import etctocron 
- from etcdsync import synckeys
  noinit = [ 'replipart' , 'evacuatehost' ]
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
