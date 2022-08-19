@@ -18,16 +18,16 @@ def addknown(leader,myhost):
  for pos in possible:
   posname=pos[0].replace('possible','')
   if posname in str(active):
-   print('posname',posname)
+   #print('posname',posname)
    etcddel('lost',posname)
    etcddel('poss',posname)
    put('known/'+posname,pos[1])
    put('sync/known/Add_'+posname+'_'+pos[1]+'/request','known_'+'known_'+stampit)
    put('sync/known/Add_'+posname+'_'+pos[1]+'/request/'+myhost,'known_'+'known_'+stampit)
    aliast = getlocal(pos[1],'alias/'+posname)[0]
-   print('pos',pos[1],posname,str(aliast))
+   #print('pos',pos[1],posname,str(aliast))
    put('alias/'+posname,str(aliast))
-   print('############')
+   #print('############')
    put('sync/alias/Add_'+posname+'_'+str(aliast).replace('_',':::').replace('/',':::')+'/request','alias_'+stampit)
    put('sync/alias/Add_'+posname+'_'+str(aliast).replace('_',':::').replace('/',':::')+'/request/'+myhost,'alias_'+stampit)
  allow=get('allowedPartners')
@@ -39,16 +39,14 @@ def addknown(leader,myhost):
  possible=get('possible','--prefix')
  if possible != []:
   for x in possible:
-   print('x=',x[0], x[1])
+   #print('x=',x[0], x[1])
    if 'yestoall' not in str(allow):
-    print(x[0].replace('possible',''))
-    print(str(allow))
+    #print(x[0].replace('possible',''))
+    #print(str(allow))
     if x[0].replace('possible','') not in str(allow):
-     print('iamhere')
+     #print('iamhere')
      Active=get('AcivePartners','--prefix')
      if x[0].replace('possible','') not in str(Active):
-      print('imhere2')
-      #queuethis('addknown','stop','system')
       return 
    knowns=get('known','--prefix')
    putlocal(x[1],'configured/'+myhost,'yes')
@@ -59,7 +57,7 @@ def addknown(leader,myhost):
     newfrstnode=frstnode[0]+'/'+x[0].replace('possible','')
     put('frstnode',newfrstnode)
    put('known/'+x[0].replace('possible',''),x[1])
-   print('syncing')
+   #print('syncing')
    put('sync/known/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','known_'+stampit)
    put('sync/known/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request/'+myhost,'known_'+stampit)
    hostsubnet = getlocal(x[1],'hostipsubnet/'+x[0].replace('possible',''))[0]
@@ -67,7 +65,7 @@ def addknown(leader,myhost):
     hostsubnet = "24"
    etcddel('modified',x[0].replace('possible',''))
    #deltolocal('modified',x[0].replace('possible',''))
-   print('syncing2')
+   #print('syncing2')
    put('ActivePartners/'+x[0].replace('possible',''),x[1])
    put('sync/ActivePartners/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','ActivePartners_'+stampit)
    put('sync/ActivePartners/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request/'+myhost,'ActivePartners_'+stampit)
@@ -95,7 +93,7 @@ def addknown(leader,myhost):
  #  put('tosync','yes')
    if x[0].replace('possible','') in str(knowns):
     put('allowedPartners','notoall')
-    print('sync3')
+    #print('sync3')
     put('sync/allowedPartners/Add_notoall_/request','allwedPartners_'+stampit)
     put('sync/allowedPartners/Add_notoall_/request/'+myhost,'allwedPartners_'+stampit)
     etcddel('possible',x[0])
@@ -103,7 +101,8 @@ def addknown(leader,myhost):
     logmsg.sendlog('AddHostsu01','info',arg[-1],name)
     #queuethis('AddHost','stop',bargs[-1])
  else:
-  print('possible is empty')
+  #print('possible is empty')
+  print('')
  #queuethis('addknown.py','stop','system')
 
 if __name__=='__main__':
