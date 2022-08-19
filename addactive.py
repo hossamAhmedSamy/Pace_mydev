@@ -8,10 +8,8 @@ from etcdgetpy import etcdget as get
 from etcdgetlocalpy import etcdget as getlocal
 from etcdput import etcdput as put 
 
-leader = ''
 
-def dosync(*args):
-  global leader
+def dosync(leader,*args):
   put(*args)
   put(args[0]+'/'+leader,args[1])
   return 
@@ -30,11 +28,11 @@ def addactive(leader, myhost):
    if x[0].replace('toactivate','') in str(Active):
     etcddel('toactivate',x[0])
    put('known/'+x[0].replace('toactivate',''),x[1])
-   dosync('sync/known/Add_'+x[0].replace('toactivate','')+'_'+x[1]+'/request','known_'+str(stamp()))
+   dosync(leader, 'sync/known/Add_'+x[0].replace('toactivate','')+'_'+x[1]+'/request','known_'+str(stamp()))
    put('nextlead/er',x[0].replace('toactivate','')+'/'+x[1])
-   dosync('sync/nextlead/Add_er_'+x[0].replace('toactivate','')+'::'+x[1]+'/request','nextlead_'+str(stamp()))
+   dosync(leader, 'sync/nextlead/Add_er_'+x[0].replace('toactivate','')+'::'+x[1]+'/request','nextlead_'+str(stamp()))
    etcddel('losthost/'+x[0].replace('toactivate',''))
-   dosync('sync/losthost/Del_'+x[0].replace('toactivate','')+'_--prefix/request','losthost_'+str(stamp()))
+   dosync(leader, 'sync/losthost/Del_'+x[0].replace('toactivate','')+'_--prefix/request','losthost_'+str(stamp()))
    frstnode=get('frstnode')
    print('frst',frstnode[0])
    if x[0].replace('toactivate','') not in frstnode[0]:

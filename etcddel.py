@@ -22,8 +22,6 @@ def etcddel(*args):
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   err = result.returncode
   if err == 2:
-   from etcdget import etcdget as get
-   get('any','any')
    sleep(1)
  mylist=str(result.stdout)[2:][:-3].split('\\n')
  zipped=zip(mylist[0::2],mylist[1::2])
@@ -54,8 +52,6 @@ def etcddel(*args):
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    err = result.returncode
    if err == 2:
-    from etcdget import etcdget as get
-    get('any','any')
     sleep(1)
   reslist=str(result.stdout)[2:][:-3]
   if '1' in reslist:

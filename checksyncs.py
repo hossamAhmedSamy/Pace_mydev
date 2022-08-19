@@ -5,7 +5,7 @@ from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
 from broadcasttolocal import broadcasttolocal
 from etcdputlocal import etcdput as putlocal 
-from etcdgetlocal import etcdget as getlocal 
+from etcdgetlocalpy import etcdget as getlocal 
 from Evacuatelocal import setall
 from etcddel import etcddel as dels
 from etcddellocal import etcddel as dellocal
@@ -98,7 +98,7 @@ def syncrequest(leader, myhost):
  myip = get('ActivePartners/'+myhost)[0]
  allsyncs = get('sync','request') 
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
- mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
+ mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) or ('request/' and '/'+myhost) in str(x) ] 
  myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
  myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
@@ -154,6 +154,20 @@ def syncrequest(leader, myhost):
    if done[1] not in str(otherdones) and done[1] not in deleted:
     dellocal(myip, 'sync', done[1])
     deleted.add(done[1])
+ else:
+  actives = len(get('ActivePartners','--prefix')) + 1
+  toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
+  toprunedic = dict()
+  for prune in toprune:
+   if prune[1] not in toprunedic:
+    toprunedic[prune[1]] = 1
+   else:
+    toprunedic[prune[1]] += 1
+  for prune in toprunedic:
+   if toprunedic[prune] >= actives:
+    dels('sync',prune) 
+    print(prune,toprunedic[prune])
+  
  return     
 
 

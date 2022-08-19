@@ -12,7 +12,6 @@ from ast import literal_eval as mtuple
 
 
 #leader=get('leader','--prefix')[0][0].split('/')[1]
-leader=''
 stamp = str(stamp())
 
 
@@ -22,8 +21,7 @@ def selecthost(minhost,hostname,hostpools):
  return minhost
 
 
-def dosync(*args):
-  global leader
+def dosync(leader,*args):
   put(*args)
   put(args[0]+'/'+leader,args[1])
   return 
@@ -43,9 +41,9 @@ def zpooltoimport(leader, myhost):
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    if pool in result:
     put('pools/'+pool,myhost)
-    dosync('sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+stamp)
-    cmdline= 'systemctl restart zfs-zed  '
-    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+    dosync(leader,'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+stamp)
+    #cmdline= 'systemctl restart zfs-zed  '
+    #result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    dels('needtoimport',pool)
     
  if myhost != leader:

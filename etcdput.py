@@ -13,9 +13,10 @@ def etcdput(key,val):
   cmdline=['etcdctl','--user=root:YN-Password_123','-w','json','--endpoints='+endpoints,'put',key,val]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   err = result.returncode
-  if err == 2:
-    from etcdget import etcdget as get
-    get('any','any')
+  if err == 2 :
+    #from etcdget import etcdget as get
+    #get('any','any')
+    sleep(1)
  #print(result)
  return 1 
 
