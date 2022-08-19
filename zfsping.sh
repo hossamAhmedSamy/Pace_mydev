@@ -30,8 +30,10 @@ cd /pace
 rm -rf /pacedata/addiscsitargets 2>/dev/null
 rm -rf /pacedata/startzfsping 2>/dev/null
 /pace/startzfs.sh
-leadername=` ./etcdget.py leader --prefix | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
-leaderip=` ./etcdget.py leader/$leadername `
+leaderall=` ./etcdget.py leader --prefix `
+leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
+leadername=$leader
+leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
 date=`date `
 myhost=`hostname -s`
 myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
@@ -39,6 +41,10 @@ myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | 
 echo starting in $date >> /root/zfspingtmp
 while true;
 do
+ leaderall=` ./etcdget.py leader --prefix `
+ leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
+ leadername=$leader
+ leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
  pgrep fixpool 
  if [ $? -ne 0 ];
  then
@@ -80,14 +86,18 @@ do
    aliast='alias'
    /pace/etcdput.py ready/$myhost $myip
    /pace/etcdput.py $aliast/$myhost $myalias
-   /pace/etcdput.py sync/$aliast/$myhost $myip
    /pace/etcdput.py ActivePartners/$myhost $myip
    stamp=`date +%s`
-   /pace/etcdput.py sync/ActivePartners/$myhost $stamp
-   /pace/etcdput.py sync/ready/$myhost $stamp
-   /pace/etcdput.py sync/$aliast/$myhost $stamp
+   myalias=`echo $myalias | sed 's/\_/\:\:\:/g'`
+   myalias=`echo $myalias | sed 's/\//\:\:\:/g'`
+   /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request ActivePartners_$stamp
+   /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/$leadername ActivePartners_$stamp
+   /pace/etcdput.py sync/$aliast/Add_${myhost}_$myalias/request/$leadername alias_$stamp
+   /pace/etcdput.py sync/$aliast/Add_${myhost}_$myalias/request alias_$stamp
+   /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
+   /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$leadername ready_$stamp
    partnersync=0
-   /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
+   #/TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py 
    touch /pacedata/addiscsitargets 
    pgrep putzpool 
    if [ $? -ne 0 ];
@@ -114,10 +124,11 @@ do
  fi
    echo no leader although I am primary node >> /root/zfspingtmp
    ./runningetcdnodes.py $myip 2>/dev/null
-   ./etcddel.py leader --prefix 2>/dev/null &
-   ./etcdput.py leader/$myhost $myip 2>/dev/null &
+   ./etcddel.py leader --prefix 2>/dev/null 
+   ./etcdput.py leader/$myhost $myip 2>/dev/null 
    stamp=`date +%s`
-   ./etcdput.py sync/leader/$myhost $stamp 2>/dev/null &
+    /pace/etcdput.py sync/leader/Add_${myhost}_$myip/request leader_$stamp
+    /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost leader_$stamp
  echo $perfmon | grep 1
  if [ $? -eq 0 ]; then
    /TopStor/logqueue.py FixIamleader stop system 
@@ -182,8 +193,18 @@ do
      echo running sendhost.py $leaderip 'user' 'recvreq' $myhost >>/root/tmp2
      leaderall=` ./etcdget.py leader --prefix `
      leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
+     issync=`./etcdget.py sync initial | grep $myhost`initial
+  echo $issync | grep $myhost
+  if [ $? -eq 0 ];
+  then
+  ./checksyncs.py syncrequest
+  else
+   /pace/etcddellocal.py $myip sync --prefix
+   /pace/checksyncs.py syncall $myip 
+   syncinit=$myhost
+  fi 
      leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
-     ./checksync.py
+     ./checksync.py syncrequest
      /pace/sendhost.py $leaderip 'logall' 'recvreq' $myhost 
      isknown=$((isknown+1))
     fi
@@ -193,9 +214,24 @@ do
     fi
     if [[ $isknown -eq 3 ]];
     then
+     issync=`./etcdgetlocal.py $myip sync initial`initial
+     echo $issync | grep $myhost
+     if [ $? -eq 0 ]
+     then
+      echo syncrequests only 
+      ./checksyncs.py syncrequest
+     else
+      echo have to syncall 
+      ./checksyncs.py syncall $myip
+     fi 
+     stamp=`date +%s`
      /pace/etcdput.py ready/$myhost $myip 
      /pace/etcdput.py ActivePartners/$myhost $myip 
-     /pace/etcdput.py sync/ActivePartners/$myhost $stamp
+     /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request/$leadername ActivePartners_$stamp
+     /pace/etcdput.py sync/ActivePartners/Add_${myhost}_$myip/request ActivePartners_$stamp
+     /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$leadername ready_$stamp
+     /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
+
      /TopStor/broadcast.py SyncHosts /TopStor/pump.sh addhost.py
      #targetcli clearconfig True
      #targetcli saveconfig
@@ -255,14 +291,15 @@ do
   done
   leaderall=` ./etcdget.py leader --prefix `
   leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
+  leadername=$leader
   leaderip=`echo $leaderall | awk -F"')" '{print $1}' | awk -F", '" '{print $2}'`
   ./etcdsync.py $myip primary primary 2>/dev/null &
   ./etcddellocal.py $myip known --prefix 2>/dev/null &
   ./etcddellocal.py $myip localrun --prefix 2>/dev/null &
   ./etcddellocal.py $myip run --prefix 2>/dev/null &
   ./etcdsync.py $myip known known 2>/dev/null &
-  ./etcdsync.py $myip localrun localrun 2>/dev/null &
-  ./etcdsync.py $myip leader known 2>/dev/null &
+  #./etcdsync.py $myip localrun localrun 2>/dev/null &
+  ./etcdsync.py $myip leader leader 2>/dev/null &
   echo /TopStor/syncq.py $leaderip $myhost >>/root/tmp2
   /TopStor/syncq.py $leaderip $myhost 2>/root/syncqerror
 #   ./etcddellocal.py $myip known/$myhost --prefix 2>/dev/null
@@ -290,7 +327,7 @@ do
   pgrep checksyncs 
   if [ $? -ne 0 ];
   then
-   /pace/checksyncs.py
+   /pace/checksyncs.py syncrequest
   fi
 
  fi
@@ -324,8 +361,7 @@ do
    if [ $? -ne 0 ];
    then
     stamp=`date +%s`
-    ETCDCTL_API=3 /pace/etcdput.py sync/poolsnxt/$myhost $stamp 
-    /TopStor/selectimport.py $myhost &
+    /TopStor/selectimport.py $myhost $leader &
    fi
  fi 
  echo toimport = $toimport >> /root/zfspingtmp
@@ -374,7 +410,7 @@ do
    pgrep zpooltoimport
    if [ $? -ne 0 ];
    then
-    /TopStor/zpooltoimport.py all &
+    /TopStor/zpooltoimport.py all 2>/dev/null &  
     oldlsscsi=$lsscsi
    fi
    pgrep  VolumeCheck 
@@ -412,7 +448,7 @@ do
  pgrep checksyncs 
  if [ $? -ne 0 ];
  then
-  /pace/checksyncs.py
+  /pace/checksyncs.py syncrequest
  fi
 
   echo Collecting a change in system occured >> /root/zfspingtmp

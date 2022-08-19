@@ -10,7 +10,10 @@ from etcdgetlocal import etcdget as getlocal
 from time import time as stamp
 from etcdput import etcdput as put 
 import json
+from socket import gethostname as hostname
 
+myhost = hostname()
+leader=get('leader','--prefix')[0][0].split('/')[1]
 
 with open('/pacedata/perfmon','r') as f:
  perfmon = f.readline() 
@@ -18,24 +21,30 @@ if '1' in perfmon:
  queuethis('remknown.py','start','system')
 known=get('known','--prefix')
 ready=get('ready','--prefix')
-leader=get('leader','--prefix')
 knownchange = 0
+
+def dosync(*args):
+  put(*args)
+  put(args[0]+'/'+leader,args[1])
+  return 
+
+stamp = str(stamp())
 if len(ready) > len(known)+1:
  print('iamhere')
  for r in ready:
   if r[0].split('/')[1] not in ( str(known) and str(leader)) :
-   put('known/',r[0].split('/')[1],r[0],r[1])
-   put('sync/known/'+myhost,str(stamp()))
+   put('known/'+r[0].split('/')[1],r[1])
+   dosync('sync/known/Add_'+r[0].split('/')[1]+'_'+r[1]+'/request','known_'+stamp)
    knownchange = 1
 if knownchange == 1:
  known=get('known','--prefix')
   
 print(known)
-nextone=get('nextlead')
-if str(nextone[0]).split('/')[0] not in  str(known):
- print('deleting nextlead')
- etcddel('nextlead')
- etcddel('sync/nextlead', '--prefix')
+nextone=get('nextlead/er')[0]
+if str(nextone) != '-1':
+ if str(nextone[1]).split('/')[0] not in  str(known):
+  print('deleting nextlead')
+  etcddel('nextlead/er')
  nextone=[]
 if known != []:
  for kno in known:
@@ -44,42 +53,45 @@ if known != []:
   print('heartbeat=',heart, kn[1])
   print(type(heart),heart)
   if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in kn[1]):
-   print('the known ',kn[0].replace('known/',''),' is gone, notfound')
+   thelost = kn[0].split('/')[1]
+   print('the known',thelost,'is gone, notfound')
    etcddel(kn[0])
-   etcddel('host',kn[0].replace('known',''))
-   etcddel('list',kn[0].replace('known',''))
+   etcddel('host',thelost)
+   etcddel('list',thelost)
+   print('thlost'+thelost)
+   etcddel('sync/known','_'+thelost)
+   dosync('sync/known/Del_known::_'+thelost+'/request','known_'+stamp)
+   etcddel('sync/ready','_'+thelost)
+   etcddel('sync/volumes','_'+thelost)
+   etcddel('volumes',thelost)
+   dosync('sync/volumes/request','volumes_'+stamp)
+   etcddel('pools',thelost)
+   etcddel('sync/pools','_'+thelost)
+   dosync('sync/poolsnxt/Del_poolsnxt_'+thelost+'/request','poolsnxt_'+stamp)
+   dosync('sync/pools/Del_pools_'+thelost+'/request','pools_'+stamp)
+   etcddel('sync/nextlead',thelost)
    if kn[1] in str(nextone):
-    etcddel('nextlead')
-    broadcasttolocal('nextlead','nothing')
+    etcddel('nextlead/er')
+    dosync('sync/nextlead/Del_nextlead_--prefix/request','nextlead_'+stamp)
+    #broadcasttolocal('nextlead','nothing')
    logmsg.sendlog('Partst02','warning','system', kn[0].replace('known/',''))
    etcddel('ready/'+kn[0].replace('known/',''))
-   put('sync/known/'+myhost,str(stamp()))
-
+   dosync('sync/ready/Del_ready::_'+thelost+'/request','ready_'+stamp)
    etcddel('ipaddr',kn[0].replace('known/',''))
-   put('sync/known/'+myhost,str(stamp()))
-   put('sync/pool/'+myhost,str(stamp()))
-   put('sync/volume/'+myhost,str(stamp()))
-
-#   etcddel('sync/known', '--prefix')
-#   etcddel('sync/volume', '--prefix')
-#   etcddel('sync/pool', '--prefix')
-#   etcddel('needtoreplace', kn[0].replace('known/',''))
-#   etcddel('needtoimport', kn[0].replace('known/',''))
-#   etcddel('old','--prefix')
-   
-   cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
-   subprocess.run(cmdline,stdout=subprocess.PIPE)
+   print('hostlost ###########################################33333')
+   #cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
+   #subprocess.run(cmdline,stdout=subprocess.PIPE)
    etcddel('localrun/'+str(kn[0]))
-   broadcast('broadcast','/pace/hostlostfromleader.sh',kn[0].replace('known/',''))
-   broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
-   broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
+   #broadcast('broadcast','/pace/hostlostfromleader.sh',kn[0].replace('known/',''))
+   #broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
+   #broadcast('broadcast','/TopStor/pump.sh','zpooltoimport.py','all')
   else:
    if nextone == []:
-    put('nextlead',kn[0].replace('known/','')+'/'+kn[1])
-    etcddel('nextlead','--prefix')
-    broadcasttolocal('nextlead',kn[0].replace('known/','')+'/'+kn[1])
-    broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
-    put('sync/nextlead/'+myhost,str(stamp()))
+    put('nextlead/er',kn[0].replace('known/','')+'/'+kn[1])
+    dosync('sync/nextlead/Add_er_'+kn[0].split('/')[1]+'::'+kn[1]+'/request','nextlead_'+stamp)
+    #etcddel('nextlead','--prefix')
+   # broadcasttolocal('nextlead',kn[0].replace('known/','')+'/'+kn[1])
+   # broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
 poss = get('pos','--prefix')
 if poss != []:
  for pos in poss:
@@ -88,6 +100,7 @@ if poss != []:
   if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in pos[1]):
    print(pos[0].replace('possible',''))
    etcddel('ready/'+pos[0].replace('possible',''))
+   dosync('sync/ready/Del_ready::_'+pos[0].replace('possible','')+'/request','ready_'+stamp)
    etcddel(pos[0])
   
   
