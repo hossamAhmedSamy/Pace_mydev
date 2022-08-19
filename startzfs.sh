@@ -228,7 +228,7 @@ then
  ./etcddel.py vol  --prefix 2>/dev/null
  ./etcddel.py ipaddr  --prefix 2>/dev/null
  ./etcddel.py active --prefix 2>/dev/null
- ./etcddel.py sync/volumes volume_1 2>/dev/null
+ ./etcddel.py sync/volumes --prefix 2>/dev/null
  systemctl start iscsid &
  systemctl start iscsi &
  systemctl start topstorremote
@@ -338,7 +338,7 @@ else
   ./etcddellocal.py $myip volumes --prefix 2>/dev/null
   ./etcddellocal.py $myip sync/pools Add_ 2>/dev/null
   ./etcddellocal.py $myip sync/pools Del_ 2>/dev/null
-  ./etcddellocal.py $myip sync/volumes volume_1 2>/dev/null
+  ./etcddellocal.py $myip sync/volumes volumes_$stamp 2>/dev/null
   ./etcdput.py $aliast/$myhost $myalias
   myalias=`echo $myalias | sed 's/\_/\:\:\:/g'`
   myalias=`echo $myalias | sed 's/\//\:\:\:/g'`
