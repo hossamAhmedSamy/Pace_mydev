@@ -333,6 +333,8 @@ else
   fi 
   stamp=`date +%s%N`
   myalias=`ETCDCTL_API=3 /pace/etcdgetlocal.py $myip $aliast/$myhost`
+  ./etcddellocal.py $myip leader --prefix 
+  ./etcdputlocal.py $myip leader/$leader $leaderip 
   ./etcddel.py sync/pools request/$myhost 2>/dev/null
   ./etcddellocal.py $myip pools --prefix 2>/dev/null
   ./etcddellocal.py $myip volumes --prefix 2>/dev/null
