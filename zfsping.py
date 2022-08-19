@@ -82,7 +82,7 @@ def zpooltoimportproc():
   while True:
    try:
     zpooltoimport(leader, myhost)
-    sleep(60)
+    sleep(3)
    except Exception as e:
     print(e)
     with open('/root/zpooltoimporterr','w') as f:
@@ -135,8 +135,10 @@ def infinitproc():
  myip = get('ActivePartners/'+myhost)[0]
  myalias = get('alias/'+myhost)[0]
  put('ready/'+myhost,myip)
+ put('nextlead/er',myhost+'/'+myip)
  stampit = str(stamp())
  dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
+ dosync(leader,'sync/nextlead/Add_er_'+myhost+'::'+myip+'/request','ready_'+stampit)
  if myhost == cleader:
   logmsg.sendlog('Partsu03','info','system',myalias,myip)
  else:
