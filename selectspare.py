@@ -65,7 +65,9 @@ def mustattach(cmdline,disksallowed,raid,myhost):
    dmstup = alldmlst[0][1].replace('inuse/','')
    cmd = cmd+[dmstup, '/dev/disk/by-id/'+spare['name']] 
    print('cmd', cmd)
-   res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
+   cmd = ['systemctl', 'restart', 'zfs-zed']
+   subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('result', res.stderr.decode())    
    if res.returncode == 0:
     put(alldmlst[0][0],dmstup) 
@@ -445,6 +447,8 @@ def solvedegradedraid(raid,disksfree):
     cmdline2=['/sbin/zpool', 'detach','-f',raid['pool'], disk['actualdisk']]
     forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print('detaching the faulty disk',forget.stderr.decode())
+    cmdline2=['systemctl', 'restart','zfs-zed']
+    subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return disksfree
    defdisk.append(disk['name'])
    dmstup = get('dm/'+myhost+'/'+raid['name'],'--prefix')
@@ -459,6 +463,8 @@ def solvedegradedraid(raid,disksfree):
 
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   cmdline2=['systemctl', 'restart','zfs-zed']
+   subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
    print('returncode',forget.returncode)
    if forget.returncode == 0:
@@ -523,6 +529,8 @@ def spare2(*args):
    print('will do:', poolname, raidname, rmdisk, adisk)
    cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   cmd = ['systemctl', 'restart', 'zfs-zed']
+   subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print(" ".join(cmdline2))
    print('thereuslt',forget.stdout.decode())
    print('return code',forget.returncode)
