@@ -7,6 +7,6 @@ pkill isciswatchdoglooper.sh
 while true;
 do
  iscsiwatchdogsh
- sleep 10 
+ sleep 1 
 done
 

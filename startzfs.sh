@@ -132,7 +132,7 @@ then
  fi
  #./etcddel.py sync --prefix
  ./etcddel.py needtoreplace --prefix
- ./etcddel.py needtoimport --prefix
+ ./etcddel.py poolsnxt --prefix
  ./etcddel.py known --prefix 2>/dev/null 
  /TopStor/HostManualconfigTZ $myip 
  /TopStor/HostManualconfigNTP $myip
@@ -317,6 +317,7 @@ else
   ./etcdget.py Active --prefix | grep $myhost
   if [ $? -ne 0 ];
   then
+   ./etcddellocal.py $myip sync --prefix
    ./etcdput.py possible$myhost $myip
    sleep 3
    stillpossible=1

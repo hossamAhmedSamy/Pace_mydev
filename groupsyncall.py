@@ -13,6 +13,8 @@ allusers= []
 #def thread_add(*user):
 def thread_add(user):
  username=user[0].replace('usersigroup/','')
+ if 'Everyone' == username:
+  return
  groupusers=user[1].split('/')[2]
  if groupusers=='no':
   groupusers='users'
@@ -29,6 +31,8 @@ def thread_add(user):
 #def thread_del(*user):
 def thread_del(user):
  username=user[0].replace('usersigroup/','')
+ if 'Everyone' == username:
+  return
  if username not in str(allusers):
   print(username,str(allusers))
   cmdline=['/TopStor/UnixDelGroup_sync',username,'system']
@@ -89,8 +93,9 @@ def groupsyncall(hostip,tosync='usrsigroup'):
 def onegroupsync(oper,usertosync):
  global allusers
  global myusers
- user=get('usersinfo', usertosync)[0]
- if oper == 'add':
+ user=get('usersigroup', usertosync)[0]
+ print('user',user)
+ if oper == 'Add':
   thread_add(user)
  else:
   thread_del(user)
@@ -99,4 +104,4 @@ def onegroupsync(oper,usertosync):
 if __name__=='__main__':
  with open('/root/sync2','w') as f:
   f.write('Starting\n')
- groupsyncall(*sys.argv[1:])
+ onegroupsync(*sys.argv[1:])

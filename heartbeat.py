@@ -2,6 +2,8 @@
 
 import sys, os, subprocess
 from etcdgetpy import etcdget as get
+from etcdput import etcdput as put 
+from etcddel import etcddel as dels 
 from etcdgetlocalpy import etcdget as getlocal
 from socket import gethostname as hostname
 from time import sleep
@@ -43,6 +45,7 @@ def getnextlead(myip,myport,leadern,leaderip):
 
 
 def heartbeat(*args):
+ sleep(1)
  cmdline=['pcs','resource','show','--full']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE).stdout.decode()
  myport = '2379' if 'mgmtip' in result else '2378'
@@ -54,50 +57,53 @@ def heartbeat(*args):
  leadern = leader[0].split('/')[1]
  leaderip = leader[1]
  myhost = hostname()
- knowns =  etcdctlheart(myip,myport,'known','--prefix')
- nextlead, nextleadip = getnextlead(myip,myport,leadern,leaderip)
- knowns = [leader]
- if myhost == leader:
-  knowns = knowns + etcdctlheart(myip, myport, 'known','--prefix')
- for known in knowns:
-  host = known[0].split('/')[1]
-  hostip = known[1]
-  port = '2379' if host in str(leadern) else '2378'
-  cmdline='nmap --max-rtt-timeout 2000ms -p '+port+' '+hostip 
-  result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-  result =(host,'ok') if 'open' in result  else (host,'lost')
-  print(result)
-  if 'ok' not in str(result):
-   if host == leadern:
-    print('leader lost. nextlead is ',nextlead, 'while my host',myhost)
-    cmdline='/pace/leaderlost.sh '+leadern+' '+myhost+' '+leaderip+' '+myip+' '+nextlead+' '+nextleadip
-    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-    if myhost == nextlead:
-     myport = '2379'
-    leader =  etcdctlheart(myip,myport,'leader','--prefix')[0]
-    leadern = leader[0].split('/')[1]
-    leaderip = leader[1]
-    nextlead, nextleadip = getnextlead(myip,myport, leadern, leaderip)
-   else:
-    leader =  etcdctlheart(myip,myport,'leader','--prefix')[0]
-    leadern = leader[0].split('/')[1]
-    leaderip = leader[1]
-   print('myhost',myhost,myip,myport)
-   #remknown(leadern,myhost) 
-   cmdline='/pace/iscsiwatchdog.sh'
+ while True:
+  nextlead, nextleadip = getnextlead(myip,myport,leadern,leaderip)
+  knowns = [leader]
+  if myhost == leadern:
+   knowns = knowns + etcdctlheart(myip, myport, 'known','--prefix')
+  for known in knowns:
+   host = known[0].split('/')[1]
+   hostip = known[1]
+   port = '2379' if host in str(leadern) else '2378'
+   cmdline='nmap --max-rtt-timeout 2000ms -p '+port+' '+hostip 
    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-   zpooltoimport(leadern, myhost)
-   etcds = etcdctlheart(myip,myport,'volumes','--prefix')
-   replis = etcdctlheart(myip,myport, 'replivol','--prefix')
-   cmdline = 'pcs resource'
-   pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
-   volumecheck(leader, myhost, etcds, replis, pcss)
-   addactive(leadern,myhost)
-   spare2(leadern, myhost)
-   spare2(leadern, myhost)
-   spare2(leadern, myhost)
-   break
- return leadern, leaderip 
+   result =(host,'ok') if 'open' in result  else (host,'lost')
+   print(result)
+   if 'ok' not in str(result):
+    if host == leadern:
+     print('leader lost. nextlead is ',nextlead, 'while my host',myhost)
+     cmdline='/pace/leaderlost.sh '+leadern+' '+myhost+' '+leaderip+' '+myip+' '+nextlead+' '+nextleadip
+     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+     if myhost == nextlead:
+      myport = '2379'
+     leader =  etcdctlheart(myip,myport,'leader','--prefix')[0]
+     leadern = leader[0].split('/')[1]
+     leaderip = leader[1]
+     nextlead, nextleadip = getnextlead(myip,myport, leadern, leaderip)
+    print('myhost',myhost,myip,myport)
+    dels('ready/'+host)
+    dels('known/'+host)
+    dels('pools',host)
+    stampit = str(stamp())
+    dosync(leadern,'sync/known/Del_known_'+host+'/request','known_'+stampit)
+    dosync(leadern,'sync/ready/Del_ready_'+host+'/request','ready_'+stampit)
+    dosync(leadern,'sync/pools/Del_pools_'+host+'/request','pools_'+stampit)
+    cmdline='/pace/iscsiwatchdog.sh'
+    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+    zpooltoimport(leadern, myhost)
+    etcds = etcdctlheart(myip,myport,'volumes','--prefix')
+    replis = etcdctlheart(myip,myport, 'replivol','--prefix')
+    cmdline = 'pcs resource'
+    pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
+    volumecheck(leadern, myhost, etcds, replis, pcss)
+    addactive(leadern,myhost)
+    spare2(leadern, myhost)
+    spare2(leadern, myhost)
+    spare2(leadern, myhost)
+    if myhost == leadern:
+     remknown(leadern,myhost) 
+    break
  
 
 

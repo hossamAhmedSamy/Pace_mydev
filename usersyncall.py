@@ -11,7 +11,10 @@ myhost = hostname()
 myip = get('ActivePartners/'+myhost)[0]
 allusers = []
 def thread_add(user):
+ global myusers
  username=user[0].replace('usersinfo/','')
+ if 'NoUser' == username:
+  return
  with open('/root/usersync2','w') as f:
   f.write(str(user)+' + '+str(username)+'\n')
  if username in str(myusers):
@@ -38,6 +41,8 @@ def thread_add(user):
 def thread_del(*user):
  global allusers
  username=user[0].replace('usersinfo/','')
+ if 'NoUser' == username:
+  return
  if username not in str(allusers):
   print(username,str(allusers))
   cmdline=['/TopStor/UnixDelUser_sync',username,'system']
@@ -85,7 +90,9 @@ def usersyncall(hostip,tosync='usersinfo'):
 def oneusersync(oper,usertosync):
  global allusers
  global myusers
+ global myip
  print('args',oper,usertosync)
+ myusers=getlocal(myip,'usersinfo','--prefix')
  user=get('usersinfo', usertosync)[0]
  if user == -1:
   return

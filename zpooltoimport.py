@@ -27,12 +27,15 @@ def dosync(leader,*args):
   return 
 
 def zpooltoimport(leader, myhost):
- needtoimport=get('needtoimport', myhost) 
+ needtoimport=get('poolsnxt', myhost) 
+ cpools = get('pools/','--prefix')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
  else:
   for poolline in needtoimport:
-   pool = poolline[0].replace('needtoimport/','')
+   pool = poolline[0].replace('poolsnxt/','')
+   if pool in str(cpools):
+    continue
    ioperf()
    print('pool', pool)
    cmdline= '/usr/sbin/zpool import  '+pool
@@ -44,7 +47,7 @@ def zpooltoimport(leader, myhost):
     dosync(leader,'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+stamp)
     #cmdline= 'systemctl restart zfs-zed  '
     #result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
-   dels('needtoimport',pool)
+   dels('poolsnxt',pool)
     
  if myhost != leader:
   return
@@ -52,7 +55,7 @@ def zpooltoimport(leader, myhost):
  knowns=get('ready','--prefix')
  hosts=get('hosts','/current')
  pools = getpoolstoimport()
- needtoimport=get('needtoimport', '--prefix') 
+ needtoimport=get('poolsnxt', '--prefix') 
  for pool in pools:
   if pool not in str(needtoimport):
    minhost=(myhost,float('inf'))
@@ -60,7 +63,7 @@ def zpooltoimport(leader, myhost):
     hostname = host[0].split('/')[1]
     hostpools=mtuple(host[1])
     minhost = selecthost(minhost,hostname,hostpools)
-   put('needtoimport/'+pool,minhost[0])
+   put('poolsnxt/'+pool,minhost[0])
  return
      
        

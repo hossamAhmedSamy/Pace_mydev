@@ -81,13 +81,16 @@ stamp=`date +%s%N`
 /pace/etcdput.py sync/ready/Del_ready_${leader}/request ready_$stamp
 /pace/etcdput.py sync/ready/Del_ready_${leader}/request/$myhost ready_$stamp
 ./etcdput.py ready/$myhost $myip  
-/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
-/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
+/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready2_$stamp
+/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready2_$stamp
 ./etcddel.py  host $leader  
 ./etcddel.py  known $myhost  
 /pace/etcdput.py sync/known/Del_known_${myhost}/request known_$stamp
 /pace/etcdput.py sync/known/Del_known_${myhost}/request/$myhost known_$stamp
 /TopStor/logmsg.py Partst02 warning system $leader 
+./etcddel.py pool $leader  
+/pace/etcdput.py sync/pool/Del_pool_${leader}/request pool_$stamp
+/pace/etcdput.py sync/pool/Del_pool_${leader}/request/$myhost pool_$stamp
 #./broadcasttolocal.py sync/leader/$myhost $stamp 
 ./etcddel.py ipaddr $leader
 ./etcdput.py sync/ipaddr/Del_ip/request  ipaddr_$stamp 

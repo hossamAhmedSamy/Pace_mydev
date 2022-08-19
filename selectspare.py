@@ -398,8 +398,12 @@ def solvedegradedraid(raid,disksfree):
     print('new',dmstup,'is created')
    diskuid = disk['actualdisk']
    if 'scsi' in disk['actualdisk']:
-    cmdline2=['/sbin/zdb']
-    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().replace(' ','').split('\n')
+    cmdline2='/sbin/zdb -e -C '+disk['pool']
+    forget=subprocess.run(cmdline2.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if forget.returncode:
+     cmdline2='/sbin/zdb -C '+disk['pool']
+     forget=subprocess.run(cmdline2.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    forget=forget.stdout.decode().replace(' ','').split('\n')
     faultdisk = [ x for x in forget if 'guid' in x or (disk['actualdisk'] in x and 'path' in x) ]
     eindex = 0 
     for fa in faultdisk:
@@ -413,9 +417,9 @@ def solvedegradedraid(raid,disksfree):
     f.write('cmdline '+ " ".join(cmdline2)+'\n')
     f.write('result: '+forget.stdout.decode()+'\n')
     f.write('result: '+forget.stderr.decode()+'\n')
-   sleep(3)
-   cmdline2=['/sbin/zpool', 'offline',raid['pool'], '/dev/'+dmstup]
-   subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   #sleep(3)
+   #cmdline2=['/sbin/zpool', 'offline',raid['pool'], '/dev/'+dmstup]
+   #subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    #cmdline2=['systemctl', 'restart','zfs-zed']
    #subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
@@ -537,19 +541,19 @@ def spare2(*args):
 #####################################  set the right replacements for all raids
  newop=getall()
  getcurrent = get('hosts','current')
+ allraids = []
  for hostinfo in newop:
   pools = mtuple(hostinfo[1])['pools']
   for spool in pools:
-   if spool['name'] not in str(getcurrent):
+   if spool['name'] not in str(getcurrent) or 'ree' in spool['name']:
     continue
    for sraid in spool['raidlist']:
     if len(availability) > 0:
-     if 'ree' not in sraid['name'] and spool['name'] in str(availability):
+     if spool['name'] in str(availability):
       allraids.append(sraid)
     else:
-     if 'ree' not in sraid['name'] and sraid['name'] in str(getcurrent):
+     if sraid['name'] in str(getcurrent):
       allraids.append(sraid)
- 
  diskreplace = {}
  allraidsranked = []
  if len(allraids) == 0:
