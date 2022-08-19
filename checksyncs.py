@@ -117,6 +117,7 @@ def syncrequest(*args):
       else:
        putlocal(myip,sync+'/'+opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
      else:
+      print(sync,opers)
       dellocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
       if 'syncfn' in opers[0]:
