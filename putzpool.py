@@ -53,7 +53,7 @@ def putzpool(leader,myhost):
  poolsstatus=[]
  x=list(map(chr,(range(97,123))))
  cmdline=['fdisk','-l']
- cdisks=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ cdisks=subprocess.run(cmdline,stderr=subprocess.PIPE, stdout=subprocess.PIPE)
  devs=cdisks.stdout.decode().split('Disk /dev/')
  drives = []
  for dev in devs:
