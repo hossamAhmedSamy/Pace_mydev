@@ -9,6 +9,8 @@ from etcdgetlocalpy import etcdget as getlocal
 from time import time as stamp
 from etcdput import etcdput as put 
 from socket import gethostname as hostname
+from addknown import addknown
+from putzpool import putzpool
 
 
 
@@ -20,4 +22,6 @@ while True:
  print('start remknown')
  remknown(leadern,myhost) 
  print('finish remknown')
-# if myhost == leadern:
+ if myhost == leadern:
+  addknown(leader,myhost)
+ putzpool(leader,myhost)
