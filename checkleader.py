@@ -13,7 +13,7 @@ def checkleader(key, prefix=''):
  cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
  err = 2
  count = 0
- while count < 3: 
+ while count < 4: 
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   err = result.returncode
   if err == 2:
