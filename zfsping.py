@@ -11,6 +11,8 @@ from etcdput import etcdput as put
 from socket import gethostname as hostname
 from addknown import addknown
 from putzpool import putzpool
+from etcdputlocal import etcdput as putlocal 
+
 
 
 

@@ -2,11 +2,10 @@
 import sys, subprocess, logmsg
 from socket import gethostname as hostname
 from etcddel import etcddel as etcddel
-from deltolocal import deltolocal 
 from logqueue import queuethis
-from broadcast import broadcast as broadcast 
+#from broadcast import broadcast as broadcast 
 from time import time as stamp
-from broadcasttolocal import broadcasttolocal as broadcasttolocal
+#from broadcasttolocal import broadcasttolocal as broadcasttolocal
 from etcdgetpy import etcdget as get
 from etcdgetlocalpy import etcdget as getlocal
 from etcdput import etcdput as put 
@@ -25,7 +24,6 @@ def addknown(leader,myhost):
    put('known/'+posname,pos[1])
    put('sync/known/Add_'+posname+'_'+pos[1]+'/request','known_'+'known_'+stampit)
    put('sync/known/Add_'+posname+'_'+pos[1]+'/request/'+myhost,'known_'+'known_'+stampit)
- #  broadcasttolocal('known/'+posname,pos[1])
    aliast = getlocal(pos[1],'alias/'+posname)[0]
    print('pos',pos[1],posname,str(aliast))
    put('alias/'+posname,str(aliast))
@@ -68,7 +66,7 @@ def addknown(leader,myhost):
    if hostsubnet == -1:
     hostsubnet = "24"
    etcddel('modified',x[0].replace('possible',''))
-   deltolocal('modified',x[0].replace('possible',''))
+   #deltolocal('modified',x[0].replace('possible',''))
    print('syncing2')
    put('ActivePartners/'+x[0].replace('possible',''),x[1])
    put('sync/ActivePartners/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','ActivePartners_'+stampit)
@@ -95,7 +93,6 @@ def addknown(leader,myhost):
    put('sync/cleanlost/Del_'+x[0].replace('possible','')+'_--prefix/request/'+myhost,'cleanlost_'+stampit)
    put('change/'+x[0].replace('possible','')+'/booted',x[1])
  #  put('tosync','yes')
- #  broadcast('broadcast','/TopStor/pump.sh','syncnext.sh','nextlead','nextlead')
    if x[0].replace('possible','') in str(knowns):
     put('allowedPartners','notoall')
     print('sync3')
