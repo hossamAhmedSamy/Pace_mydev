@@ -1,14 +1,11 @@
 #!/bin/python3.6
-import subprocess,sys,socket, os
+import subprocess,sys, os
 from socket import gethostname as hostname
 from levelthis import levelthis
 from logqueue import queuethis
 import json
 from raidrank import getraidrank
 from ast import literal_eval as mtuple
-from diskdata import diskdata
-from broadcasttolocal import broadcasttolocal
-from collections import Counter
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
 from etcddel import etcddel as dels 
@@ -21,7 +18,7 @@ os.environ['ETCDCTL_API']= '3'
 newop=[]
 disksvalue=[]
 usedfree=[]
-myhost = hostname()
+myhost = '' 
 def mustattach(cmdline,disksallowed,raid,myhost):
    print('################################################')
    if len(disksallowed) < 1 : 
@@ -71,7 +68,6 @@ def mustattach(cmdline,disksallowed,raid,myhost):
    print('result', res.stderr.decode())    
    if res.returncode == 0:
     put(alldmlst[0][0],dmstup) 
-    broadcasttolocal(alldmlst[0][0],dmstup) 
     return 0
    else:
     return 1
@@ -469,7 +465,6 @@ def solvedegradedraid(raid,disksfree):
    print('returncode',forget.returncode)
    if forget.returncode == 0:
     put(dmstuplst[0][0],'inuse/'+dmstup)
-    broadcasttolocal(dmstuplst[0][0],'inuse/'+dmstup)
    else:
     if forget.returncode != 255:
      dels(dmstuplst[0][0], '--prefix')
@@ -514,10 +509,9 @@ def solvedegradedraid(raid,disksfree):
  else:
   return sparedisklst
   
-def spare2(*args):
+def spare2(leader, myhost):
  global newop
  global usedfree 
- myhost = hostname()
  needtoreplace=get('needtoreplace', myhost) 
  if myhost in str(needtoreplace):
   print('need to replace',needtoreplace)
@@ -534,12 +528,11 @@ def spare2(*args):
    print(" ".join(cmdline2))
    print('thereuslt',forget.stdout.decode())
    print('return code',forget.returncode)
- if myhost not in str(get('leader','--prefix')):
+ if myhost not in leader:
   return
  freedisks=[]
  allraids=[]
  freeraids=[]
- myhost=args[0]
  hosts=get('ready','--prefix')
  allhosts=set()
  for host in hosts:
@@ -660,12 +653,16 @@ def spare2(*args):
  
  
 if __name__=='__main__':
- with open('/pacedata/perfmon','r') as f:
-  perfmon = f.readline() 
- if '1' in perfmon:
-  queuethis('selectspare.py','start','system')
- if len(sys.argv)< 2:
-  sys.argv.append(hostname())
- spare2(*sys.argv[1:])
- if '1' in perfmon:
-  queuethis('selectspare.py','stop','system')
+ #with open('/pacedata/perfmon','r') as f:
+ # perfmon = f.readline() 
+ #if '1' in perfmon:
+ # queuethis('selectspare.py','start','system')
+ if len(sys.argv) > 1:
+  leader = sys.argv[1]
+  myhost = sys.argv[2]
+ else:
+  leader=get('leader','--prefix')[0][0].split('/')[1]
+  myhost = hostname()
+ spare2(leader, myhost)
+ #if '1' in perfmon:
+ # queuethis('selectspare.py','stop','system')

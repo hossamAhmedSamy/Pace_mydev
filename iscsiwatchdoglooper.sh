@@ -1,10 +1,12 @@
 #!/usr/bin/sh
-iscsiwatchdogsh() {
+iscsiwatchdogsh () {
 cd /pace
-/pace/iscsiwatchdoglooper.sh 
+/pace/iscsiwatchdog.sh 
 }
-until iscsiwatchdogsh; do
- echo "'iscsiwatchdogsh' crashed with exit code $?. Restarting..." >&2
-    sleep 10 
+pkill isciswatchdoglooper.sh
+while true;
+do
+ iscsiwatchdogsh
+ sleep 10 
 done
 

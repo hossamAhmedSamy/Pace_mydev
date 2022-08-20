@@ -33,9 +33,10 @@ rm -rf /pacedata/startzfsping 2>/dev/null
 zfspingpy(){
 ./zfsping.py >/root/zfspingpy 2>/root/zfspingpyerr
 }
-until zfspingpy; do
- echo "'zfsping' crashed with exit code $?. Restarting..." >&2
-    sleep 1
+while true;
+do
+ zfspingpy
+ sleep 1
 done
 
 

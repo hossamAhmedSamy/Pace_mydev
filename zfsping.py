@@ -1,7 +1,9 @@
 #!/bin/python3.6
 from checkleader import checkleader
 from remknown import remknown
-import subprocess,sys, logmsg
+from poolall import getall as getall
+from sendhost import sendhost
+import subprocess,sys, logmsg, os
 from logqueue import queuethis
 from etcddel import etcddel as etcddel
 from etcdgetpy import etcdget as get
@@ -16,12 +18,18 @@ from etcdputlocal import etcdput as putlocal
 from activeusers import activeusers
 from addactive import addactive
 from selectimport import selectimport
+from zpooltoimport import zpooltoimport
+from selectspare import spare2  
+from checksyncs import syncrequest
+from VolumeCheck import volumecheck
 from multiprocessing import Process
+from concurrent.futures import ThreadPoolExecutor
 
+os.environ['ETCDCTL_API']= '3'
 myhost = hostname()
-leader = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-leadern = leader[0].split('/')[1]
-leaderip = leader[1]
+leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+leader = leaderinfo[0].split('/')[1]
+leaderip = leaderinfo[1]
  
 
 
@@ -35,39 +43,116 @@ def fapiproc():
 
 def putzpoolproc():
   global leader, myhost
-  putzpool(leader,myhost)
-  sleep(5)
+  while True:
+   try:
+    putzpool(leader,myhost)
+    sleep(5)
+   except Exception as e:
+    with open('/root/putzpoolerr','w') as f:
+     f.write(e+'\n')
 
-def addactive():
+def addactiveproc():
   global leader, myhost
-  addactive(leader,myhost)
-  sleep(5)
+  while True:
+   try:
+    addactive(leader,myhost)
+    sleep(5)
+   except Exception as e:
+    with open('/root/addactiveerr','w') as f:
+     f.write(e+'\n')
 
 def selectimportproc():
   global leader, myhost
-  allpools=get('pools/','--prefix')
-  selectimport(myhost,allpools,leader)
-  sleep(5)
+  while True:
+   try:
+    allpools=get('pools/','--prefix')
+    selectimport(myhost,allpools,leader)
+    sleep(5)
+   except Exception as e:
+    with open('/root/selectimporterr','w') as f:
+     f.write(e+'\n')
+   
+
+def zpooltoimportproc():
+  global leader, myhost
+  while True:
+   try:
+    zpooltoimport(leader, myhost)
+    sleep(60)
+   except Exception as e:
+    print(e)
+    with open('/root/zpooltoimporterr','w') as f:
+     f.write(e+'\n')
+ 
+def volumecheckproc():
+  global leader, myhost
+  while True:
+   try:
+    etcds = get('volumes','--prefix')
+    replis = get('replivol','--prefix')
+    cmdline = 'pcs resource'
+    pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
+    volumecheck(leader, myhost, etcds, replis, pcss)
+    sleep(10)
+   except Exception as e:
+    print(volumecheck)
+    with open('/root/volumecheckerr','w') as f:
+     f.write(e+'\n')
+
+def selectspareproc():
+  global leader, myhost
+  while True:
+   try:
+    spare2(leader, myhost)
+    sleep(5)
+   except Exception as e:
+    with open('/root/selectsparerr','w') as f:
+
+     f.write(e+'\n')
+
+def syncrequestproc():
+ global leader, myhost
+ while True:
+  try:
+   syncrequest(leader, myhost)
+   sleep(5)
+  except Exception as e:
+   with open('/root/syncrequesterr','w') as f:
+    f.write(e+'\n')
+ 
+
 
 def infinitproc():
  global leader, myhost
  while True:
-  leader = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-  leadern = leader[0].split('/')[1]
-  leaderip = leader[1]
-  print('start remknown')
-  remknown(leadern,myhost) 
-  print('finish remknown')
-  if myhost == leadern:
-   addknown(leader,myhost)
-  activeusers(leader, myhost)
+  try:
+   leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+   leader = leaderinfo[0].split('/')[1]
+   leaderip = leaderinfo[1]
+   print('start remknown')
+   remknown(leadern,myhost) 
+   print('finish remknown')
+   if myhost == leadern:
+    addknown(leader,myhost)
+   activeusers(leader, myhost)
+  except Exception as e:
+   with open('/root/infiniterr','w') as f:
+    f.write(e+'\n')
+   
 
-loopers = [ infinitproc, iscsiwatchdogproc, fapiproc, putzpoolproc, addactive, selectimport ]
-
+loopers = [ infinitproc, iscsiwatchdogproc, fapiproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc,
+            selectspareproc , syncrequestproc ]
+#loopers = [ syncrequestproc ]
 if __name__=='__main__':
- fapi = Process(target=fapiproc)
- looper = Process(target=infinitproc)
- fapi.start()
- looper.start()
- fapi.join()
- looper.join()
+ with ThreadPoolExecutor(max_workers=len(loopers)) as e:
+  res = [ e.submit(x) for x in loopers ] 
+'''
+ process = []
+ for proc in loopers:
+  p = Process(target=proc)
+  p.start()
+  process.append((proc,p))
+ for proc in process:
+  print('starting process:', proc[0])
+  proc[1].join() 
+'''

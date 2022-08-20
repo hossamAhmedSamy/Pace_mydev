@@ -23,7 +23,7 @@ echo updating iscsitargets >> /root/iscsiwatch
 sh /pace/addtargetdisks.sh
 sh /pace/disklost.sh
 sh /pace/addtargetdisks.sh
-ETCDCTL_API=3 /pace/putzpool.py isciwatchversion &
+ETCDCTL_API=3 /pace/putzpool.py 
 
 pgrep checkfrstnode -a
 if [ $? -ne 0 ];
