@@ -12,6 +12,7 @@ from socket import gethostname as hostname
 from addknown import addknown
 from putzpool import putzpool
 from etcdputlocal import etcdput as putlocal 
+from activeusers import activeusers
 
 
 
@@ -27,3 +28,4 @@ while True:
  if myhost == leadern:
   addknown(leader,myhost)
  putzpool(leader,myhost)
+ activeusers(leader, myhost)
