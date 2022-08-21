@@ -30,6 +30,22 @@ cd /pace
 rm -rf /pacedata/addiscsitargets 2>/dev/null
 rm -rf /pacedata/startzfsping 2>/dev/null
 /pace/startzfs.sh
+zfspingpy(){
+./zfsping.py >/root/zfspingpy 2>/root/zfspingpyerr
+}
+while true;
+do
+ ./zfsping.py >/root/zfspingpy 2>/root/zfspingpyerr
+# zfspingpy
+ sleep 1
+done
+
+
+
+
+
+
+
 leaderall=` ./etcdget.py leader --prefix `
 leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
 leadername=$leader

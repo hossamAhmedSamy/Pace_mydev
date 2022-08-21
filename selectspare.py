@@ -1,14 +1,11 @@
 #!/bin/python3.6
-import subprocess,sys,socket, os
+import subprocess,sys, os
 from socket import gethostname as hostname
 from levelthis import levelthis
 from logqueue import queuethis
 import json
 from raidrank import getraidrank
 from ast import literal_eval as mtuple
-from diskdata import diskdata
-from broadcasttolocal import broadcasttolocal
-from collections import Counter
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
 from etcddel import etcddel as dels 
@@ -21,7 +18,7 @@ os.environ['ETCDCTL_API']= '3'
 newop=[]
 disksvalue=[]
 usedfree=[]
-myhost = hostname()
+myhost = '' 
 def mustattach(cmdline,disksallowed,raid,myhost):
    print('################################################')
    if len(disksallowed) < 1 : 
@@ -46,107 +43,32 @@ def mustattach(cmdline,disksallowed,raid,myhost):
     return 'wait' 
    dels('clearplsdisk/'+spare['actualdisk']) 
    dels('cleareddisk/'+spare['actualdisk']) 
+   print('cmd',cmd)
+   print('raidname',raid)
    if 'stripe' in raid['name']:
     print('############start attaching')
     cmd = cmd+[raid['disklist'][0]['name'],'/dev/disk/by-id/'+spare['name']] 
+    print(' '.join(cmd))
     res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if res.returncode !=0:
      print('somehting went wrong', res.stderr.encode())
     else:
      print(' the most suitable disk is attached')
     return
-    
-   print('############start replacing')
-   alldms = get('dm/'+myhost+'/'+raid['name'],'--prefix')
-   alldmlst = [ x for x in alldms if 'inuse' in str(x)]
-   if len(alldmlst) < 1:
+   dmcmd = 'zpool status '+raid['pool']
+   dmstup = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
+   if 'dm-' not in dmstup:
     print('somthing wrong, no stup found for this degraded group')
     return
-   dmstup = alldmlst[0][1].replace('inuse/','')
+   dmstup = 'dm-'+dmstup.split('dm-')[1].split(' ')[0]
    cmd = cmd+[dmstup, '/dev/disk/by-id/'+spare['name']] 
-   print('cmd', cmd)
    res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
    cmd = ['systemctl', 'restart', 'zfs-zed']
    subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('result', res.stderr.decode())    
-   if res.returncode == 0:
-    put(alldmlst[0][0],dmstup) 
-    broadcasttolocal(alldmlst[0][0],dmstup) 
-    return 0
-   else:
-    return 1
+   return 
  
-def mustattachold(cmdline,disksallowed,defdisk,myhost):
-   print('################################################')
-   if len(disksallowed) < 1 : 
-    return 'na'
-   print('helskdlskdkddlsldssd#######################')
-   cmd=cmdline.copy()
-   spare=disksallowed
-   print('spare',spare)
-   print('###########################')
-   spareplsclear=get('clearplsdisk/'+spare['actualdisk'])
-   spareiscleared=get('cleareddisk/'+spare['actualdisk']) 
-   if spareiscleared[0] != spareplsclear[0] or spareiscleared[0] == -1:
-    print('asking to clear')
-    put('clearplsdisk/'+spare['actualdisk'],spare['host'])
-    dels('cleareddisk/'+spare['actualdisk']) 
-    hostip=get('ready/'+spare['host'])
-    z=['/TopStor/pump.sh','Zpoolclrrun',spare['actualdisk']]
-    msg={'req': 'Zpool', 'reply':z}
-    sendhost(hostip[0], str(msg),'recvreply',myhost)
-    print('returning')
-    return 'wait' 
-   dels('clearplsdisk/'+spare['actualdisk']) 
-   dels('cleareddisk/'+spare['actualdisk']) 
-   if 'attach' in cmd:
-    print('attach in command')
-   else:
-    if spare['pool']==defdisk['pool']:
-     cmdline2=['/sbin/zpool', 'remove', defdisk['pool'],spare['actualdisk']]
-     subprocess.run(cmdline2,stdout=subprocess.PIPE)
-   if 'attach' in cmd:
-    logmsg.sendlog('Dist6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
-   else:
-    logmsg.sendlog('Dist2','info','system', defdisk['id'],spare['id'],myhost)
-   cmdline3=['/sbin/zpool', 'labelclear', spare['actualdisk']]
-   subprocess.run(cmdline3,stdout=subprocess.PIPE)
-   cmd.append(defdisk['actualdisk'])
-   cmd.append(spare['actualdisk'])
-   try: 
-    print('cmd',cmd)
-    subprocess.check_call(cmd)
-    if 'attach' in cmd:
-     logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
-     put('fixpool/'+defdisk['pool'],'1')
-    else:
-     logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
-    #syncmypools('all')
-    print('hihihi')
-    return spare['actualdisk'] 
-   except subprocess.CalledProcessError:
-    return 'fault'
-    cmd=cmdline.copy()
-    cmd.append('/dev/'+defdisk['devname'])
-    cmd.append(spare['actualdisk'])
-    try: 
-     subprocess.check_call(cmd)
-     if 'attach' in cmd:
-      logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
-      put('fixpool/'+defdisk['pool'],'1')
-     else:
-      logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
-    #syncmypools('all')
-      print('hihihi')
-     return spare['actualdisk'] 
-    except subprocess.CalledProcessError:
-     if 'attach' in cmd:
-      logmsg.sendlog('Difa6','warning','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
-     else:
-      logmsg.sendlog('Difa2','warning','system', defdisk['id'],spare['id'],myhost)
-     return 'fault' 
-   put('fixpool/'+defdisk['pool'],'1')
-  
+ 
 def norm(val):
  units={'B':1/1024**2,'K':1/1024, 'M': 1, 'G':1024 , 'T': 1024**2 }
  if type(val)==float:
@@ -451,16 +373,24 @@ def solvedegradedraid(raid,disksfree):
     subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return disksfree
    defdisk.append(disk['name'])
-   dmstup = get('dm/'+myhost+'/'+raid['name'],'--prefix')
-   dmstuplst = [ x for x in dmstup if 'inuse' not in str(x)]
-   print('dmstup:',dmstup)
-   if len(dmstuplst) < 1:
-    cmddm= ['/pace/mkdm.sh', raid['name'], myhost ]
-    subprocess.run(cmddm,stdout=subprocess.PIPE).stdout.decode()
-    alldms = get('dm/'+myhost+'/'+raid['name'],'--prefix')
-    dmstuplst = [ x for x in alldms if 'inuse' not in str(x)]
-   dmstup = dmstuplst[0][1]
-
+   dmcmd=['zpool', 'status']
+   dminuse = subprocess.run(dmcmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
+   dmcmd=['zpool','import']
+   dminuse = dminuse + subprocess.run(dmcmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
+   dminuse = [ 'dm-'+x.split('dm-')[1].split(' ')[0] for x in dminuse  if 'dm-' in x ]
+   dmcmd = '/pace/lstdm.sh'
+   dmstuplst = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
+   dmstup = '0'
+   for dm in dmstuplst:
+    if dm not in str(dminuse) or 'was /dev/'+dm in (dminuse):
+     dmstup = dm
+   print('dmstuplst',dmstuplst)
+   print('dmstup',dmstup)
+   if dmstup == '0':
+    print('creating new dm')
+    cmddm= ['/pace/mkdm.sh']
+    dmstup = subprocess.run(cmddm,stdout=subprocess.PIPE).stdout.decode()
+    print('new',dmstup,'is created')
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    cmdline2=['systemctl', 'restart','zfs-zed']
@@ -469,7 +399,6 @@ def solvedegradedraid(raid,disksfree):
    print('returncode',forget.returncode)
    if forget.returncode == 0:
     put(dmstuplst[0][0],'inuse/'+dmstup)
-    broadcasttolocal(dmstuplst[0][0],'inuse/'+dmstup)
    else:
     if forget.returncode != 255:
      dels(dmstuplst[0][0], '--prefix')
@@ -514,10 +443,9 @@ def solvedegradedraid(raid,disksfree):
  else:
   return sparedisklst
   
-def spare2(*args):
+def spare2(leader, myhost):
  global newop
  global usedfree 
- myhost = hostname()
  needtoreplace=get('needtoreplace', myhost) 
  if myhost in str(needtoreplace):
   print('need to replace',needtoreplace)
@@ -534,12 +462,11 @@ def spare2(*args):
    print(" ".join(cmdline2))
    print('thereuslt',forget.stdout.decode())
    print('return code',forget.returncode)
- if myhost not in str(get('leader','--prefix')):
+ if myhost not in leader:
   return
  freedisks=[]
  allraids=[]
  freeraids=[]
- myhost=args[0]
  hosts=get('ready','--prefix')
  allhosts=set()
  for host in hosts:
@@ -660,12 +587,16 @@ def spare2(*args):
  
  
 if __name__=='__main__':
- with open('/pacedata/perfmon','r') as f:
-  perfmon = f.readline() 
- if '1' in perfmon:
-  queuethis('selectspare.py','start','system')
- if len(sys.argv)< 2:
-  sys.argv.append(hostname())
- spare2(*sys.argv[1:])
- if '1' in perfmon:
-  queuethis('selectspare.py','stop','system')
+ #with open('/pacedata/perfmon','r') as f:
+ # perfmon = f.readline() 
+ #if '1' in perfmon:
+ # queuethis('selectspare.py','start','system')
+ if len(sys.argv) > 1:
+  leader = sys.argv[1]
+  myhost = sys.argv[2]
+ else:
+  leader=get('leader','--prefix')[0][0].split('/')[1]
+  myhost = hostname()
+ spare2(leader, myhost)
+ #if '1' in perfmon:
+ # queuethis('selectspare.py','stop','system')

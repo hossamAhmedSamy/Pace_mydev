@@ -14,6 +14,7 @@ from usersyncall import usersyncall, oneusersync
 from groupsyncall import groupsyncall, onegroupsync
 from socket import gethostname as hostname
 from etcdsync import synckeys
+from time import time as timestamp
 
 syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
@@ -33,9 +34,8 @@ myhost = hostname()
 def checksync(hostip='request',*args):
  synctypes[hostip](*args)
 
-def syncinit(*args):
- global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
- from time import time as timestamp
+def syncinit(leader, myhost):
+ global syncs, syncanitem, forReceivers, etcdonly, allsyncs
  stamp = int(timestamp() + 3600)
  for sync in syncs:
   put('sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
@@ -74,8 +74,8 @@ def doinitsync(myip, syncinfo):
  return
 
 
-def syncall(thisip,*args):
- global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
+def syncall(thisip,leader, myhost):
+ global syncs, syncanitem, forReceivers, etcdonly, allsyncs
  myip = thisip
  allinitials = get('sync','initial')
  myinitials = [ x for x in allinitials if 'initial' in str(x)  and '/request/dhcp' not in str(x) ] 
@@ -93,10 +93,9 @@ def syncall(thisip,*args):
  return
 
 
-def syncrequest(*args):
- global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
+def syncrequest(leader, myhost):
+ global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
  myip = get('ActivePartners/'+myhost)[0]
- leader = get('leader','--prefix')[0][0].replace('leader/','')
  allsyncs = get('sync','request') 
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
@@ -105,7 +104,8 @@ def syncrequest(*args):
  print('myrequests', myrequests)
  for syncinfo in myrequests:
   if '/initial/' in str(syncinfo):
-   doinitsync(myip, syncinfo)
+   if myhsot != leader:
+    doinitsync(myip, syncinfo)
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]
@@ -160,4 +160,11 @@ def syncrequest(*args):
 runcmd={'cron':'etctocron'} 
 synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
 if __name__=='__main__':
- synctypes[sys.argv[1]](*sys.argv[2:])
+ if len(sys.argv) > 2: 
+  leader = sys.argv[2]
+  myhost = sys.argv[3]
+ else:
+  leader=get('leader','--prefix')[0][0].split('/')[1]
+  myhost = hostname()
+ 
+ synctypes[sys.argv[1]](leader, myhost)

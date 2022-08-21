@@ -1,8 +1,7 @@
 #!/bin/python3.6
-import traceback, hashlib, sys
+import sys
 import subprocess
-from ast import literal_eval as mtuple
-from etcddel import etcddel as dels
+from etcddel import etcddel as etcddel
 from etcdgetpy import etcdget as get 
 from etcdput import etcdput as put 
 from socket import gethostname as hostname
@@ -10,8 +9,9 @@ from socket import gethostname as hostname
 
 def activeusers(leader, myhost):
  cmdline = 'docker ps'
- result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
- activeshares = [ (x.split()[0],[z for z in x.split() if 'pdhcp' in z][0].split('-')[2]) for x in result.split('\n') if 'smb' in x] 
+ result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
+ result = [ x for x in result if 'cifs' in x ] 
+ activeshares = [ (x.split()[0], x.split('cifs-')[1] ) for x in result ]
  conndict = {}
  for x in activeshares:
   cmdline = 'docker exec -t '+x[0]+' smbstatus -b '
@@ -31,7 +31,7 @@ def activeusers(leader, myhost):
    put('connections/user/'+x[0]+'/'+x[1], connx1user)
    put('connections/dev/'+x[0]+'/'+x[1], connx1dev)
   else:
-   dels('connections',x[0])
+   etcddel('connections',x[0])
 
 if __name__=='__main__':
  if len(sys.argv) > 1:

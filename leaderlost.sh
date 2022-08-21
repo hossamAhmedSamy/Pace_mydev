@@ -95,9 +95,9 @@ then
  /pace/putzpool.py 2 $isprimary $primtostd  &
  /TopStor/HostgetIPs
 fi
- /TopStor/selectimport.py $myhost $myhost &
- /TopStor/zpooltoimport.py all 
- /TopStor/zpooltoimport.py all &
+ /pace/selectimport.py $myhost $myhost &
+ /pace/zpooltoimport.py all 
+ /pace/zpooltoimport.py all &
  /pace/selectspare.py $myhost &
 pgrep activeusers 
 if [ $? -ne 0 ];
