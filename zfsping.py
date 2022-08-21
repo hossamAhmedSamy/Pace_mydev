@@ -32,6 +32,10 @@ leader = leaderinfo[0].split('/')[1]
 leaderip = leaderinfo[1]
  
 
+def dosync(leader,*args):
+  put(*args)
+  put(args[0]+'/'+leader,args[1])
+  return 
 
 def iscsiwatchdogproc():
   cmdline='/pace/iscsiwatchdoglooper.sh'
@@ -124,6 +128,13 @@ def syncrequestproc():
 
 def infinitproc():
  global leader, myhost
+ leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+ leader = leaderinfo[0].split('/')[1]
+ leaderip = leaderinfo[1]
+ cleader = leader
+ myip = get('ActivePartners/'+myhost)[0]
+ put('ready/'+myhost,myip)
+ dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
  while True:
   try:
    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
