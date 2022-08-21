@@ -104,7 +104,8 @@ def syncrequest(leader, myhost):
  print('myrequests', myrequests)
  for syncinfo in myrequests:
   if '/initial/' in str(syncinfo):
-   doinitsync(myip, syncinfo)
+   if myhsot != leader:
+    doinitsync(myip, syncinfo)
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]

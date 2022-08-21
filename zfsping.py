@@ -147,9 +147,9 @@ def infinitproc():
    leader = leaderinfo[0].split('/')[1]
    leaderip = leaderinfo[1]
    print('start remknown')
-   remknown(leadern,myhost) 
+   remknown(leader,myhost) 
    print('finish remknown')
-   if myhost == leadern:
+   if myhost == leader:
     addknown(leader,myhost)
    activeusers(leader, myhost)
   except Exception as e:

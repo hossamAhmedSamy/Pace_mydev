@@ -35,7 +35,8 @@ zfspingpy(){
 }
 while true;
 do
- zfspingpy
+ ./zfsping.py >/root/zfspingpy 2>/root/zfspingpyerr
+# zfspingpy
  sleep 1
 done
 

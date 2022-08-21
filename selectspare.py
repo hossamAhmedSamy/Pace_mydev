@@ -382,13 +382,15 @@ def solvedegradedraid(raid,disksfree):
    dmstuplst = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
    dmstup = '0'
    for dm in dmstuplst:
-    if dm not in str(dminuse):
-     print('hihi')
+    if dm not in str(dminuse) or 'was /dev/'+dm in (dminuse):
      dmstup = dm
+   print('dmstuplst',dmstuplst)
    print('dmstup',dmstup)
-   if 'dm' not in dmstup:
+   if dmstup == '0':
+    print('creating new dm')
     cmddm= ['/pace/mkdm.sh']
     dmstup = subprocess.run(cmddm,stdout=subprocess.PIPE).stdout.decode()
+    print('new',dmstup,'is created')
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    cmdline2=['systemctl', 'restart','zfs-zed']
