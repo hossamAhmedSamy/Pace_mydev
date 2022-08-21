@@ -53,7 +53,7 @@ if __name__=='__main__':
 	myhost=socket.gethostname()
 	leader=get('leader','--prefix')[0][0].replace('leader/','')
 	allpools=get('pools/','--prefix')
-	slectimport(myhost,allpools,leader, *sys.argv[1:])
+	selectimport(myhost,allpools,leader, *sys.argv[1:])
 	cmdline='cat /pacedata/perfmon'
 	
 	perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)

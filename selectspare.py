@@ -43,106 +43,32 @@ def mustattach(cmdline,disksallowed,raid,myhost):
     return 'wait' 
    dels('clearplsdisk/'+spare['actualdisk']) 
    dels('cleareddisk/'+spare['actualdisk']) 
+   print('cmd',cmd)
+   print('raidname',raid)
    if 'stripe' in raid['name']:
     print('############start attaching')
     cmd = cmd+[raid['disklist'][0]['name'],'/dev/disk/by-id/'+spare['name']] 
+    print(' '.join(cmd))
     res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if res.returncode !=0:
      print('somehting went wrong', res.stderr.encode())
     else:
      print(' the most suitable disk is attached')
     return
-    
-   print('############start replacing')
-   alldms = get('dm/'+myhost+'/'+raid['name'],'--prefix')
-   alldmlst = [ x for x in alldms if 'inuse' in str(x)]
-   if len(alldmlst) < 1:
+   dmcmd = 'zpool status '+raid['pool']
+   dmstup = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
+   if 'dm-' not in dmstup:
     print('somthing wrong, no stup found for this degraded group')
     return
-   dmstup = alldmlst[0][1].replace('inuse/','')
+   dmstup = 'dm-'+dmstup.split('dm-')[1].split(' ')[0]
    cmd = cmd+[dmstup, '/dev/disk/by-id/'+spare['name']] 
-   print('cmd', cmd)
    res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
    cmd = ['systemctl', 'restart', 'zfs-zed']
    subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('result', res.stderr.decode())    
-   if res.returncode == 0:
-    put(alldmlst[0][0],dmstup) 
-    return 0
-   else:
-    return 1
+   return 
  
-def mustattachold(cmdline,disksallowed,defdisk,myhost):
-   print('################################################')
-   if len(disksallowed) < 1 : 
-    return 'na'
-   print('helskdlskdkddlsldssd#######################')
-   cmd=cmdline.copy()
-   spare=disksallowed
-   print('spare',spare)
-   print('###########################')
-   spareplsclear=get('clearplsdisk/'+spare['actualdisk'])
-   spareiscleared=get('cleareddisk/'+spare['actualdisk']) 
-   if spareiscleared[0] != spareplsclear[0] or spareiscleared[0] == -1:
-    print('asking to clear')
-    put('clearplsdisk/'+spare['actualdisk'],spare['host'])
-    dels('cleareddisk/'+spare['actualdisk']) 
-    hostip=get('ready/'+spare['host'])
-    z=['/TopStor/pump.sh','Zpoolclrrun',spare['actualdisk']]
-    msg={'req': 'Zpool', 'reply':z}
-    sendhost(hostip[0], str(msg),'recvreply',myhost)
-    print('returning')
-    return 'wait' 
-   dels('clearplsdisk/'+spare['actualdisk']) 
-   dels('cleareddisk/'+spare['actualdisk']) 
-   if 'attach' in cmd:
-    print('attach in command')
-   else:
-    if spare['pool']==defdisk['pool']:
-     cmdline2=['/sbin/zpool', 'remove', defdisk['pool'],spare['actualdisk']]
-     subprocess.run(cmdline2,stdout=subprocess.PIPE)
-   if 'attach' in cmd:
-    logmsg.sendlog('Dist6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
-   else:
-    logmsg.sendlog('Dist2','info','system', defdisk['id'],spare['id'],myhost)
-   cmdline3=['/sbin/zpool', 'labelclear', spare['actualdisk']]
-   subprocess.run(cmdline3,stdout=subprocess.PIPE)
-   cmd.append(defdisk['actualdisk'])
-   cmd.append(spare['actualdisk'])
-   try: 
-    print('cmd',cmd)
-    subprocess.check_call(cmd)
-    if 'attach' in cmd:
-     logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
-     put('fixpool/'+defdisk['pool'],'1')
-    else:
-     logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
-    #syncmypools('all')
-    print('hihihi')
-    return spare['actualdisk'] 
-   except subprocess.CalledProcessError:
-    return 'fault'
-    cmd=cmdline.copy()
-    cmd.append('/dev/'+defdisk['devname'])
-    cmd.append(spare['actualdisk'])
-    try: 
-     subprocess.check_call(cmd)
-     if 'attach' in cmd:
-      logmsg.sendlog('Disu6','info','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
-      put('fixpool/'+defdisk['pool'],'1')
-     else:
-      logmsg.sendlog('Disu2','info','system', defdisk['id'],spare['id'],myhost)
-    #syncmypools('all')
-      print('hihihi')
-     return spare['actualdisk'] 
-    except subprocess.CalledProcessError:
-     if 'attach' in cmd:
-      logmsg.sendlog('Difa6','warning','system', spare['id'],defdisk['raid'],defdisk['pool'],myhost)
-     else:
-      logmsg.sendlog('Difa2','warning','system', defdisk['id'],spare['id'],myhost)
-     return 'fault' 
-   put('fixpool/'+defdisk['pool'],'1')
-  
+ 
 def norm(val):
  units={'B':1/1024**2,'K':1/1024, 'M': 1, 'G':1024 , 'T': 1024**2 }
  if type(val)==float:
@@ -447,16 +373,22 @@ def solvedegradedraid(raid,disksfree):
     subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return disksfree
    defdisk.append(disk['name'])
-   dmstup = get('dm/'+myhost+'/'+raid['name'],'--prefix')
-   dmstuplst = [ x for x in dmstup if 'inuse' not in str(x)]
-   print('dmstup:',dmstup)
-   if len(dmstuplst) < 1:
-    cmddm= ['/pace/mkdm.sh', raid['name'], myhost ]
-    subprocess.run(cmddm,stdout=subprocess.PIPE).stdout.decode()
-    alldms = get('dm/'+myhost+'/'+raid['name'],'--prefix')
-    dmstuplst = [ x for x in alldms if 'inuse' not in str(x)]
-   dmstup = dmstuplst[0][1]
-
+   dmcmd=['zpool', 'status']
+   dminuse = subprocess.run(dmcmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
+   dmcmd=['zpool','import']
+   dminuse = dminuse + subprocess.run(dmcmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
+   dminuse = [ 'dm-'+x.split('dm-')[1].split(' ')[0] for x in dminuse  if 'dm-' in x ]
+   dmcmd = '/pace/lstdm.sh'
+   dmstuplst = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
+   dmstup = '0'
+   for dm in dmstuplst:
+    if dm not in str(dminuse):
+     print('hihi')
+     dmstup = dm
+   print('dmstup',dmstup)
+   if 'dm' not in dmstup:
+    cmddm= ['/pace/mkdm.sh']
+    dmstup = subprocess.run(cmddm,stdout=subprocess.PIPE).stdout.decode()
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    cmdline2=['systemctl', 'restart','zfs-zed']

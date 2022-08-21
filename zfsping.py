@@ -133,8 +133,14 @@ def infinitproc():
  leaderip = leaderinfo[1]
  cleader = leader
  myip = get('ActivePartners/'+myhost)[0]
+ myalias = get('alias/'+myhost)[0]
  put('ready/'+myhost,myip)
  dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
+ if myhost == cleader:
+  logmsg.sendlog('Partsu03','info','system',myalias)
+ else:
+  logmsg.sendlog('Partsu04','info','system',myalias)
+ 
  while True:
   try:
    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
