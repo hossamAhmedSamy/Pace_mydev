@@ -135,11 +135,12 @@ def infinitproc():
  myip = get('ActivePartners/'+myhost)[0]
  myalias = get('alias/'+myhost)[0]
  put('ready/'+myhost,myip)
+ stampit = str(stamp())
  dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
  if myhost == cleader:
-  logmsg.sendlog('Partsu03','info','system',myalias)
+  logmsg.sendlog('Partsu03','info','system',myalias,myip)
  else:
-  logmsg.sendlog('Partsu04','info','system',myalias)
+  logmsg.sendlog('Partsu04','info','system',myalias,myip)
  
  while True:
   try:
