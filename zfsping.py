@@ -82,7 +82,7 @@ def zpooltoimportproc():
   while True:
    try:
     zpooltoimport(leader, myhost)
-    sleep(60)
+    sleep(3)
    except Exception as e:
     print(e)
     with open('/root/zpooltoimporterr','w') as f:
