@@ -10,6 +10,8 @@ export REMOTE=Topstor
 export ETCDCTL_API=3
 #chgrp root /tmp/msgfile; 
 chown apache /tmp2/msgfile; 
+systemctl stop zfs-zed
+sysemctl disable zfs-zed
 echo $$ > /var/run/topstor.pid
 ClearExit() {
 	echo got a signal > /TopStor/txt/sigstatus.txt

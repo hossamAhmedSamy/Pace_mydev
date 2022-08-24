@@ -44,8 +44,8 @@ def zpooltoimport(leader, myhost):
    if pool in result:
     put('pools/'+pool,myhost)
     dosync('sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+stamp)
-    cmdline= 'systemctl restart zfs-zed  '
-    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+    #cmdline= 'systemctl restart zfs-zed  '
+    #result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    dels('needtoimport',pool)
     
  if myhost != leader:
