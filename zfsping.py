@@ -146,12 +146,20 @@ def infinitproc():
  
  while True:
   try:
-   leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-   leader = leaderinfo[0].split('/')[1]
-   leaderip = leaderinfo[1]
    print('start remknown')
    remknown(leader,myhost) 
    print('finish remknown')
+   leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+   leader = leaderinfo[0].split('/')[1]
+   leaderip = leaderinfo[1]
+   if cleader != leader:
+    cleader = leader
+    cmdline='/pace/iscsiwatchdog.sh'
+    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+    zpooltoimport(leader, myhost)
+    addactive(leader,myhost)
+    spare2(leader, myhost)
+    
    if myhost == leader:
     addknown(leader,myhost)
    activeusers(leader, myhost)

@@ -5,7 +5,7 @@ from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
 from broadcasttolocal import broadcasttolocal
 from etcdputlocal import etcdput as putlocal 
-from etcdgetlocal import etcdget as getlocal 
+from etcdgetlocalpy import etcdget as getlocal 
 from Evacuatelocal import setall
 from etcddel import etcddel as dels
 from etcddellocal import etcddel as dellocal
