@@ -5,7 +5,7 @@ from time import sleep
 def etcdput(key,val):
  os.environ['ETCDCTL_API']= '3'
  err = 2
- while err != 0:
+ while err == 2:
   endpoints=''
   data=json.load(open('/pacedata/runningetcdnodes.txt'));
   for x in data['members']:
@@ -13,7 +13,7 @@ def etcdput(key,val):
   cmdline=['etcdctl','--user=root:YN-Password_123','-w','json','--endpoints='+endpoints,'put',key,val]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   err = result.returncode
-  if err != 0 :
+  if err == 2 :
     #from etcdget import etcdget as get
     #get('any','any')
     sleep(1)
