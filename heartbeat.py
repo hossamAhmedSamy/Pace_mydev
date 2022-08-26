@@ -31,6 +31,8 @@ def heartbeat(leader,myhost,knowns):
     zpooltoimport(leadern, myhost)
     addactive(leadern,myhost)
     spare2(leadern, myhost)
+    spare2(leadern, myhost)
+    spare2(leadern, myhost)
 
 
  return 

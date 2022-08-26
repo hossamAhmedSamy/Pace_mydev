@@ -24,7 +24,7 @@ def etcdctl(ip,port,key,prefix):
    cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    returncode = int(result.returncode)
-  return result 
+ return result 
  
 def etcdget(key, prefix=''):
  cmdline=['pcs','resource','show','--full']
