@@ -53,6 +53,7 @@ def putzpoolproc():
     sleep(5)
    except Exception as e:
     with open('/root/putzpoolerr','w') as f:
+
      f.write(e+'\n')
 
 def addactiveproc():
@@ -147,7 +148,7 @@ def infinitproc():
  while True:
   try:
    print('start remknown')
-   remknown(leader,myhost) 
+   #remknown(leader,myhost) 
    print('finish remknown')
    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
    leader = leaderinfo[0].split('/')[1]
