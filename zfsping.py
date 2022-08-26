@@ -109,6 +109,9 @@ def selectspareproc():
   while True:
    try:
     spare2(leader, myhost)
+    spare2(leader, myhost)
+    spare2(leader, myhost)
+    spare2(leader, myhost)
     sleep(5)
    except Exception as e:
     with open('/root/selectsparerr','w') as f:
