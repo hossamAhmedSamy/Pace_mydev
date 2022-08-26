@@ -154,6 +154,20 @@ def syncrequest(leader, myhost):
    if done[1] not in str(otherdones) and done[1] not in deleted:
     dellocal(myip, 'sync', done[1])
     deleted.add(done[1])
+ else:
+  actives = len(get('ActivePartners','--prefix')) + 1
+  toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
+  toprunedic = dict()
+  for prune in toprune:
+   if prune[1] not in toprunedic:
+    toprunedic[prune[1]] = 1
+   else:
+    toprunedic[prune[1]] += 1
+  for prune in toprunedic:
+   if toprunedic[prune] >= actives:
+    dels('sync',prune) 
+    print(prune,toprunedic[prune])
+  
  return     
 
 
