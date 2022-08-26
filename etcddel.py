@@ -10,7 +10,7 @@ def etcddel(*args):
  else:
   pointer=0
  err = 2
- while err == 2:
+ while err != 0:
   endpoints=''
   data=json.load(open('/pacedata/runningetcdnodes.txt'));
   for x in data['members']:
@@ -21,9 +21,9 @@ def etcddel(*args):
    cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',args[0]]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   err = result.returncode
-  if err == 2:
-   from etcdget import etcdget as get
-   get('any','any')
+  if err != 0:
+   #from etcdget import etcdget as get
+   #get('any','any')
    sleep(1)
  mylist=str(result.stdout)[2:][:-3].split('\\n')
  zipped=zip(mylist[0::2],mylist[1::2])

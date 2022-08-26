@@ -4,15 +4,35 @@ import json
 from time import sleep
 from checkleader import checkleader
 
+dev = 'enp0s8'
+os.environ['ETCDCTL_API']= '3'
+
+def etcdctl(ip,port,key,prefix):
+ if port == '2379':
+  cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints=http://'+ip+':'+port,'get',key,prefix]
+  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  while result.returncode != 0:
+   sleep(1)
+   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ else:
+  returncode= 1
+  while returncode != 0:
+   endpoints=''
+   data=json.load(open('/pacedata/runningetcdnodes.txt'));
+   for x in data['members']:
+    endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
+   cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
+   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+   returncode = int(result.returncode)
+  return result 
+ 
 def etcdget(key, prefix=''):
- os.environ['ETCDCTL_API']= '3'
- endpoints=''
- data=json.load(open('/pacedata/runningetcdnodes.txt'));
- for x in data['members']:
-  endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
- endpoints = endpoints[:-1]
- cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
- result=checkleader(key,prefix)
+ cmdline=['pcs','resource','show','--full']
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE).stdout.decode()
+ port = '2379' if 'mgmtip' in result else '2378'
+ result = result.split('\n')
+ ip = [ x for x in result if dev in x][0].split('ip=')[1].split(' ')[0]
+ result = etcdctl(ip,port,key,prefix)
  z=[]
  try:
   if(prefix =='--prefix'):
@@ -28,18 +48,7 @@ def etcdget(key, prefix=''):
     z.append((str(result.stdout).split(key)[1][2:][:-3]))
    print(z[0])
   else:
-   err = 2
-   while err == 2:
-    endpoints=''
-    data=json.load(open('/pacedata/runningetcdnodes.txt'));
-    for x in data['members']:
-     endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
-    endpoints = endpoints[:-1]
-    cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,'--prefix']
-    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-    err = result.returncode
-    if err == 2:
-     sleep(1)
+   result = etcdctl(ip,port,key,'--prefix')
    mylist=str(result.stdout)[2:][:-3].split('\\n')
    zipped=zip(mylist[0::2],mylist[1::2])
    for x in zipped:
