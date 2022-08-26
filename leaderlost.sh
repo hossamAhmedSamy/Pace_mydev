@@ -28,7 +28,7 @@ then
 #   leaderall=` ./etcdget.py leader --prefix `
 #   leader=`echo $leaderall | awk -F'/' '{print $2}' | awk -F"'" '{print $1}'`
 #   leaderip=` ./etcdget.py leader/$leader `
-  exit
+   exit
 fi
 echo leader is dead..  > /root/zfspingtmp2
 leaderfail=1
@@ -44,7 +44,7 @@ if [ $? -eq 0 ]; then
  /TopStor/logqueuelocal.py $myip AddingMePrimary start system 
 fi
 echo prepare the registry 
-cho hostlostlocal getting all my pools from $leader >> /root/zfspingtmp2
+echo hostlostlocal getting all my pools from $leader >> /root/zfspingtmp2
 #ETCDCTL_API=3 /pace/hostlostlocal.sh $leader $myip $leaderip
 systemctl stop etcd 2>/dev/null
 clusterip=`cat /pacedata/clusterip`
@@ -69,18 +69,28 @@ echo adding me as a leader >> /root/zfspingtmpa2
  stamp=`date +%s%N`
 ./runningetcdnodes.py $myip 2>/dev/null
  /TopStor/logmsg.py Partst05 info system $myhost &
+./etcddel.py ready/$leader  
+/pace/etcdput.py sync/ready/Del_ready_${leader}/request ready_$stamp
+/pace/etcdput.py sync/ready/Del_ready_${leader}/request/$myhost ready_$stamp
 ./etcdput.py ready/$myhost $myip  
 /pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
+/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
 ./etcddel.py  leader --prefix  
 ./etcdput.py  leader/$myhost $myip 
+/pace/etcdput.py sync/leader/Del_leader_--prefix/request leader_$stamp
+/pace/etcdput.py sync/leader/Del_leader_--prefix/request/$myhost leader_$stamp
+stamp=`date +%s%N`
 /pace/etcdput.py sync/leader/Add_${myhost}_$myip/request leader_$stamp
+/pace/etcdput.py sync/leader/Add_${myhost}_$myip/request/$myhost leader_$stamp
 ./etcddel.py  host $leader  
 ./etcddel.py  known $myhost  
 /pace/etcdput.py sync/known/Del_known_${myhost}/request known_$stamp
+/pace/etcdput.py sync/known/Del_known_${myhost}/request/$myhost known_$stamp
 /TopStor/logmsg.py Partst02 warning system $leader 
 #./broadcasttolocal.py sync/leader/$myhost $stamp 
 ./etcddel.py ipaddr $leader
-./etcddel.py sync/ipaddr/$myhost  $stamp 
+./etcdput.py sync/ipaddr/Del_ip/request  ipaddr_$stamp 
+./etcdput.py sync/ipaddr/Del_ip/request/$myhost  ipaddr_$stamp 
 echo created namespaces >>/root/zfspingtmp2
 ./setnamespace.py $enpdev &
 ./setdataip.py &
@@ -89,21 +99,11 @@ echo importing all pools >> /root/zfspingtmp2
 toimport=1
 #/sbin/zpool import -am &>/dev/null
 echo running putzpool and nfs >> /root/zfspingtmp2
-pgrep putzpool 
-if [ $? -ne 0 ];
-then
- /pace/putzpool.py 2 $isprimary $primtostd  &
- /TopStor/HostgetIPs
-fi
- /pace/selectimport.py $myhost $myhost &
- /pace/zpooltoimport.py all 
- /pace/zpooltoimport.py all &
- /pace/selectspare.py $myhost &
-pgrep activeusers 
-if [ $? -ne 0 ];
-then
- /pace/activeusers.py   &
-fi
+#pgrep activeusers 
+#if [ $? -ne 0 ];
+#then
+# /pace/activeusers.py   &
+#fi
 chgrp apache /var/www/html/des20/Data/* 2>/dev/null
 chmod g+r /var/www/html/des20/Data/* 2>/dev/null
 #else

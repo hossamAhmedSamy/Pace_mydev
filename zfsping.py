@@ -142,7 +142,7 @@ def infinitproc():
  put('nextlead/er',myhost+'/'+myip)
  stampit = str(stamp())
  dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
- dosync(leader,'sync/nextlead/Add_er_'+myhost+'::'+myip+'/request','ready_'+stampit)
+ dosync(leader,'sync/nextlead/Add_er_'+myhost+'::'+myip+'/request','next_'+stampit)
  if myhost == cleader:
   logmsg.sendlog('Partsu03','info','system',myalias,myip)
  else:
