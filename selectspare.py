@@ -11,6 +11,7 @@ from etcdput import etcdput as put
 from etcddel import etcddel as dels 
 from deltolocal import deltolocal as delstolocal
 from poolall import getall as getall
+from time import sleep
 from sendhost import sendhost
 #from syncpools import syncmypools
 import logmsg
@@ -65,6 +66,10 @@ def mustattach(cmdline,disksallowed,raid,myhost):
    res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
    #cmd = ['systemctl', 'restart', 'zfs-zed']
    #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   with open('/root/dmproblem','w') as f:
+    f.write('cmdline '+ " ".join(cmd)+'\n')
+    f.write('result: '+res.stdout.decode()+'\n')
+    f.write('result: '+res.stderr.decode()+'\n')
    print('result', res.stderr.decode())    
    return 
  
@@ -397,6 +402,7 @@ def solvedegradedraid(raid,disksfree):
     f.write('cmdline '+ " ".join(cmdline2)+'\n')
     f.write('result: '+forget.stdout.decode()+'\n')
     f.write('result: '+forget.stderr.decode()+'\n')
+   sleep(3)
    cmdline2=['/sbin/zpool', 'offline',raid['pool'], '/dev/'+dmstup]
    subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    #cmdline2=['systemctl', 'restart','zfs-zed']
