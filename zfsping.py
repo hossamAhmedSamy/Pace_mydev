@@ -181,6 +181,11 @@ if __name__=='__main__':
  leader = leaderinfo[0].split('/')[1]
  leaderip = leaderinfo[1]
  cleader = leader
+ if myhost != leader:
+  getready = str(get('ready','--prefix'))
+  while leader not in getready:
+   sleep(1)
+   getready = str(get('ready','--prefix'))
  myip = get('ActivePartners/'+myhost)[0]
  myalias = get('alias/'+myhost)[0]
  put('ready/'+myhost,myip)
