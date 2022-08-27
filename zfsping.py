@@ -23,7 +23,7 @@ from selectspare import spare2
 from checksyncs import syncrequest
 from VolumeCheck import volumecheck
 from multiprocessing import Process
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from heartbeat import heartbeat
 
 os.environ['ETCDCTL_API']= '3'
@@ -31,179 +31,191 @@ myhost = hostname()
 leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
 leader = leaderinfo[0].split('/')[1]
 leaderip = leaderinfo[1]
+ctask = 1
  
 def heartbeatpls():
  global leader, myhost
- while True:
-  try:
+ try:
+  cleader = leader
+  leader, leaderip = heartbeat()
+  if leader != cleader:
+   print('######################################################################### heartbeat')
    cleader = leader
-   leader, leaderip = heartbeat()
-   if leader != cleader:
-    print('######################################################################### heartbeat')
-    cleader = leader
-    refreshall()
-   sleep(1)
-  except Exception as e:
-   with open('/root/heartbeaterr','w') as f:
-    f.write(e+'\n')
+   refreshall()
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in heartbeat:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+ 
 
 def dosync(leader,*args):
  put(*args)
  put(args[0]+'/'+leader,args[1])
 
 def iscsiwatchdogproc():
-  cmdline='/pace/iscsiwatchdoglooper.sh'
+ try:
+  cmdline='/pace/iscsiwatchdog.sh'
   result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in iscsiwatchdogproc:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def fapiproc():
   cmdline='/pace/fapilooper.sh' 
   result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
 
 def putzpoolproc():
-  global leader, myhost
-  while True:
-   try:
-    putzpool(leader,myhost)
-    #putzpool(leader,myhost)
-    sleep(5)
-   except Exception as e:
-    with open('/root/putzpoolerr','w') as f:
-     f.write(e+'\n')
+ global leader, myhost
+ try:
+  putzpool(leader,myhost)
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in putzpool:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def addactiveproc():
-  global leader, myhost
-  while True:
-   try:
-    addactive(leader,myhost)
-    sleep(15)
-   except Exception as e:
-    with open('/root/addactiveerr','w') as f:
-     f.write(e+'\n')
+ global leader, myhost
+ try:
+  addactive(leader,myhost)
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in addactive:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def selectimportproc():
-  global leader, myhost
-  while True:
-   try:
-    allpools=get('pools/','--prefix')
-    selectimport(myhost,allpools,leader)
-    sleep(5)
-   except Exception as e:
-    with open('/root/selectimporterr','w') as f:
-     f.write(e+'\n')
+ global leader, myhost
+ try:
+  allpools=get('pools/','--prefix')
+  selectimport(myhost,allpools,leader)
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in selectimport:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
    
 
 def zpooltoimportproc():
-  global leader, myhost
-  while True:
-   try:
-    zpooltoimport(leader, myhost)
-    sleep(3)
-   except Exception as e:
-    print(e)
-    with open('/root/zpooltoimporterr','w') as f:
-     f.write(e+'\n')
+ global leader, myhost
+ try:
+  zpooltoimport(leader, myhost)
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in zpooltoimport:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
  
 def volumecheckproc():
-  global leader, myhost
-  while True:
-   try:
-    etcds = get('volumes','--prefix')
-    replis = get('replivol','--prefix')
-    cmdline = 'pcs resource'
-    pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
-    volumecheck(leader, myhost, etcds, replis, pcss)
-    sleep(5)
-   except Exception as e:
-    print(volumecheck)
-    with open('/root/volumecheckerr','w') as f:
-     f.write(e+'\n')
+ global leader, myhost
+ try:
+  etcds = get('volumes','--prefix')
+  replis = get('replivol','--prefix')
+  cmdline = 'pcs resource'
+  pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
+  volumecheck(leader, myhost, etcds, replis, pcss)
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in volumecheckproc:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+
 def refreshall():
  global leader, myhost
- print('2')
  cmdline='/pace/iscsiwatchdog.sh'
  result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
- print('3')
  putzpool(leader,myhost)
- print('4')
  allpools=get('pools/','--prefix')
  selectimport(myhost,allpools,leader)
- print('5')
  zpooltoimport(leader, myhost)
- print('6')
  etcds = get('volumes','--prefix')
  replis = get('replivol','--prefix')
  cmdline = 'pcs resource'
  pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
- print('7')
  volumecheck(leader, myhost, etcds, replis, pcss)
- print('8')
  spare2(leader, myhost)
- print('9')
  spare2(leader, myhost)
- print('10')
  spare2(leader, myhost)
- print('11')
  spare2(leader, myhost)
- print('12')
  
 def selectspareproc():
-  global leader, myhost
+ global leader, myhost
+ try:
   clsscsi = 'nothing'
-  while True:
-   print('000000')
-   try:
-    spare2(leader, myhost)
-    spare2(leader, myhost)
-    spare2(leader, myhost)
-    cmdline='lsscsi -is'
-    lsscsi=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-    if clsscsi != lsscsi:
-     clsscsi = lsscsi
-     print('######################################################################### lsscsi')
-     print('1')
-     refreshall()
-     print('100')
-    sleep(3)
-    print('101')
-   except Exception as e:
-    with open('/root/selectsparerr','w') as f:
-
-     f.write(e+'\n')
+  spare2(leader, myhost)
+  spare2(leader, myhost)
+  spare2(leader, myhost)
+  cmdline='lsscsi -is'
+  lsscsi=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+  if clsscsi != lsscsi:
+   clsscsi = lsscsi
+   refreshall()
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in selectspare:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def syncrequestproc():
  global leader, myhost
- while True:
-  try:
-   syncrequest(leader, myhost)
-   sleep(5)
-  except Exception as e:
-   with open('/root/syncrequesterr','w') as f:
-    f.write(e+'\n')
- 
+ try:
+  syncrequest(leader, myhost)
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in syncrequest:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
-
-def infinitproc():
+def remknownproc():
  global leader, myhost
- while True:
-  try:
-   sleep(2)
-   print('start remknown')
-   remknown(leader,myhost) 
-   print('finish remknown')
-   if myhost == leader:
-    print('start addknown')
-    addknown(leader,myhost)
-    print('stop addknown')
-   print('start activeusers')
-   activeusers(leader, myhost)
-   print('stop activeusers')
-  except Exception as e:
-   with open('/root/infiniterr','w') as f:
-    f.write(e+'\n')
-   
+ try:
+  remknown(leader,myhost) 
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in remknown:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
-loopers = [ infinitproc, iscsiwatchdogproc, fapiproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc, heartbeatpls ]
+def addknownproc():
+ global leader, myhost
+ try:
+  if myhost == leader:
+   addknown(leader,myhost)
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in addknown:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+
+def activeusersproc():
+ global leader, myhost
+ try:
+  activeusers(leader, myhost)
+ except Exception as e:
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+  print(' in activeusers:',e)
+  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+
+
+
+
+loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc, heartbeatpls ]
+
+def CommonTask(task):
+ print("''''''''' task started",task,"'''''''''''''''''''''''''''''''''''''''")
+ #if 'selectspare' in str(task):
+ # print('############################thisis the task will fail')
+ # task()
+ task()
+ #task()
+ print("''''''''' task ended",task,"'''''''''''''''''''''''''''''''''''''''",flush=True)
+ 
+def lazylooper():
+    x = 0
+    while True:
+        yield loopers[x]
+        x = x + 1
+        if x == len(loopers):
+         x = 0
 if __name__=='__main__':
+ infloop = lazylooper()
+ with ProcessPoolExecutor(4) as e:
+   args = (task for task in infloop)
+   res = e.map(CommonTask,args)
+ exit()
+ ctask = -1 
  leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
  leader = leaderinfo[0].split('/')[1]
  leaderip = leaderinfo[1]
@@ -225,15 +237,15 @@ if __name__=='__main__':
  else:
   logmsg.sendlog('Partsu04','info','system',myalias,myip)
  refreshall() 
- with ThreadPoolExecutor(max_workers=len(loopers)) as e:
-  res = [ e.submit(x) for x in loopers ] 
-'''
- process = []
- for proc in loopers:
-  p = Process(target=proc)
-  p.start()
-  process.append((proc,p))
- for proc in process:
-  print('starting process:', proc[0])
-  proc[1].join() 
-'''
+ res = dict()
+ with ProcessPoolExecutor(4) as e:
+   res = e.submit(CommonTask)
+   exception = res.exception()
+   if exception:
+    print('an exception occurred',exception)
+    print('############## task failed:',res,'################################')
+    with open('/root/zfspingerr','a') as f:
+     f.write('############## task failed: ' + str(ctask) +' ################################\n')
+     f.write(e+'\n')
+   else:
+    result = res.result()

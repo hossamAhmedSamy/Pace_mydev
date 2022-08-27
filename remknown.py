@@ -65,7 +65,7 @@ def remknown(leader,myhost):
     etcddel('ready/'+kn[0].replace('known/',''))
     dosync(leader,'sync/ready/Del_ready::_'+thelost+'/request','ready_'+stamp)
     etcddel('ipaddr',kn[0].replace('known/',''))
-    print('hostlost ###########################################33333')
+    #print('hostlost ###########################################33333')
     #cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
     #subprocess.run(cmdline,stdout=subprocess.PIPE)
     etcddel('localrun/'+str(kn[0]))
