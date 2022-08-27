@@ -35,7 +35,12 @@ leaderip = leaderinfo[1]
 def heartbeatpls():
  while True:
   try:
-   heartbeat()
+   cleader = leader
+   leader, leaderip = heartbeat()
+   if leader != cleader:
+    cleader = leader
+    refreshall()
+   sleep(1)
   except Exception as e:
    with open('/root/heartbeaterr','w') as f:
     f.write(e+'\n')
@@ -111,7 +116,23 @@ def volumecheckproc():
     print(volumecheck)
     with open('/root/volumecheckerr','w') as f:
      f.write(e+'\n')
-
+def refreshall():
+ cmdline='/pace/iscsiwatchdog.sh'
+ result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+ putzpool(leader,myhost)
+ allpools=get('pools/','--prefix')
+ selectimport(myhost,allpools,leader)
+ zpooltoimport(leader, myhost)
+ etcds = get('volumes','--prefix')
+ replis = get('replivol','--prefix')
+ cmdline = 'pcs resource'
+ pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
+ volumecheck(leader, myhost, etcds, replis, pcss)
+ spare2(leader, myhost)
+ spare2(leader, myhost)
+ spare2(leader, myhost)
+ spare2(leader, myhost)
+ 
 def selectspareproc():
   global leader, myhost
   clsscsi = 'nothing'
@@ -121,14 +142,7 @@ def selectspareproc():
     lsscsi=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     if clsscsi != lsscsi:
      clsscsi = lsscsi
-     putzpool(leader,myhost)
-     allpools=get('pools/','--prefix')
-     selectimport(myhost,allpools,leader)
-     zpooltoimport(leader, myhost)
-     spare2(leader, myhost)
-     spare2(leader, myhost)
-     spare2(leader, myhost)
-     spare2(leader, myhost)
+     refreshall()
     sleep(3)
    except Exception as e:
     with open('/root/selectsparerr','w') as f:
@@ -155,9 +169,6 @@ def infinitproc():
    print('start remknown')
    remknown(leader,myhost) 
    print('finish remknown')
-   leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-   leader = leaderinfo[0].split('/')[1]
-   leaderip = leaderinfo[1]
    if cleader != leader:
     cleader = leader
    # cmdline='/pace/iscsiwatchdog.sh'
@@ -197,15 +208,7 @@ if __name__=='__main__':
   logmsg.sendlog('Partsu03','info','system',myalias,myip)
  else:
   logmsg.sendlog('Partsu04','info','system',myalias,myip)
- allpools=get('pools/','--prefix')
- cmdline='/pace/iscsiwatchdog.sh'
- result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
- selectimport(myhost,allpools,leader)
- zpooltoimport(leader, myhost)
- spare2(leader, myhost)
- spare2(leader, myhost)
- spare2(leader, myhost)
- 
+ refreshall() 
  with ThreadPoolExecutor(max_workers=len(loopers)) as e:
   res = [ e.submit(x) for x in loopers ] 
 '''

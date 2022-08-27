@@ -35,7 +35,6 @@ def selectimport(myhost, allpools, leader, *arg):
 		#	put('sync/poolsnxt/Del_poolsnxt_'+nhost+'/request','poolsnxt_'+str(stamp))
 		#	put('sync/poolsnxt/Del_poolsnxt_'+nhost+'/request/'+leader,'poolsnxt_'+str(stamp))
 		hosts=get('hosts','/current')
-		print('hosts',hosts)
 		if len(hosts) < 2:
 			continue   # just to clean the poolsnxt or otherwise it would be 'return'
 		minhost = ('',float('inf'))
