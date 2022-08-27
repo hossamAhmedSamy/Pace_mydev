@@ -24,6 +24,7 @@ from checksyncs import syncrequest
 from VolumeCheck import volumecheck
 from multiprocessing import Process
 from concurrent.futures import ThreadPoolExecutor
+from heartbeat import heartbeat
 
 os.environ['ETCDCTL_API']= '3'
 myhost = hostname()
@@ -31,7 +32,15 @@ leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
 leader = leaderinfo[0].split('/')[1]
 leaderip = leaderinfo[1]
  
-
+def heartbeatpls():
+ while True:
+  try:
+   heartbeat()
+  except Exception as e:
+   with open('/root/heartbeaterr','w') as f:
+    f.write(e+'\n')
+  
+ return
 def dosync(leader,*args):
   put(*args)
   put(args[0]+'/'+leader,args[1])
@@ -53,7 +62,6 @@ def putzpoolproc():
     sleep(5)
    except Exception as e:
     with open('/root/putzpoolerr','w') as f:
-
      f.write(e+'\n')
 
 def addactiveproc():
@@ -198,8 +206,7 @@ def infinitproc():
     f.write(e+'\n')
    
 
-loopers = [ infinitproc, iscsiwatchdogproc, fapiproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc,
-            selectspareproc , syncrequestproc ]
+loopers = [ infinitproc, iscsiwatchdogproc, fapiproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc, heartbeatpls ]
 #loopers = [ syncrequestproc ]
 if __name__=='__main__':
  with ThreadPoolExecutor(max_workers=len(loopers)) as e:

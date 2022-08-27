@@ -15,7 +15,7 @@ from VolumeCheck import volumecheck
 dev = 'enp0s8'
 os.environ['ETCDCTL_API']= '3'
 
-def etcdctl(ip,port,key,prefix):
+def etcdctlheart(ip,port,key,prefix):
  if port == '2379':
   result = get(key,prefix)
  else:
@@ -50,11 +50,11 @@ def heartbeat(*args):
  cmdline=['pcs','resource','show','CC']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE).stdout.decode()
  myip = [ x for x in result.split('\n') if dev in x][0].split('ip=')[1].split(' ')[0]
- leader =  etcdctl(myip,myport,'leader','--prefix')[0]
+ leader =  etcdctlheart(myip,myport,'leader','--prefix')[0]
  leadern = leader[0].split('/')[1]
  leaderip = leader[1]
  myhost = hostname()
- knowns =  etcdctl(myip,myport,'known','--prefix')
+ knowns =  etcdctlheart(myip,myport,'known','--prefix')
  nextlead, nextleadip = getnextlead(myip,myport,leadern,leaderip)
  sleeping = 0 
  while True:
@@ -76,7 +76,7 @@ def heartbeat(*args):
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
      if myhost == nextlead:
       myport = '2379'
-     leader =  etcdctl(myip,myport,'leader','--prefix')[0]
+     leader =  etcdctlheart(myip,myport,'leader','--prefix')[0]
      leadern = leader[0].split('/')[1]
      leaderip = leader[1]
      nextlead, nextleadip = getnextlead(myip,myport, leadern, leaderip)
@@ -86,8 +86,8 @@ def heartbeat(*args):
     cmdline='/pace/iscsiwatchdog.sh'
     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     zpooltoimport(leadern, myhost)
-    etcds = etcdctl(myip,myport,'volumes','--prefix')
-    replis = etcdctl(myip,myport, 'replivol','--prefix')
+    etcds = etcdctlheart(myip,myport,'volumes','--prefix')
+    replis = etcdctlheart(myip,myport, 'replivol','--prefix')
     cmdline = 'pcs resource'
     pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
     volumecheck(leader, myhost, etcds, replis, pcss)
