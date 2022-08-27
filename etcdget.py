@@ -14,7 +14,7 @@ def etcdctl(ip,port,key,prefix):
   counter = 0
   while result.returncode == 2 and counter < 10:
    sleep(1)
-   couner -= 1
+   counter -= 1
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  else:
   returncode= 2 
