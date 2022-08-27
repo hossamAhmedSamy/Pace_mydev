@@ -150,11 +150,11 @@ def selectspareproc():
   global leader, myhost
   clsscsi = 'nothing'
   while True:
-   spare2(leader, myhost)
-   spare2(leader, myhost)
-   spare2(leader, myhost)
    print('000000')
    try:
+    spare2(leader, myhost)
+    spare2(leader, myhost)
+    spare2(leader, myhost)
     cmdline='lsscsi -is'
     lsscsi=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     if clsscsi != lsscsi:
