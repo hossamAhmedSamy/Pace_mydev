@@ -391,8 +391,10 @@ def solvedegradedraid(raid,disksfree):
     cmddm= ['/pace/mkdm.sh']
     dmstup = subprocess.run(cmddm,stdout=subprocess.PIPE).stdout.decode()
     print('new',dmstup,'is created')
-   cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],dmstup]
+   cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], disk['actualdisk'],'/dev/'+dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   cmdline2=['/sbin/zpool', 'offline',raid['pool'], '/dev/'+dmstup]
+   subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    #cmdline2=['systemctl', 'restart','zfs-zed']
    #subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
@@ -443,9 +445,11 @@ def solvedegradedraid(raid,disksfree):
  else:
   return sparedisklst
   
-def spare2(leader, myhost):
+def spare2(*args):
  global newop
  global usedfree 
+ leader=get('leader','--prefix')[0][0].split('/')[1]
+ myhost = hostname()
  needtoreplace=get('needtoreplace', myhost) 
  if myhost in str(needtoreplace):
   print('need to replace',needtoreplace)

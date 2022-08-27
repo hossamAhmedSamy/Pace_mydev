@@ -46,12 +46,10 @@ def heartbeatpls():
   except Exception as e:
    with open('/root/heartbeaterr','w') as f:
     f.write(e+'\n')
- return
 
 def dosync(leader,*args):
  put(*args)
  put(args[0]+'/'+leader,args[1])
- return 
 
 def iscsiwatchdogproc():
   cmdline='/pace/iscsiwatchdoglooper.sh'
@@ -66,6 +64,7 @@ def putzpoolproc():
   while True:
    try:
     putzpool(leader,myhost)
+    #putzpool(leader,myhost)
     sleep(5)
    except Exception as e:
     with open('/root/putzpoolerr','w') as f:
@@ -151,12 +150,11 @@ def selectspareproc():
   global leader, myhost
   clsscsi = 'nothing'
   while True:
-  
+   spare2(leader, myhost)
+   spare2(leader, myhost)
+   spare2(leader, myhost)
    print('000000')
    try:
-    spare2(leader, myhost)
-    spare2(leader, myhost)
-    spare2(leader, myhost)
     cmdline='lsscsi -is'
     lsscsi=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     if clsscsi != lsscsi:
@@ -192,24 +190,19 @@ def infinitproc():
    print('start remknown')
    remknown(leader,myhost) 
    print('finish remknown')
-   if cleader != leader:
-    cleader = leader
-   # cmdline='/pace/iscsiwatchdog.sh'
-   # result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-   # zpooltoimport(leader, myhost)
-   # addactive(leader,myhost)
-   # spare2(leader, myhost)
-    
    if myhost == leader:
+    print('start addknown')
     addknown(leader,myhost)
+    print('stop addknown')
+   print('start activeusers')
    activeusers(leader, myhost)
+   print('stop activeusers')
   except Exception as e:
    with open('/root/infiniterr','w') as f:
     f.write(e+'\n')
    
 
 loopers = [ infinitproc, iscsiwatchdogproc, fapiproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc, heartbeatpls ]
-#loopers = [ syncrequestproc ]
 if __name__=='__main__':
  leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
  leader = leaderinfo[0].split('/')[1]

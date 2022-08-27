@@ -11,11 +11,6 @@ def etcdctl(ip,port,key,prefix):
  if port == '2379':
   cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints=http://'+ip+':'+port,'get',key,prefix]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-  counter = 0
-  while result.returncode == 2 and counter < 10:
-   sleep(1)
-   counter -= 1
-   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  else:
   returncode= 2 
   counter = 0
