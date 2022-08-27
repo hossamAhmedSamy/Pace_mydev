@@ -109,6 +109,10 @@ echo running putzpool and nfs >> /root/zfspingtmp2
 #fi
 chgrp apache /var/www/html/des20/Data/* 2>/dev/null
 chmod g+r /var/www/html/des20/Data/* 2>/dev/null
+./etcdput.py ready/$myhost $myip  
+/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
+/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
+
 #else
 # ETCDCTL_API=3 /pace/hostlostlocal.sh $leader $myip $leaderip
 # systemctl stop etcd 2>/dev/null 

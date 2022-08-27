@@ -32,7 +32,6 @@ def dosync(leader,*args):
 
 def getnextlead(myip,myport,leadern,leaderip):
  nextleadinfo =  etcdctl(myip,myport,'nextlead/er','')
- print(nextleadinfo)
  if len(str(nextleadinfo)) < 6:
   nextlead = leadern
   nextleadip = leaderip
@@ -99,7 +98,7 @@ def heartbeat(*args):
     spare2(leadern, myhost)
     spare2(leadern, myhost)
     spare2(leadern, myhost)
-   break
+    break
 
 
  return 
