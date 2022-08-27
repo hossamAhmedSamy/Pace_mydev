@@ -60,8 +60,10 @@ def heartbeat(*args):
  while True:
   sleep(sleeping)
   sleeping = 1
-  knowns = etcdctl(myip, myport, 'known','--prefix')
-  for known in [leader]+knowns:
+  knowns = [leader]
+  if myhost == leader:
+   knowns = knowns + etcdctl(myip, myport, 'known','--prefix')
+  for known in knowns:
    host = known[0].split('/')[1]
    hostip = known[1]
    port = '2379' if host in str(leadern) else '2378'
