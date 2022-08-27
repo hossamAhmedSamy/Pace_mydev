@@ -11,12 +11,16 @@ def etcdctl(ip,port,key,prefix):
  if port == '2379':
   cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints=http://'+ip+':'+port,'get',key,prefix]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-  while result.returncode != 0:
+  counter = 0
+  while result.returncode == 2 and counter < 10:
    sleep(1)
+   couner -= 1
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  else:
-  returncode= 1
-  while returncode != 0:
+  returncode= 2 
+  counter = 0
+  while result.returncode == 2 and counter < 10:
+   counter -= 1
    endpoints=''
    data=json.load(open('/pacedata/runningetcdnodes.txt'));
    for x in data['members']:
@@ -24,6 +28,8 @@ def etcdctl(ip,port,key,prefix):
    cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    returncode = int(result.returncode)
+   if returncode == 2:
+    sleep(1)
  return result 
  
 def etcdget(key, prefix=''):
