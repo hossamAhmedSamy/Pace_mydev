@@ -66,15 +66,9 @@ do
 done
 echo adding me as a leader >> /root/zfspingtmpa2
  stamp=`date +%s%N`
+sleep 1 
 ./runningetcdnodes.py $myip 2>/dev/null
-sleep 3
- /TopStor/logmsg.py Partst05 info system $myhost 
-./etcddel.py ready/$leader  
-/pace/etcdput.py sync/ready/Del_ready_${leader}/request ready_$stamp
-/pace/etcdput.py sync/ready/Del_ready_${leader}/request/$myhost ready_$stamp
-./etcdput.py ready/$myhost $myip  
-/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
-/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
+sleep 1 
 ./etcddel.py  leader --prefix  
 ./etcdput.py  leader/$myhost $myip 
 /pace/etcdput.py sync/leader/Del_leader_--prefix/request leader_$stamp
@@ -82,6 +76,15 @@ sleep 3
 stamp=`date +%s%N`
 /pace/etcdput.py sync/leader/Add_${myhost}_$myip/request leader_$stamp
 /pace/etcdput.py sync/leader/Add_${myhost}_$myip/request/$myhost leader_$stamp
+
+ ./etcdget.py ready --prefix
+ /TopStor/logmsg.py Partst05 info system $myhost 
+./etcddel.py ready/$leader  
+/pace/etcdput.py sync/ready/Del_ready_${leader}/request ready_$stamp
+/pace/etcdput.py sync/ready/Del_ready_${leader}/request/$myhost ready_$stamp
+./etcdput.py ready/$myhost $myip  
+/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request ready_$stamp
+/pace/etcdput.py sync/ready/Add_${myhost}_$myip/request/$myhost ready_$stamp
 ./etcddel.py  host $leader  
 ./etcddel.py  known $myhost  
 /pace/etcdput.py sync/known/Del_known_${myhost}/request known_$stamp
