@@ -147,6 +147,12 @@ def infinitproc():
   logmsg.sendlog('Partsu03','info','system',myalias,myip)
  else:
   logmsg.sendlog('Partsu04','info','system',myalias,myip)
+ allpools=get('pools/','--prefix')
+ selectimport(myhost,allpools,leader)
+ zpooltoimport(leader, myhost)
+ spare2(leader, myhost)
+ spare2(leader, myhost)
+ spare2(leader, myhost)
  
  while True:
   try:
