@@ -87,7 +87,7 @@ def selectimportproc():
    try:
     allpools=get('pools/','--prefix')
     selectimport(myhost,allpools,leader)
-    sleep(15)
+    sleep(5)
    except Exception as e:
     with open('/root/selectimporterr','w') as f:
      f.write(e+'\n')
@@ -98,7 +98,7 @@ def zpooltoimportproc():
   while True:
    try:
     zpooltoimport(leader, myhost)
-    sleep(13)
+    sleep(3)
    except Exception as e:
     print(e)
     with open('/root/zpooltoimporterr','w') as f:
@@ -113,7 +113,7 @@ def volumecheckproc():
     cmdline = 'pcs resource'
     pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
     volumecheck(leader, myhost, etcds, replis, pcss)
-    sleep(10)
+    sleep(5)
    except Exception as e:
     print(volumecheck)
     with open('/root/volumecheckerr','w') as f:
@@ -151,6 +151,10 @@ def selectspareproc():
   global leader, myhost
   clsscsi = 'nothing'
   while True:
+  
+   spare2(leader, myhost)
+   spare2(leader, myhost)
+   spare2(leader, myhost)
    print('000000')
    try:
     cmdline='lsscsi -is'
