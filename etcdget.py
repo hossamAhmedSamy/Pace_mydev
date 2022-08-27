@@ -4,10 +4,10 @@ import json
 from time import sleep
 from checkleader import checkleader
 
+dev = 'enp0s8'
+os.environ['ETCDCTL_API']= '3'
 
 def etcdctl(ip,port,key,prefix):
- dev = 'enp0s8'
- os.environ['ETCDCTL_API']= '3'
  if port == '2379':
   cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints=http://'+ip+':'+port,'get',key,prefix]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
@@ -19,7 +19,7 @@ def etcdctl(ip,port,key,prefix):
  else:
   returncode= 2 
   counter = 0
-  while result.returncode == 2 and counter < 10:
+  while returncode == 2 and counter < 10:
    counter -= 1
    endpoints=''
    data=json.load(open('/pacedata/runningetcdnodes.txt'));
