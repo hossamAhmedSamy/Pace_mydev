@@ -68,9 +68,6 @@ def addactiveproc():
   global leader, myhost
   while True:
    try:
-    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-    leader = leaderinfo[0].split('/')[1]
-    leaderip = leaderinfo[1]
     addactive(leader,myhost)
     sleep(5)
    except Exception as e:
@@ -81,9 +78,6 @@ def selectimportproc():
   global leader, myhost
   while True:
    try:
-    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-    leader = leaderinfo[0].split('/')[1]
-    leaderip = leaderinfo[1]
     allpools=get('pools/','--prefix')
     selectimport(myhost,allpools,leader)
     sleep(5)
@@ -96,9 +90,6 @@ def zpooltoimportproc():
   global leader, myhost
   while True:
    try:
-    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-    leader = leaderinfo[0].split('/')[1]
-    leaderip = leaderinfo[1]
     zpooltoimport(leader, myhost)
     sleep(3)
    except Exception as e:
@@ -110,9 +101,6 @@ def volumecheckproc():
   global leader, myhost
   while True:
    try:
-    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-    leader = leaderinfo[0].split('/')[1]
-    leaderip = leaderinfo[1]
     etcds = get('volumes','--prefix')
     replis = get('replivol','--prefix')
     cmdline = 'pcs resource'
@@ -126,16 +114,22 @@ def volumecheckproc():
 
 def selectspareproc():
   global leader, myhost
+  clsscsi = 'nothing'
   while True:
    try:
-    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-    leader = leaderinfo[0].split('/')[1]
-    leaderip = leaderinfo[1]
-    spare2(leader, myhost)
-    spare2(leader, myhost)
-    spare2(leader, myhost)
-    spare2(leader, myhost)
-    sleep(5)
+    cmdline='lsscsi -is'
+    lsscsi=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+    if clsscsi != lsscsi:
+     clsscsi = lsscsi
+     putzpool(leader,myhost)
+     allpools=get('pools/','--prefix')
+     selectimport(myhost,allpools,leader)
+     zpooltoimport(leader, myhost)
+     spare2(leader, myhost)
+     spare2(leader, myhost)
+     spare2(leader, myhost)
+     spare2(leader, myhost)
+    sleep(3)
    except Exception as e:
     with open('/root/selectsparerr','w') as f:
 
@@ -145,9 +139,6 @@ def syncrequestproc():
  global leader, myhost
  while True:
   try:
-   leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
-   leader = leaderinfo[0].split('/')[1]
-   leaderip = leaderinfo[1]
    syncrequest(leader, myhost)
    sleep(5)
   except Exception as e:
@@ -158,30 +149,7 @@ def syncrequestproc():
 
 def infinitproc():
  global leader, myhost
- leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
- leader = leaderinfo[0].split('/')[1]
- leaderip = leaderinfo[1]
- cleader = leader
- myip = get('ActivePartners/'+myhost)[0]
- myalias = get('alias/'+myhost)[0]
- put('ready/'+myhost,myip)
- put('nextlead/er',myhost+'/'+myip)
- stampit = str(stamp())
- dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
- dosync(leader,'sync/nextlead/Add_er_'+myhost+'::'+myip+'/request','next_'+stampit)
- if myhost == cleader:
-  logmsg.sendlog('Partsu03','info','system',myalias,myip)
- else:
-  logmsg.sendlog('Partsu04','info','system',myalias,myip)
- allpools=get('pools/','--prefix')
- cmdline='/pace/iscsiwatchdog.sh'
- result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
- selectimport(myhost,allpools,leader)
- zpooltoimport(leader, myhost)
- spare2(leader, myhost)
- spare2(leader, myhost)
- spare2(leader, myhost)
- 
+
  while True:
   try:
    print('start remknown')
@@ -209,6 +177,30 @@ def infinitproc():
 loopers = [ infinitproc, iscsiwatchdogproc, fapiproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc, heartbeatpls ]
 #loopers = [ syncrequestproc ]
 if __name__=='__main__':
+ leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+ leader = leaderinfo[0].split('/')[1]
+ leaderip = leaderinfo[1]
+ cleader = leader
+ myip = get('ActivePartners/'+myhost)[0]
+ myalias = get('alias/'+myhost)[0]
+ put('ready/'+myhost,myip)
+ put('nextlead/er',myhost+'/'+myip)
+ stampit = str(stamp())
+ dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
+ dosync(leader,'sync/nextlead/Add_er_'+myhost+'::'+myip+'/request','next_'+stampit)
+ if myhost == cleader:
+  logmsg.sendlog('Partsu03','info','system',myalias,myip)
+ else:
+  logmsg.sendlog('Partsu04','info','system',myalias,myip)
+ allpools=get('pools/','--prefix')
+ cmdline='/pace/iscsiwatchdog.sh'
+ result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+ selectimport(myhost,allpools,leader)
+ zpooltoimport(leader, myhost)
+ spare2(leader, myhost)
+ spare2(leader, myhost)
+ spare2(leader, myhost)
+ 
  with ThreadPoolExecutor(max_workers=len(loopers)) as e:
   res = [ e.submit(x) for x in loopers ] 
 '''
