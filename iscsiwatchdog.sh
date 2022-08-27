@@ -26,6 +26,7 @@ sh /pace/disklost.sh
 sh /pace/addtargetdisks.sh
 ETCDCTL_API=3 /pace/putzpool.py 
 lsscsi2=`lsscsi -is | wc -c `
+./pace/selectspare.py
 
 pgrep checkfrstnode -a
 if [ $? -ne 0 ];
