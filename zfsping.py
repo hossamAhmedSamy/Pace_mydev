@@ -60,6 +60,9 @@ def addactiveproc():
   global leader, myhost
   while True:
    try:
+    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+    leader = leaderinfo[0].split('/')[1]
+    leaderip = leaderinfo[1]
     addactive(leader,myhost)
     sleep(5)
    except Exception as e:
@@ -70,6 +73,9 @@ def selectimportproc():
   global leader, myhost
   while True:
    try:
+    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+    leader = leaderinfo[0].split('/')[1]
+    leaderip = leaderinfo[1]
     allpools=get('pools/','--prefix')
     selectimport(myhost,allpools,leader)
     sleep(5)
@@ -82,6 +88,9 @@ def zpooltoimportproc():
   global leader, myhost
   while True:
    try:
+    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+    leader = leaderinfo[0].split('/')[1]
+    leaderip = leaderinfo[1]
     zpooltoimport(leader, myhost)
     sleep(3)
    except Exception as e:
@@ -93,6 +102,9 @@ def volumecheckproc():
   global leader, myhost
   while True:
    try:
+    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+    leader = leaderinfo[0].split('/')[1]
+    leaderip = leaderinfo[1]
     etcds = get('volumes','--prefix')
     replis = get('replivol','--prefix')
     cmdline = 'pcs resource'
@@ -108,6 +120,9 @@ def selectspareproc():
   global leader, myhost
   while True:
    try:
+    leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+    leader = leaderinfo[0].split('/')[1]
+    leaderip = leaderinfo[1]
     spare2(leader, myhost)
     spare2(leader, myhost)
     spare2(leader, myhost)
@@ -122,6 +137,9 @@ def syncrequestproc():
  global leader, myhost
  while True:
   try:
+   leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+   leader = leaderinfo[0].split('/')[1]
+   leaderip = leaderinfo[1]
    syncrequest(leader, myhost)
    sleep(5)
   except Exception as e:
