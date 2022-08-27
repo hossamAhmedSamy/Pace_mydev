@@ -148,6 +148,8 @@ def infinitproc():
  else:
   logmsg.sendlog('Partsu04','info','system',myalias,myip)
  allpools=get('pools/','--prefix')
+ cmdline='/pace/iscsiwatchdog.sh'
+ result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
  selectimport(myhost,allpools,leader)
  zpooltoimport(leader, myhost)
  spare2(leader, myhost)
