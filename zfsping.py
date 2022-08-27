@@ -33,23 +33,25 @@ leader = leaderinfo[0].split('/')[1]
 leaderip = leaderinfo[1]
  
 def heartbeatpls():
+ global leader, myhost
  while True:
   try:
    cleader = leader
    leader, leaderip = heartbeat()
    if leader != cleader:
+    print('######################################################################### heartbeat')
     cleader = leader
     refreshall()
    sleep(1)
   except Exception as e:
    with open('/root/heartbeaterr','w') as f:
     f.write(e+'\n')
-  
  return
+
 def dosync(leader,*args):
-  put(*args)
-  put(args[0]+'/'+leader,args[1])
-  return 
+ put(*args)
+ put(args[0]+'/'+leader,args[1])
+ return 
 
 def iscsiwatchdogproc():
   cmdline='/pace/iscsiwatchdoglooper.sh'
@@ -74,7 +76,7 @@ def addactiveproc():
   while True:
    try:
     addactive(leader,myhost)
-    sleep(5)
+    sleep(15)
    except Exception as e:
     with open('/root/addactiveerr','w') as f:
      f.write(e+'\n')
@@ -85,7 +87,7 @@ def selectimportproc():
    try:
     allpools=get('pools/','--prefix')
     selectimport(myhost,allpools,leader)
-    sleep(5)
+    sleep(15)
    except Exception as e:
     with open('/root/selectimporterr','w') as f:
      f.write(e+'\n')
@@ -96,7 +98,7 @@ def zpooltoimportproc():
   while True:
    try:
     zpooltoimport(leader, myhost)
-    sleep(3)
+    sleep(13)
    except Exception as e:
     print(e)
     with open('/root/zpooltoimporterr','w') as f:
@@ -117,33 +119,50 @@ def volumecheckproc():
     with open('/root/volumecheckerr','w') as f:
      f.write(e+'\n')
 def refreshall():
+ global leader, myhost
+ print('2')
  cmdline='/pace/iscsiwatchdog.sh'
  result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+ print('3')
  putzpool(leader,myhost)
+ print('4')
  allpools=get('pools/','--prefix')
  selectimport(myhost,allpools,leader)
+ print('5')
  zpooltoimport(leader, myhost)
+ print('6')
  etcds = get('volumes','--prefix')
  replis = get('replivol','--prefix')
  cmdline = 'pcs resource'
  pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
+ print('7')
  volumecheck(leader, myhost, etcds, replis, pcss)
+ print('8')
  spare2(leader, myhost)
+ print('9')
  spare2(leader, myhost)
+ print('10')
  spare2(leader, myhost)
+ print('11')
  spare2(leader, myhost)
+ print('12')
  
 def selectspareproc():
   global leader, myhost
   clsscsi = 'nothing'
   while True:
+   print('000000')
    try:
     cmdline='lsscsi -is'
     lsscsi=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     if clsscsi != lsscsi:
      clsscsi = lsscsi
+     print('######################################################################### lsscsi')
+     print('1')
      refreshall()
+     print('100')
     sleep(3)
+    print('101')
    except Exception as e:
     with open('/root/selectsparerr','w') as f:
 
@@ -163,9 +182,9 @@ def syncrequestproc():
 
 def infinitproc():
  global leader, myhost
-
  while True:
   try:
+   sleep(2)
    print('start remknown')
    remknown(leader,myhost) 
    print('finish remknown')

@@ -66,9 +66,7 @@ do
 done
 echo adding me as a leader >> /root/zfspingtmpa2
  stamp=`date +%s%N`
-sleep 1 
 ./runningetcdnodes.py $myip 2>/dev/null
-sleep 1 
 ./etcddel.py  leader --prefix  
 ./etcdput.py  leader/$myhost $myip 
 /pace/etcdput.py sync/leader/Del_leader_--prefix/request leader_$stamp

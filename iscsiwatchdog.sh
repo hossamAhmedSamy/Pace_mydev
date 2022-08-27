@@ -27,17 +27,6 @@ sh /pace/addtargetdisks.sh
 ETCDCTL_API=3 /pace/putzpool.py 
 lsscsi2=`lsscsi -is | wc -c `
 
-echo $lsscsi | grep $lsscsi2
-if [ $lsscsi -eq $lsscsi2 ];
-then 
- echo '###############################################'
- /pace/zpooltoimport.py
- /pace/selectspare.py
- /pace/selectspare.py
- /pace/selectspare.py
- ./VolumeCheck.py
-fi
-
 pgrep checkfrstnode -a
 if [ $? -ne 0 ];
 then

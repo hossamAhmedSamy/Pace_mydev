@@ -31,7 +31,7 @@ def dosync(leader,*args):
 
 
 def getnextlead(myip,myport,leadern,leaderip):
- nextleadinfo =  etcdctl(myip,myport,'nextlead/er','')
+ nextleadinfo =  etcdctlheart(myip,myport,'nextlead/er','')
  if len(str(nextleadinfo)) < 6:
   nextlead = leadern
   nextleadip = leaderip
@@ -58,7 +58,7 @@ def heartbeat(*args):
  nextlead, nextleadip = getnextlead(myip,myport,leadern,leaderip)
  knowns = [leader]
  if myhost == leader:
-  knowns = knowns + etcdctl(myip, myport, 'known','--prefix')
+  knowns = knowns + etcdctlheart(myip, myport, 'known','--prefix')
  for known in knowns:
   host = known[0].split('/')[1]
   hostip = known[1]
