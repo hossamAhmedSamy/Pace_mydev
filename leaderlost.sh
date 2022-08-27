@@ -12,7 +12,6 @@ rm -rf /etc/chrony.conf
 cp /TopStor/chrony.conf /etc/
 sed -i "s/MASTERSERVER/$nextleadip/g" /etc/chrony.conf
 systemctl restart chronyd
- 
 echo $nextlead | grep $myhost
 if [ $? -ne 0 ];
 then
@@ -36,7 +35,7 @@ echo hi
 ./etcdgetlocal.py $myip known --prefix | wc -l | grep 1
 if [ $? -eq 0 ];
 then
- /TopStor/logmsglocal.py $myip Partst05 info system $myhost &
+ /TopStor/logmsglocal.py $myip Partst05 info system $myhost 
 fi
 echo next lead is $nextleadip , $nextlead and this is me
 echo $perfmon | grep 1
@@ -68,7 +67,8 @@ done
 echo adding me as a leader >> /root/zfspingtmpa2
  stamp=`date +%s%N`
 ./runningetcdnodes.py $myip 2>/dev/null
- /TopStor/logmsg.py Partst05 info system $myhost &
+sleep 3
+ /TopStor/logmsg.py Partst05 info system $myhost 
 ./etcddel.py ready/$leader  
 /pace/etcdput.py sync/ready/Del_ready_${leader}/request ready_$stamp
 /pace/etcdput.py sync/ready/Del_ready_${leader}/request/$myhost ready_$stamp
@@ -92,10 +92,10 @@ stamp=`date +%s%N`
 ./etcdput.py sync/ipaddr/Del_ip/request  ipaddr_$stamp 
 ./etcdput.py sync/ipaddr/Del_ip/request/$myhost  ipaddr_$stamp 
 echo created namespaces >>/root/zfspingtmp2
-./setnamespace.py $enpdev &
-./setdataip.py &
+./setnamespace.py $enpdev 
+./setdataip.py 
 echo importing all pools >> /root/zfspingtmp2
-./etcddel.py toimport/$myhost &
+./etcddel.py toimport/$myhost 
 toimport=1
 #/sbin/zpool import -am &>/dev/null
 echo running putzpool and nfs >> /root/zfspingtmp2
