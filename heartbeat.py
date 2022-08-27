@@ -74,14 +74,11 @@ def heartbeat(*args):
      print('leader lost. nextlead is ',nextlead, 'while my host',myhost)
      cmdline='/pace/leaderlost.sh '+leadern+' '+myhost+' '+leaderip+' '+myip+' '+nextlead+' '+nextleadip
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+     if myhost == nextlead:
+      myport = '2379'
      leader =  etcdctl(myip,myport,'leader','--prefix')[0]
      leadern = leader[0].split('/')[1]
      leaderip = leader[1]
-     put('ready/'+myhost,myip)
-     stampit = str(stamp())
-     dosync(leadern,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
-     if myhost == nextlead:
-      myport = '2379'
      nextlead, nextleadip = getnextlead(myip,myport, leadern, leaderip)
      
     print('myhost',myhost,myip,myport)
