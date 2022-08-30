@@ -26,13 +26,13 @@ sh /pace/disklost.sh
 sh /pace/addtargetdisks.sh
 ETCDCTL_API=3 /pace/putzpool.py 
 lsscsi2=`lsscsi -is | wc -c `
-./pace/selectspare.py
+/pace/selectspare.py
 
-pgrep checkfrstnode -a
-if [ $? -ne 0 ];
-then
- /pace/frstnodecheck.py
-fi
+#pgrep checkfrstnode -a
+#if [ $? -ne 0 ];
+#then
+# /pace/frstnodecheck.py
+#fi
 /usr/bin/chronyc -a makestep
 rebootstatus='thestatus'`cat /TopStordata/rebootstatus`
 echo $rebootstatus | grep finish >/dev/null

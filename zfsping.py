@@ -45,6 +45,8 @@ def heartbeatpls():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in heartbeat:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
  
 
@@ -59,6 +61,8 @@ def iscsiwatchdogproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in iscsiwatchdogproc:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def fapiproc():
@@ -72,6 +76,8 @@ def putzpoolproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in putzpool:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def addactiveproc():
@@ -81,6 +87,8 @@ def addactiveproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in addactive:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def selectimportproc():
@@ -91,6 +99,8 @@ def selectimportproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in selectimport:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
    
 
@@ -101,6 +111,8 @@ def zpooltoimportproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in zpooltoimport:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
  
 def volumecheckproc():
@@ -114,6 +126,8 @@ def volumecheckproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in volumecheckproc:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def refreshall():
@@ -149,6 +163,8 @@ def selectspareproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in selectspare:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def syncrequestproc():
@@ -158,6 +174,8 @@ def syncrequestproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in syncrequest:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def remknownproc():
@@ -167,6 +185,8 @@ def remknownproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in remknown:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def addknownproc():
@@ -177,6 +197,8 @@ def addknownproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in addknown:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def activeusersproc():
@@ -186,6 +208,8 @@ def activeusersproc():
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in activeusers:',e)
+  with open('/root/pingerr','a') as f:
+   f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 
@@ -199,9 +223,19 @@ def CommonTask(task):
  # print('############################thisis the task will fail')
  # task()
  task()
- #task()
+ #sleep(2)
  print("''''''''' task ended",task,"'''''''''''''''''''''''''''''''''''''''",flush=True)
- 
+
+i = 0
+def lazyloop():
+ global i
+ while True:
+  resyyult = loopers[i % len(loopers)]
+  yield result 
+  i = i + 1
+ return next() 
+
+
 def lazylooper():
     x = 0
     while True:
@@ -210,12 +244,7 @@ def lazylooper():
         if x == len(loopers):
          x = 0
 if __name__=='__main__':
- infloop = lazylooper()
- with ProcessPoolExecutor(4) as e:
-   args = (task for task in infloop)
-   res = e.map(CommonTask,args)
- exit()
- ctask = -1 
+
  leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
  leader = leaderinfo[0].split('/')[1]
  leaderip = leaderinfo[1]
@@ -237,15 +266,11 @@ if __name__=='__main__':
  else:
   logmsg.sendlog('Partsu04','info','system',myalias,myip)
  refreshall() 
- res = dict()
- with ProcessPoolExecutor(4) as e:
-   res = e.submit(CommonTask)
-   exception = res.exception()
-   if exception:
-    print('an exception occurred',exception)
-    print('############## task failed:',res,'################################')
-    with open('/root/zfspingerr','a') as f:
-     f.write('############## task failed: ' + str(ctask) +' ################################\n')
-     f.write(e+'\n')
-   else:
-    result = res.result()
+ #infloop = lazyloop()
+ while True:
+  with ProcessPoolExecutor(4) as e:
+    for i in range(len(loopers)*5):
+     args = loopers[i % len(loopers)]
+     res = e.submit(CommonTask,args)
+ exit()
+
