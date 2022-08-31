@@ -30,6 +30,7 @@ cd /pace
 rm -rf /pacedata/addiscsitargets 2>/dev/null
 rm -rf /pacedata/startzfsping 2>/dev/null
 /pace/startzfs.sh
+./fapilooper.sh &
 zfspingpy(){
 ./zfsping.py >/root/zfspingpy 2>/root/zfspingpyerr
 }
