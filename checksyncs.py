@@ -160,11 +160,12 @@ def syncrequest(leader, myhost):
   toprunedic = dict()
   for prune in toprune:
    if prune[1] not in toprunedic:
-    toprunedic[prune[1]] = 1
+    toprunedic[prune[1]] = [1,prune[0]]
    else:
-    toprunedic[prune[1]] += 1
+    toprunedic[prune[1]][0] += 1
+    toprunedic[prune[1]].append(prune[0])
   for prune in toprunedic:
-   if toprunedic[prune] >= actives:
+   if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
     dels('sync',prune) 
     print(prune,toprunedic[prune])
   
