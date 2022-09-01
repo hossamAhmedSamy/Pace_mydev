@@ -11,6 +11,12 @@ from etcdgetlocalpy import etcdget as getlocal
 from etcdput import etcdput as put 
 from etcdputlocal import etcdput as putlocal 
 
+def dosync(leader,*args):
+  put(*args)
+  put(args[0]+'/'+leader,args[1])
+  return 
+
+
 def addknown(leader,myhost):
  possible=get('possible','--prefix')
  active = get('Active','--prefix')
@@ -22,14 +28,12 @@ def addknown(leader,myhost):
    etcddel('lost',posname)
    etcddel('poss',posname)
    put('known/'+posname,pos[1])
-   put('sync/known/Add_'+posname+'_'+pos[1]+'/request','known_'+'known_'+stampit)
-   put('sync/known/Add_'+posname+'_'+pos[1]+'/request/'+myhost,'known_'+'known_'+stampit)
+   dosync(leader,'sync/known/Add_'+posname+'_'+pos[1]+'/request','known_'+'known_'+stampit)
    aliast = getlocal(pos[1],'alias/'+posname)[0]
    #print('pos',pos[1],posname,str(aliast))
    put('alias/'+posname,str(aliast))
    #print('############')
-   put('sync/alias/Add_'+posname+'_'+str(aliast).replace('_',':::').replace('/',':::')+'/request','alias_'+stampit)
-   put('sync/alias/Add_'+posname+'_'+str(aliast).replace('_',':::').replace('/',':::')+'/request/'+myhost,'alias_'+stampit)
+   dosync(leader,'sync/alias/Add_'+posname+'_'+str(aliast).replace('_',':::').replace('/',':::')+'/request','alias_'+stampit)
  allow=get('allowedPartners')
  if 'notallowed' in str(allow):
   return 
@@ -58,8 +62,7 @@ def addknown(leader,myhost):
     put('frstnode',newfrstnode)
    put('known/'+x[0].replace('possible',''),x[1])
    #print('syncing')
-   put('sync/known/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','known_'+stampit)
-   put('sync/known/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request/'+myhost,'known_'+stampit)
+   dosync(leader,'sync/known/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','known_'+stampit)
    hostsubnet = getlocal(x[1],'hostipsubnet/'+x[0].replace('possible',''))[0]
    if hostsubnet == -1:
     hostsubnet = "24"
@@ -67,35 +70,28 @@ def addknown(leader,myhost):
    #deltolocal('modified',x[0].replace('possible',''))
    #print('syncing2')
    put('ActivePartners/'+x[0].replace('possible',''),x[1])
-   put('sync/ActivePartners/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','ActivePartners_'+stampit)
-   put('sync/ActivePartners/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request/'+myhost,'ActivePartners_'+stampit)
+   dosync(leader,'sync/ActivePartners/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','ActivePartners_'+stampit)
  
    put('hostipsubnet/'+x[0].replace('possible',''),hostsubnet)
-   put('sync/hostipsubnet/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request/'+myhost,'hostipsubnet_'+stampit)
-   put('sync/hostipsubnet/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','hostipsubnet_'+stampit)
+   dosync(leader,'sync/hostipsubnet/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','hostipsubnet_'+stampit)
    put('configured/'+x[0].replace('possible',''),'yes')
-   put('sync/configured/Add_'+x[0].replace('possible','')+'_yes/request','configured_'+stampit)
-   put('sync/configured/Add_'+x[0].replace('possible','')+'_yes/request/'+myhost,'configured_'+stampit)
+   dosync(leader,'sync/configured/Add_'+x[0].replace('possible','')+'_yes/request','configured_'+stampit)
    put('nextlead/er',x[0].replace('possible','')+'/'+x[1])
-   put('sync/nextlead/Add_er_'+x[0].replace('possible','')+'::'+x[1]+'/request/'+myhost,'nextlead_'+stampit)
-   put('sync/nextlead/Add_er_'+x[0].replace('possible','')+'::'+x[1]+'/request','nextlead_'+stampit)
+   dosync(leader,'sync/nextlead/Add_er_'+x[0].replace('possible','')+'::'+x[1]+'/request','nextlead_'+stampit)
    aliast = getlocal(x[1],'alias/'+x[0].replace('possible',''))[0]
    put('alias/'+x[0].replace('possible',''),str(aliast))
-   put('sync/alias/Add_'+x[0].replace('possible','')+'_'+x[1].replace('_',':::').replace('/',':::')+'/request/'+myhost,'alias_'+stampit)
-   put('sync/alias/Add_'+x[0].replace('possible','')+'_'+x[1].replace('_',':::').replace('/',':::')+'/request','alias_'+stampit)
+   dosync(leader,'sync/alias/Add_'+x[0].replace('possible','')+'_'+x[1].replace('_',':::').replace('/',':::')+'/request','alias_'+stampit)
    cmdline=['/sbin/rabbitmqctl','add_user','rabb_'+x[0].replace('possible',''),'YousefNadody']
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    cmdline=['/sbin/rabbitmqctl','set_permissions','-p','/','rabb_'+x[0].replace('possible',''),'.*','.*','.*']
    etcddel('losthost/'+x[0].replace('possible',''))
-   put('sync/cleanlost/Del_'+x[0].replace('possible','')+'_--prefix/request','cleanlost_'+stampit)
-   put('sync/cleanlost/Del_'+x[0].replace('possible','')+'_--prefix/request/'+myhost,'cleanlost_'+stampit)
+   dosync(leader, 'sync/cleanlost/Del_'+x[0].replace('possible','')+'_--prefix/request','cleanlost_'+stampit)
    put('change/'+x[0].replace('possible','')+'/booted',x[1])
  #  put('tosync','yes')
    if x[0].replace('possible','') in str(knowns):
     put('allowedPartners','notoall')
     #print('sync3')
-    put('sync/allowedPartners/Add_notoall_/request','allwedPartners_'+stampit)
-    put('sync/allowedPartners/Add_notoall_/request/'+myhost,'allwedPartners_'+stampit)
+    dosync(leader, 'sync/allowedPartners/Add_notoall_/request','allwedPartners_'+stampit)
     etcddel('possible',x[0])
     put('possible',x[0])
     logmsg.sendlog('AddHostsu01','info',arg[-1],name)
