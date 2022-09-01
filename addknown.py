@@ -2,6 +2,7 @@
 import sys, subprocess, logmsg
 from socket import gethostname as hostname
 from etcddel import etcddel as etcddel
+from etcddellocal import etcddel as dellocal
 from logqueue import queuethis
 #from broadcast import broadcast as broadcast 
 from time import time as stamp
@@ -60,6 +61,7 @@ def addknown(leader,myhost):
    if x[0].replace('possible','') not in frstnode[0]:
     newfrstnode=frstnode[0]+'/'+x[0].replace('possible','')
     put('frstnode',newfrstnode)
+   dellocal(x[1],'sync','--prefix') 
    put('known/'+x[0].replace('possible',''),x[1])
    #print('syncing')
    dosync(leader,'sync/known/Add_'+x[0].replace('possible','')+'_'+x[1]+'/request','known_'+stampit)
