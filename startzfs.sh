@@ -132,7 +132,7 @@ then
  fi
  #./etcddel.py sync --prefix
  ./etcddel.py needtoreplace --prefix
- ./etcddel.py needtoimport --prefix
+ ./etcddel.py poolsnxt --prefix
  ./etcddel.py known --prefix 2>/dev/null 
  /TopStor/HostManualconfigTZ $myip 
  /TopStor/HostManualconfigNTP $myip

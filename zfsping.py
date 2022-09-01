@@ -215,7 +215,7 @@ def activeusersproc():
 
 
 
-loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc, heartbeatpls ]
+loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc ]
 
 def CommonTask(task):
  print("''''''''' task started",task,"'''''''''''''''''''''''''''''''''''''''")
