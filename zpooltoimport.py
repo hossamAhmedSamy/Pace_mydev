@@ -28,11 +28,14 @@ def dosync(leader,*args):
 
 def zpooltoimport(leader, myhost):
  needtoimport=get('poolsnxt', myhost) 
+ cpools = get('pools','--prefix')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
  else:
   for poolline in needtoimport:
    pool = poolline[0].replace('poolsnxt/','')
+   if pool in str(cpools):
+    continue
    ioperf()
    print('pool', pool)
    cmdline= '/usr/sbin/zpool import  '+pool
