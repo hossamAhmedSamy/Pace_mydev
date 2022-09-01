@@ -11,6 +11,8 @@ myhost = hostname()
 myip = get('ActivePartners/'+myhost)[0]
 allusers = []
 def thread_add(user):
+ if 'NoUser' == username
+  return
  username=user[0].replace('usersinfo/','')
  with open('/root/usersync2','w') as f:
   f.write(str(user)+' + '+str(username)+'\n')
@@ -38,6 +40,8 @@ def thread_add(user):
 def thread_del(*user):
  global allusers
  username=user[0].replace('usersinfo/','')
+ if 'NoUser' == username
+  return
  if username not in str(allusers):
   print(username,str(allusers))
   cmdline=['/TopStor/UnixDelUser_sync',username,'system']
