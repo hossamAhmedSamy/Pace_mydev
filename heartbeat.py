@@ -2,6 +2,7 @@
 
 import sys, os, subprocess
 from etcdgetpy import etcdget as get
+from etcdput import etcdput as put 
 from etcddel import etcddel as dels 
 from etcdgetlocalpy import etcdget as getlocal
 from socket import gethostname as hostname
