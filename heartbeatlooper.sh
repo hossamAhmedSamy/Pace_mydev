@@ -1,7 +1,7 @@
 #!/usr/bin/sh
-hearbeat () {
+heartbeat () {
 cd /pace
-/pace/hearbeat.py 
+/pace/heartbeat.py 
 }
 while true;
 do
