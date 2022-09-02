@@ -417,9 +417,9 @@ def solvedegradedraid(raid,disksfree):
     f.write('cmdline '+ " ".join(cmdline2)+'\n')
     f.write('result: '+forget.stdout.decode()+'\n')
     f.write('result: '+forget.stderr.decode()+'\n')
-   sleep(3)
-   cmdline2=['/sbin/zpool', 'offline',raid['pool'], '/dev/'+dmstup]
-   subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   #sleep(3)
+   #cmdline2=['/sbin/zpool', 'offline',raid['pool'], '/dev/'+dmstup]
+   #subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    #cmdline2=['systemctl', 'restart','zfs-zed']
    #subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
