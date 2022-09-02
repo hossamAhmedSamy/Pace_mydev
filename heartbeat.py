@@ -79,11 +79,12 @@ def heartbeat(*args):
      leadern = leader[0].split('/')[1]
      leaderip = leader[1]
      nextlead, nextleadip = getnextlead(myip,myport, leadern, leaderip)
-    else:
-     leader =  etcdctlheart(myip,myport,'leader','--prefix')[0]
-     leadern = leader[0].split('/')[1]
-     leaderip = leader[1]
     print('myhost',myhost,myip,myport)
+    dels('ready/'+host)
+    dels('known/'+host)
+    stampit = str(stamp())
+    dosync(leadern,'sync/known/Del_known_'+host+'/request','known_'+stampit)
+    dosync(leadern,'sync/known/Del_ready_'+host+'/request','ready_'+stampit)
     cmdline='/pace/iscsiwatchdog.sh'
     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     zpooltoimport(leadern, myhost)
