@@ -541,19 +541,19 @@ def spare2(*args):
 #####################################  set the right replacements for all raids
  newop=getall()
  getcurrent = get('hosts','current')
+ allraids = []
  for hostinfo in newop:
   pools = mtuple(hostinfo[1])['pools']
   for spool in pools:
-   if spool['name'] not in str(getcurrent):
+   if spool['name'] not in str(getcurrent) or 'ree' in spool['name']:
     continue
    for sraid in spool['raidlist']:
     if len(availability) > 0:
-     if 'ree' not in sraid['name'] and spool['name'] in str(availability):
+     if spool['name'] in str(availability):
       allraids.append(sraid)
     else:
-     if 'ree' not in sraid['name'] and sraid['name'] in str(getcurrent):
+     if sraid['name'] in str(getcurrent):
       allraids.append(sraid)
- 
  diskreplace = {}
  allraidsranked = []
  if len(allraids) == 0:
