@@ -93,7 +93,8 @@ def groupsyncall(hostip,tosync='usrsigroup'):
 def onegroupsync(oper,usertosync):
  global allusers
  global myusers
- user=get('usersinfo', usertosync)[0]
+ user=get('usersigroup', usertosync)[0]
+ print('user',user)
  if oper == 'Add':
   thread_add(user)
  else:
@@ -103,4 +104,4 @@ def onegroupsync(oper,usertosync):
 if __name__=='__main__':
  with open('/root/sync2','w') as f:
   f.write('Starting\n')
- groupsyncall(*sys.argv[1:])
+ onegroupsync(*sys.argv[1:])
