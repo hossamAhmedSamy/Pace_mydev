@@ -58,7 +58,7 @@ def heartbeat(*args):
  while True:
   nextlead, nextleadip = getnextlead(myip,myport,leadern,leaderip)
   knowns = [leader]
-  if myhost == leader:
+  if myhost == leadern:
    knowns = knowns + etcdctlheart(myip, myport, 'known','--prefix')
   for known in knowns:
    host = known[0].split('/')[1]
@@ -92,7 +92,7 @@ def heartbeat(*args):
     replis = etcdctlheart(myip,myport, 'replivol','--prefix')
     cmdline = 'pcs resource'
     pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
-    volumecheck(leader, myhost, etcds, replis, pcss)
+    volumecheck(leadern, myhost, etcds, replis, pcss)
     addactive(leadern,myhost)
     spare2(leadern, myhost)
     spare2(leadern, myhost)
