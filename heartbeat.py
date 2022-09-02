@@ -84,7 +84,6 @@ def heartbeat(*args):
      leadern = leader[0].split('/')[1]
      leaderip = leader[1]
     print('myhost',myhost,myip,myport)
-    #remknown(leadern,myhost) 
     cmdline='/pace/iscsiwatchdog.sh'
     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     zpooltoimport(leadern, myhost)
@@ -97,6 +96,8 @@ def heartbeat(*args):
     spare2(leadern, myhost)
     spare2(leadern, myhost)
     spare2(leadern, myhost)
+    if myhost == leadern:
+     remknown(leadern,myhost) 
     break
  
 

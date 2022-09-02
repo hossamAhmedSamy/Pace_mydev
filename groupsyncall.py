@@ -94,7 +94,7 @@ def onegroupsync(oper,usertosync):
  global allusers
  global myusers
  user=get('usersinfo', usertosync)[0]
- if oper == 'add':
+ if oper == 'Add':
   thread_add(user)
  else:
   thread_del(user)
