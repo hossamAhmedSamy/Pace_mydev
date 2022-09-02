@@ -11,9 +11,9 @@ myhost = hostname()
 myip = get('ActivePartners/'+myhost)[0]
 allusers = []
 def thread_add(user):
+ username=user[0].replace('usersinfo/','')
  if 'NoUser' == username:
   return
- username=user[0].replace('usersinfo/','')
  with open('/root/usersync2','w') as f:
   f.write(str(user)+' + '+str(username)+'\n')
  if username in str(myusers):
