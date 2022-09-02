@@ -2,6 +2,7 @@
 from checkleader import checkleader
 from remknown import remknown
 from poolall import getall as getall
+from getload import getload
 from sendhost import sendhost
 import subprocess,sys, logmsg, os
 from logqueue import queuethis
@@ -57,7 +58,7 @@ def dosync(leader,*args):
 def iscsiwatchdogproc():
  try:
   cmdline='/pace/iscsiwatchdog.sh'
-  result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in iscsiwatchdogproc:',e)
@@ -67,7 +68,7 @@ def iscsiwatchdogproc():
 
 def fapiproc():
   cmdline='/pace/fapilooper.sh' 
-  result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
 
 def putzpoolproc():
  global leader, myhost
@@ -133,7 +134,7 @@ def volumecheckproc():
 def refreshall():
  global leader, myhost
  cmdline='/pace/iscsiwatchdog.sh'
- result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+ result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
  putzpool(leader,myhost)
  allpools=get('pools/','--prefix')
  selectimport(myhost,allpools,leader)
@@ -156,7 +157,7 @@ def selectspareproc():
   spare2(leader, myhost)
   spare2(leader, myhost)
   cmdline='lsscsi -is'
-  lsscsi=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+  lsscsi=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
   if clsscsi != lsscsi:
    clsscsi = lsscsi
    refreshall()
@@ -268,6 +269,12 @@ if __name__=='__main__':
  refreshall() 
  #infloop = lazyloop()
  while True:
+  zload = getload()
+  while zload > 80:
+   sleep(2)
+   zload = getload()
+   print('still load high',zload)
+  print('load ok', zload)
   with ProcessPoolExecutor(4) as e:
     for i in range(len(loopers)*5):
      args = loopers[i % len(loopers)]
