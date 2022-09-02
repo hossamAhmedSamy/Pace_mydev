@@ -28,7 +28,7 @@ def dosync(leader,*args):
 
 def zpooltoimport(leader, myhost):
  needtoimport=get('poolsnxt', myhost) 
- cpools = get('pools','--prefix')
+ cpools = get('pools/','--prefix')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
  else:
