@@ -13,7 +13,7 @@ allusers= []
 #def thread_add(*user):
 def thread_add(user):
  username=user[0].replace('usersigroup/','')
- if 'Everyone' == username
+ if 'Everyone' == username:
   return
  groupusers=user[1].split('/')[2]
  if groupusers=='no':
@@ -31,7 +31,7 @@ def thread_add(user):
 #def thread_del(*user):
 def thread_del(user):
  username=user[0].replace('usersigroup/','')
- if 'Everyone' == username
+ if 'Everyone' == username:
   return
  if username not in str(allusers):
   print(username,str(allusers))
