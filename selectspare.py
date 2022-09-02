@@ -398,8 +398,8 @@ def solvedegradedraid(raid,disksfree):
     print('new',dmstup,'is created')
    diskuid = disk['actualdisk']
    if 'scsi' in disk['actualdisk']:
-    cmdline2=['/sbin/zdb']
-    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().replace(' ','').split('\n')
+    cmdline2='/sbin/zdb -e -C '+disk['pool']
+    forget=subprocess.run(cmdline2.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().replace(' ','').split('\n')
     faultdisk = [ x for x in forget if 'guid' in x or (disk['actualdisk'] in x and 'path' in x) ]
     eindex = 0 
     for fa in faultdisk:

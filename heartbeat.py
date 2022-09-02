@@ -2,6 +2,7 @@
 
 import sys, os, subprocess
 from etcdgetpy import etcdget as get
+from etcddel import etcddel as dels 
 from etcdgetlocalpy import etcdget as getlocal
 from socket import gethostname as hostname
 from time import sleep
@@ -82,9 +83,11 @@ def heartbeat(*args):
     print('myhost',myhost,myip,myport)
     dels('ready/'+host)
     dels('known/'+host)
+    dels('pools',host)
     stampit = str(stamp())
     dosync(leadern,'sync/known/Del_known_'+host+'/request','known_'+stampit)
-    dosync(leadern,'sync/known/Del_ready_'+host+'/request','ready_'+stampit)
+    dosync(leadern,'sync/ready/Del_ready_'+host+'/request','ready_'+stampit)
+    dosync(leadern,'sync/pools/Del_pools_'+host+'/request','pools_'+stampit)
     cmdline='/pace/iscsiwatchdog.sh'
     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     zpooltoimport(leadern, myhost)
