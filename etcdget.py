@@ -28,7 +28,7 @@ def etcdctl(ip,port,key,prefix):
  return result 
  
 def etcdget(key, prefix=''):
- cmdline=['pcs','resource','show','--full']
+ cmdline=['/usr/sbin/pcs','resource','show','--full']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE).stdout.decode()
  port = '2379' if 'mgmtip' in result else '2378'
  result = result.split('\n')
