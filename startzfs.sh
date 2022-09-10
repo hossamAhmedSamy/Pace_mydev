@@ -368,7 +368,7 @@ else
   systemctl start topstorremoteack
   systemctl start servicewatchdog 
   echo etcd started as local >>/root/tmp2
-  /TopStor/crontoetc.py
+  ./etcddel.py sync/Snapperiod/initial $myhost
   rm -rf /var/lib/iscsi/nodes/* 2>/dev/null
   echo starting iscsiwaatchdog >>/root/tmp2
   /sbin/zpool export -a
