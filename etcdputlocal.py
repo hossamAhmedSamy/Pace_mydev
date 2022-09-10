@@ -10,7 +10,7 @@ def etcdput(*args):
  val=args[2]
  endpoints=''
  endpoints='http://'+myip+':2378'
- cmdline=['etcdctl','--user=root:YN-Password_123','-w','json','--endpoints='+endpoints,'put',key,val]
+ cmdline=['/usr/bin/etcdctl','--user=root:YN-Password_123','-w','json','--endpoints='+endpoints,'put',key,val]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
 if __name__=='__main__':
