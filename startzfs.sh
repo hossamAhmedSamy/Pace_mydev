@@ -216,7 +216,7 @@ then
  ./etcddel.py poolsnxt --prefix 2>/dev/null
  ./etcddel.py cann --prefix 2>/dev/null
  ./etcddel.py prop --prefix 2>/dev/null
- ./etcddel.py Snapperiod --prefix 2>/dev/null
+ #./etcddel.py Snapperiod --prefix 2>/dev/null
  ./etcdput.py leader/$myhost $myip 2>/dev/null
  ./etcdput.py primary/name $myhost 2>/dev/null
  ./etcdput.py primary/address $myip 2>/dev/null
@@ -272,7 +272,7 @@ then
  fi
  /sbin/zpool export -a 2>/dev/null
  rm -rf /pdhcp*
- /TopStor/crontoetc.py all &
+ #/TopStor/crontoetc.py all &
  echo startiscsiwatchdog >>/root/tmp2
  /pace/iscsiwatchdog.sh 2>/dev/null
  echo finished iscsiwatchdog >>/root/tmp2
@@ -360,8 +360,8 @@ else
   fi 
 
   echo requesting syncrequest
-  /bin/crontab /TopStor/plaincron
-  /TopStor/etctocron.py
+  #/bin/crontab /TopStor/plaincron
+  /TopStor/crontoetc.py
   systemctl start iscsid &
   systemctl start iscsi &
   systemctl start topstorremote

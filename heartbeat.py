@@ -83,7 +83,7 @@ def heartbeat(*args):
      nextlead, nextleadip = getnextlead(myip,myport, leadern, leaderip)
     print('myhost',myhost,myip,myport)
     dels('ready/'+host)
-    dels('running/'+host)
+    dels('running/', host)
     dels('known/'+host)
     dels('pools',host)
     stampit = str(stamp())
