@@ -83,11 +83,13 @@ def heartbeat(*args):
      nextlead, nextleadip = getnextlead(myip,myport, leadern, leaderip)
     print('myhost',myhost,myip,myport)
     dels('ready/'+host)
+    dels('running/'+host)
     dels('known/'+host)
     dels('pools',host)
     stampit = str(stamp())
     dosync(leadern,'sync/known/Del_known_'+host+'/request','known_'+stampit)
     dosync(leadern,'sync/ready/Del_ready_'+host+'/request','ready_'+stampit)
+    dosync(leadern,'sync/running/____/request','running_'+stampit)
     dosync(leadern,'sync/pools/Del_pools_'+host+'/request','pools_'+stampit)
     cmdline='/pace/iscsiwatchdog.sh'
     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')

@@ -185,6 +185,7 @@ then
  /TopStor/logmsg2.sh $datenow $timenow $myhost Partst03 info system $myhost $myip
  ./etcddel.py possbile --prefix 2>/dev/null 
  ./etcddel.py ready --prefix 2>/dev/null 
+ ./etcddel.py running --prefix 2>/dev/null 
  ./etcddel.py locked --prefix 2>/dev/null 
  ./etcddel.py cannot --prefix 2>/dev/null 
  ./etcddel.py request --prefix 2>/dev/null 
