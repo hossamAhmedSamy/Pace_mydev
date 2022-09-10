@@ -20,8 +20,8 @@ from etctocron import etctocron
 syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'Snappreiod', 'running','volumes', 'ipaddr' ]
-etcdonly = [ 'cleanlost','balancedtype','sizevol', 'Partnr','ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
+wholeetcd = [ 'Partnr', 'Snappreiod', 'running','volumes', 'ipaddr' ]
+etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 myhost = hostname()
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
@@ -63,8 +63,11 @@ def doinitsync(myip, syncinfo):
      cmdline='/TopStor/pump.sh HostManualconfig'+sync.upper()
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
  if sync in syncs:
+  if sync == 'Partnr':
+   synckeys(myip, 'Partner','Partner')
+  else:
+   synckeys(myip, sync,sync)
   print('sycs',sync, myip)
-  synckeys(myip, sync,sync)
      
  if sync not in syncs:
   print('there is a sync that is not defined:',sync)
@@ -114,7 +117,10 @@ def syncrequest(leader, myhost):
    opers= syncleft.split('/')[2].split('_')
    print('the sync',sync)
    if sync in wholeetcd :
-    synckeys(myip, sync,sync)
+    if sync == 'Partnr':
+      synckeys(myip, 'Partner', 'Partner')
+    else:
+      synckeys(myip, sync,sync)
    if sync in etcdonly and myhost != leader:
      if opers[0] == 'Add':
       if 'Split' in opers[1]:
