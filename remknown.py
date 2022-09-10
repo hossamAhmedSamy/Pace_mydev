@@ -64,6 +64,8 @@ def remknown(leader,myhost):
     logmsg.sendlog('Partst02','warning','system', kn[0].replace('known/',''))
     etcddel('ready/'+kn[0].replace('known/',''))
     dosync(leader,'sync/ready/Del_ready::_'+thelost+'/request','ready_'+stamp)
+    etcddel('running'+kn[0].replace('known/',''))
+    dosync(leader,'sync/running/____/request','running_'+stamp)
     etcddel('ipaddr',kn[0].replace('known/',''))
     #print('hostlost ###########################################33333')
     #cmdline=['/pace/hostlost.sh',kn[0].replace('known/','')]
