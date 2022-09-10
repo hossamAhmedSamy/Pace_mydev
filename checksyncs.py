@@ -63,8 +63,11 @@ def doinitsync(myip, syncinfo):
      cmdline='/TopStor/pump.sh HostManualconfig'+sync.upper()
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
  if sync in syncs:
+  if sync == 'Partnr':
+   synckeys(myip, 'Partner','Partner')
+  else:
+   synckeys(myip, sync,sync)
   print('sycs',sync, myip)
-  synckeys(myip, sync,sync)
      
  if sync not in syncs:
   print('there is a sync that is not defined:',sync)
@@ -114,7 +117,10 @@ def syncrequest(leader, myhost):
    opers= syncleft.split('/')[2].split('_')
    print('the sync',sync)
    if sync in wholeetcd :
-    synckeys(myip, sync,sync)
+    if sync == 'Partnr':
+      synckeys(myip, 'Partner', 'Partner')
+    else:
+      synckeys(myip, sync,sync)
    if sync in etcdonly and myhost != leader:
      if opers[0] == 'Add':
       if 'Split' in opers[1]:

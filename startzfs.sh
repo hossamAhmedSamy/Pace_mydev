@@ -361,13 +361,14 @@ else
 
   echo requesting syncrequest
   #/bin/crontab /TopStor/plaincron
-  /TopStor/crontoetc.py
+  #/TopStor/crontoetc.py
   systemctl start iscsid &
   systemctl start iscsi &
   systemctl start topstorremote
   systemctl start topstorremoteack
   systemctl start servicewatchdog 
   echo etcd started as local >>/root/tmp2
+  /TopStor/crontoetc.py
   rm -rf /var/lib/iscsi/nodes/* 2>/dev/null
   echo starting iscsiwaatchdog >>/root/tmp2
   /sbin/zpool export -a
