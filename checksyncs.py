@@ -15,11 +15,12 @@ from groupsyncall import groupsyncall, onegroupsync
 from socket import gethostname as hostname
 from etcdsync import synckeys
 from time import time as timestamp
+from etctocron import etctocron 
 
 syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'running','volumes', 'ipaddr' ]
+wholeetcd = [ 'Snappreiod', 'running','volumes', 'ipaddr' ]
 etcdonly = [ 'cleanlost','balancedtype','sizevol', 'Partnr','ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 myhost = hostname()
@@ -44,13 +45,13 @@ def syncinit(leader, myhost):
 
 def doinitsync(myip, syncinfo):
  global syncs, syncanitem, forReceivers, etcdonly, myhost, allsyncs
- from etctocron import etctocron 
  noinit = [ 'replipart' , 'evacuatehost' ]
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
  sync = syncleft.split('/')[1]
  if sync in syncanitem and sync not in noinit:
-    if 'cron' in sync:
+    if 'Snapperiod'in sync:
+     print('found etctocron')
      etctocron()
     if sync in 'user':
      print('syncing all users')
@@ -111,6 +112,7 @@ def syncrequest(leader, myhost):
    stamp = syncinfo[1]
    sync = syncleft.split('/')[1]
    opers= syncleft.split('/')[2].split('_')
+   print('the sync',sync)
    if sync in wholeetcd :
     synckeys(myip, sync,sync)
    if sync in etcdonly and myhost != leader:
@@ -123,7 +125,9 @@ def syncrequest(leader, myhost):
       print(sync,opers)
       dellocal(myip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
-      if 'syncfn' in opers[0]:
+      if sync in 'Snapperiod' :
+       etctocron()
+      elif 'syncfn' in opers[0]:
        print('opers',opers)
        globals()[opers[1]](*opers[2:])
       else:
@@ -172,7 +176,7 @@ def syncrequest(leader, myhost):
  return     
 
 
-runcmd={'cron':'etctocron'} 
+runcmd={'Snapperiod':'etctocron'} 
 synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
 if __name__=='__main__':
  if len(sys.argv) > 2: 
