@@ -5,6 +5,7 @@ from levelthis import levelthis
 from logqueue import queuethis
 import json
 from raidrank import getraidrank
+from putzpool import putzpool
 from ast import literal_eval as mtuple
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
@@ -491,8 +492,10 @@ def spare2(*args):
    print(" ".join(cmdline2))
    print('thereuslt',forget.stdout.decode())
    print('return code',forget.returncode)
+ 
  if myhost not in leader:
   return
+ putzpool()
  freedisks=[]
  allraids=[]
  freeraids=[]
@@ -565,6 +568,7 @@ def spare2(*args):
     rankdisk = disk
     break
   raid = getraidrank(raid,rankdisk,rankdisk)
+  print(raid['name'],raid['raidrank'])
  replacements = dict() 
  foundranks = [] 
  currentneedtoreplace = get('needtoreplace','--prefix')
