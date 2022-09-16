@@ -270,10 +270,15 @@ if __name__=='__main__':
  #infloop = lazyloop()
  while True:
   zload = getload()
-  while zload > 50:
+  counter = 0
+  while zload > 65:
    sleep(2)
-   zload = getload()
-   print('still load high',zload)
+   counter += 1
+   if counter > 10:
+    zload = 0
+   else:
+    zload = getload()
+    print('still load high',zload,'counter',counter)
   print('load ok', zload)
   with ProcessPoolExecutor(4) as e:
     for i in range(len(loopers)*2):
