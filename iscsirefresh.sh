@@ -8,11 +8,14 @@ hosts=`./etcdget.py ready --prefix | awk -F"', " '{print $2}' | awk -F"'" '{prin
 for host in $hosts ; do
  echo $sessions  | grep $host
  if [ $? -ne 0 ]; then
+  echo sessions=$sessions
   needrescan=1;
-  hostpath=`ls /var/lib/iscsi/nodes/ | grep "$host"`;
-  hostiqn=`/sbin/iscsiadm -m discovery --portal $host:3266 --type sendtargets | awk '{print $2}'`
-  /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -u
-  /sbin/iscsiadm -m node --targetname $hostiqn --portal $host:3266 -l
+  #hostpath=`ls /var/lib/iscsi/nodes/ | grep "$host"`;
+  echo /sbin/iscsiadm -m discovery --portal ${host}:3266 --type sendtargets \| awk '{print $2}'
+  hostiqn=`/sbin/iscsiadm -m discovery --portal ${host}:3266 --type sendtargets | awk '{print $2}'`
+  echo hostiqn=$hostieqn
+  /sbin/iscsiadm -m node --targetname $hostiqn --portal ${host}:3266 -u
+  /sbin/iscsiadm -m node --targetname $hostiqn --portal ${host}:3266 -l
   fi
 done
 sleep 2

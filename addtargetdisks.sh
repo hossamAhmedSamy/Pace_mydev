@@ -22,6 +22,15 @@ if [ $? -ne 0 ]; then
  targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals create $myip 3266
  change=1
 fi
+targetcli ls iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals | grep $myip &>/dev/null
+if [ $? -ne 0 ]; then
+ targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals ls | grep 3266 | awk -F'o-' '{print $2}' | awk -F':' '{print $1}'
+ oldip=`targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals ls | grep 3266 | awk -F'o-' '{print $2}' | awk -F':' '{print $1}'`
+ echo oldip=$oldip
+ targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals delete$olidp 3266
+ targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals create $myip 3266
+fi
+targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=true
 i=0;
 echo diskids="${diskids[@]}"
 for ddisk in "${disks[@]}"; do
@@ -64,6 +73,7 @@ for target in "${iscsitargets[@]}"; do
   change=1
  fi
 done
+targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=false
 targetcli saveconfig
 if [ $change -eq 1 ];
 then
