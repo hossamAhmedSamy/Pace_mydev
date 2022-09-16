@@ -28,8 +28,9 @@ def putzpool(leader,myhost):
  sty=str(result)[2:][:-3].replace('\\t','').split('\\n')
  cmdline='/bin/lsscsi -is'
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
- lsscsi=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x ]
- freepool=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x ]
+ drives=[x.split('/dev/')[1].split(' ')[0] for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'zd' not in x and '/sd' in x ]
+ lsscsi=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x and 'zd' not in x ]
+ freepool=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x and 'zd' not in x ]
  periods=get('Snapperiod','--prefix')
  raidtypes=['mirror','raidz','stripe']
  availraid=['mirror','raidz']
@@ -52,14 +53,14 @@ def putzpool(leader,myhost):
  lsnapshots=[]
  poolsstatus=[]
  x=list(map(chr,(range(97,123))))
- cmdline=['fdisk','-l']
- cdisks=subprocess.run(cmdline,stderr=subprocess.PIPE, stdout=subprocess.PIPE)
- devs=cdisks.stdout.decode().split('Disk /dev/')
- drives = []
- for dev in devs:
-  dsk = dev.split(':')[0]
-  if 'sd' in dsk:
-   drives.append(dsk) 
+ #cmdline=['fdisk','-l']
+ #cdisks=subprocess.run(cmdline,stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+ #devs=cdisks.stdout.decode().split('Disk /dev/')
+ #drives = []
+ #for dev in devs:
+ # dsk = dev.split(':')[0]
+ # if 'sd' in dsk:
+ #  drives.append(dsk) 
  cmdline=['/sbin/zfs','list','-t','snapshot,filesystem,volume','-o','name,creation,used,quota,usedbysnapshots,refcompressratio,prot:kind,available,referenced,status:mount,snap:type,partner:receiver,partner:sender','-H']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
