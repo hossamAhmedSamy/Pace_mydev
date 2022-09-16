@@ -3,7 +3,6 @@
 #exit
 ##########################
 cd /pace
-targetcli iscsi/iqn${iqn} set global auto_add_mapped_luns=true
 myhost=`hostname -s`;
 change=0
 #declare -a iscsitargets=(`cat /pacedata/iscsitargets | awk '{print $2}' `);
@@ -31,6 +30,7 @@ if [ $? -ne 0 ]; then
  targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals delete$olidp 3266
  targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals create $myip 3266
 fi
+targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=true
 i=0;
 echo diskids="${diskids[@]}"
 for ddisk in "${disks[@]}"; do
@@ -73,10 +73,10 @@ for target in "${iscsitargets[@]}"; do
   change=1
  fi
 done
+targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=false
 targetcli saveconfig
 if [ $change -eq 1 ];
 then
  targetcli saveconfig /pacedata/targetconfig
  sleep 1 
 fi
-targetcli iscsi/iqn${iqn} set global auto_add_mapped_luns=false

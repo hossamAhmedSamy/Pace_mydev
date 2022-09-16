@@ -5,9 +5,9 @@ ETCDCTL_API=3
 echo $$ > /var/run/zfsping.pid
 targetcli clearconfig True
 targetcli saveconfig
-targetcli restoreconfig /pacedata/targetconfig
-targetcli iscsi/ delete iqn.2016-03.com.${myhost}:data
-targetcli saveconfig
+#targetcli restoreconfig /pacedata/targetconfig
+#targetcli iscsi/ delete iqn.2016-03.com.${myhost}:data
+#targetcli saveconfig
 touch /pacedata/perfmon
 #/TopStor/logqueueheap.py &
 failddisks=''
