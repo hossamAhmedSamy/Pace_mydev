@@ -125,8 +125,8 @@ then
  ./runningetcdnodes.py $myip 2>/dev/null
  echo check syncinit 
  issync=`./etcdget.py sync initial`
- echo $issync | grep '\-1' 
- if [ $? -eq 0 ];
+ echo $issync | grep initial 
+ if [ $? -ne 0 ];
  then
   ./checksyncs.py syncinit
  fi
