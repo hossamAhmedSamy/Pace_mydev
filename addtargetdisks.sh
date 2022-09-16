@@ -3,6 +3,7 @@
 #exit
 ##########################
 cd /pace
+targetcli iscsi/iqn${iqn} set global auto_add_mapped_luns=true
 myhost=`hostname -s`;
 change=0
 #declare -a iscsitargets=(`cat /pacedata/iscsitargets | awk '{print $2}' `);
@@ -78,3 +79,4 @@ then
  targetcli saveconfig /pacedata/targetconfig
  sleep 1 
 fi
+targetcli iscsi/iqn${iqn} set global auto_add_mapped_luns=false
