@@ -8,7 +8,10 @@ from etcdgetpy import etcdget as get
 from etcddel import etcddel as dels 
 from os.path import getmtime
 
-def putzpool(leader,myhost):
+def putzpool(leader='ini',myhost='ini'):
+ if 'ini' in (leader or myhost):
+  leader=get('leader','--prefix')[0][0].split('/')[1]
+  myhost = hostname()
  perfmon = '0'
  #with open('/pacedata/perfmon','r') as f:
  # perfmon = f.readline() 
