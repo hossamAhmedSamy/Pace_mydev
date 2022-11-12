@@ -1,3 +1,4 @@
+#!/usr/bin/sh
 cd /pace
 iscsimappingorig='/pacedata/iscsimapping'
 iscsimapping='/pacedata/iscsimappinglisting'
@@ -6,7 +7,7 @@ rm -rf $iscsimapping 2>/dev/null
 myhost=`hostname`;
 iscsitargets='/pacedata/iscsitargets';
 #declare -a hosts=(`cat $iscsitargets |  awk '{print $2}'`);
-declare -a hosts=(`ETCDCTL_API=3 ./iscsiclients.py | grep target | awk -F'/' '{print $2}'`);
+declare -a hosts=(`docker exec etcdclient /pace/iscsiclients.py | grep target | awk -F'/' '{print $2}'`);
 
 declare -a alldevdisk=();
 declare -a hostline=();
@@ -55,7 +56,7 @@ for host in "${hosts[@]}"; do
     echo "$host" $devformatted $diskid $diskgiga $diskstatus >> $iscsimapping;
    fi
   done;
-  python3.6 diskstatus.py $host >> $iscsimapping;
+  ./diskstatus.py $host >> $iscsimapping;
   i=$((i+1));
  fi
 done

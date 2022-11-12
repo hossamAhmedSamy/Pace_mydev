@@ -1,21 +1,26 @@
-#!/bin/sh
-lsscsi=`lsscsi -is | wc -c `
-dmesg -n 1
-pgrep iscsid -a
-while [ $? -ne 0 ];
-do
- sleep 1
- pgrep iscsid -a
-done
+#!/usr/bin/sh
+cd /pace/
+lsscsi=0
+#dmesg -n 1
 
-pgrep etcd -a
-while [ $? -ne 0 ];
-do
- sleep 1
- pgrep etcd -a
-done
 #echo start >> /root/iscsiwatch
-sh /pace/iscsirefresh.sh
+while true;
+do
+	lsscsinew=`lsscsi -is | wc -c `
+	if [ $lsscsinew -ne $lsscsi ];
+	then
+		lsscsi=$lsscsinew
+		./iscsirefresh.sh
+		./listingtargets.sh
+		./addtargetdisks.sh
+		./iscsirefresh.sh
+		./listingtargets.sh
+	fi
+	echo sleeeeeeeeeeeeeping
+	sleep 2
+	echo cyclingggggggggggggg
+done
+exit
 #echo finished start of iscsirefresh  > /root/iscsiwatch
 sh /pace/listingtargets.sh
    
