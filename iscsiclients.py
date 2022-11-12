@@ -1,9 +1,11 @@
 #!/usr/bin/python3
-from etcdget import etcdget as get
-import socket
+from etcdgetpy import etcdget as get
+import sys
 
-myhost=get('myhost')[0]
-clients=get('ActivePartners','--prefix')
-if myhost in str(clients):
- for c in clients:
-  print('target/'+c[0].replace('ActivePartners/',''))
+def iscsiclients(mycluster):
+    clients=get(mycluster, 'ActivePartners','--prefix')
+    for c in clients:
+        print('target/'+c[0].replace('ActivePartners/',''))
+
+if __name__=='__main__':
+ iscsiclients(*sys.argv[1:])

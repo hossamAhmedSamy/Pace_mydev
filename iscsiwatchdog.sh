@@ -2,20 +2,29 @@
 cd /pace/
 lsscsi=0
 #dmesg -n 1
-
+rabbitip=`echo $@ | awk '{print $1}'`
 #echo start >> /root/iscsiwatch
 while true;
 do
 	lsscsinew=`lsscsi -is | wc -c `
+	cd /pace
 	if [ $lsscsinew -ne $lsscsi ];
 	then
 		lsscsi=$lsscsinew
 		./iscsirefresh.sh
-		./listingtargets.sh
-		./addtargetdisks.sh
+		./listingtargets.sh $rabbitip
+		./addtargetdisks.sh 
 		./iscsirefresh.sh
-		./listingtargets.sh
+		./listingtargets.sh $rabbitip
 	fi
+	cd /TopStor
+	pgrep topstorrecvrep
+	if [ $? -ne 0 ];
+	then
+ 		./topstorrecvreply.py $rabbitip & disown
+	fi
+
+
 	echo sleeeeeeeeeeeeeping
 	sleep 2
 	echo cyclingggggggggggggg

@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import pika, sys
 import actionreply
 
@@ -9,7 +9,7 @@ def callback(ch, method, properties, body):
 
 myip=sys.argv[1]
 cred = pika.PlainCredentials('rabbmezo', 'HIHIHI')
-param = pika.ConnectionParameters(myip,5672, '/', cred)
+param = pika.ConnectionParameters('rmq',5672, '/', cred)
 conn = pika.BlockingConnection(param)
 chann= conn.channel()
 chann.queue_declare(queue='recvreply')

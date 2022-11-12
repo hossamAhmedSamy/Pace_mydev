@@ -3,9 +3,9 @@ import subprocess,sys, os
 import json
 from time import sleep
 
-def etcddel(*args):
+def etcddel(etcd, *args):
  os.environ['ETCDCTL_API']= '3'
- endpoints='http://etcd:2379'
+ endpoints='http://'+etcd+':2379'
  if args[-1]=='--prefix':
   pointer=-1
  else:

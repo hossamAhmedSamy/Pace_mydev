@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess,sys, os
 import json
 from time import sleep
@@ -7,33 +7,14 @@ from checkleader import checkleader
 dev = 'enp0s8'
 os.environ['ETCDCTL_API']= '3'
 
-def etcdctl(ip,port,key,prefix):
- if port == '2379':
-  cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints=http://'+ip+':'+port,'get',key,prefix]
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
- else:
-  returncode= 2 
-  counter = 0
-  while returncode == 2 and counter < 10:
-   counter -= 1
-   endpoints=''
-   data=json.load(open('/pacedata/runningetcdnodes.txt'));
-   for x in data['members']:
-    endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
-   cmdline=['/bin/etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
-   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-   returncode = int(result.returncode)
-   if returncode == 2:
-    sleep(1)
+def etcdctl(etcd, key,prefix):
+ cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints=http://'+etcd+':2379','get',key,prefix]
+ cmdline=['etcdctl','--endpoints=http://'+etcd+':2379','get',key,prefix]
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  return result 
  
-def etcdget(key, prefix=''):
- cmdline=['pcs','resource','show','--full']
- result=subprocess.run(cmdline,stdout=subprocess.PIPE).stdout.decode()
- port = '2379' if 'mgmtip' in result else '2378'
- result = result.split('\n')
- ip = [ x for x in result if dev in x][0].split('ip=')[1].split(' ')[0]
- result = etcdctl(ip,port,key,prefix)
+def etcdget(etcd, key, prefix=''):
+ result = etcdctl(etcd, key,prefix)
  z=[]
  try:
   if(prefix =='--prefix'):
@@ -47,7 +28,7 @@ def etcdget(key, prefix=''):
    else:
     z.append((str(result.stdout).split(key)[1][2:][:-3]))
   else:
-   result = etcdctl(ip,port,key,'--prefix')
+   result = etcdctl(etcd,key,'--prefix')
    mylist=str(result.stdout)[2:][:-3].split('\\n')
    zipped=zip(mylist[0::2],mylist[1::2])
    for x in zipped:

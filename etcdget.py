@@ -7,14 +7,14 @@ from checkleader import checkleader
 dev = 'enp0s8'
 os.environ['ETCDCTL_API']= '3'
 
-def etcdctl(key,prefix):
- cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints=http://etcd:2379','get',key,prefix]
- cmdline=['etcdctl','--endpoints=http://etcd:2379','get',key,prefix]
+def etcdctl(etcd, key,prefix):
+ cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints=http://'+etcd+':2379','get',key,prefix]
+ cmdline=['etcdctl','--endpoints=http://'+etcd+':2379','get',key,prefix]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  return result 
  
-def etcdget(key, prefix=''):
- result = etcdctl(key,prefix)
+def etcdget(etcd, key, prefix=''):
+ result = etcdctl(etcd, key,prefix)
  z=[]
  try:
   if(prefix =='--prefix'):
@@ -30,7 +30,7 @@ def etcdget(key, prefix=''):
     z.append((str(result.stdout).split(key)[1][2:][:-3]))
    print(z[0])
   else:
-   result = etcdctl(ip,port,key,'--prefix')
+   result = etcdctl(etcd,key,'--prefix')
    mylist=str(result.stdout)[2:][:-3].split('\\n')
    zipped=zip(mylist[0::2],mylist[1::2])
    for x in zipped:

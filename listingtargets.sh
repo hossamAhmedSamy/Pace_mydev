@@ -4,10 +4,10 @@ iscsimappingorig='/pacedata/iscsimapping'
 iscsimapping='/pacedata/iscsimappinglisting'
 cp $iscsimappingorig ${iscsimapping}old
 rm -rf $iscsimapping 2>/dev/null
-myhost=`hostname`;
+etcdip=`echo $@ | awk '{print $1}'`
 iscsitargets='/pacedata/iscsitargets';
 #declare -a hosts=(`cat $iscsitargets |  awk '{print $2}'`);
-declare -a hosts=(`docker exec etcdclient /pace/iscsiclients.py | grep target | awk -F'/' '{print $2}'`);
+declare -a hosts=(`docker exec etcdclient /pace/iscsiclients.py $etcdip | grep target | awk -F'/' '{print $2}'`);
 
 declare -a alldevdisk=();
 declare -a hostline=();
@@ -28,7 +28,7 @@ for host in "${hosts[@]}"; do
     fi
    done < ${iscsimapping}old
   fi
-  cd /pacedata/pools/
+  cd /pacedata/pools/ 2>/dev/null
   rm -rf $( ls /pacedata/pools/* | grep "$host") &>/dev/null
   cd /pace
  else
