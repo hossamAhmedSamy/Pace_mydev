@@ -1,23 +1,20 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess,sys, os
 import json
 from time import sleep
+
+def etcdctl(key,prefix):
+ cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints=http://etcd:2379','put',key,prefix]
+ cmdline=['etcdctl','--endpoints=http://etcd:2379','put',key,prefix]
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ return result 
+
+
+
+
 def etcdput(key,val):
  os.environ['ETCDCTL_API']= '3'
- err = 2
- while err == 2:
-  endpoints=''
-  data=json.load(open('/pacedata/runningetcdnodes.txt'));
-  for x in data['members']:
-   endpoints=endpoints+str(x['clientURLs'])[2:][:-2]
-  cmdline=['/usr/bin/etcdctl','--user=root:YN-Password_123','-w','json','--endpoints='+endpoints,'put',key,val]
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-  err = result.returncode
-  if err == 2 :
-    #from etcdget import etcdget as get
-    #get('any','any')
-    sleep(1)
- #print(result)
+ etcdctl(key,val)
  return 1 
 
 
