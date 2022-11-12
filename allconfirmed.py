@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess
 from ast import literal_eval as mtuple
 import socket

@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess, socket, binascii
 from etcdput import etcdput as put
 from etcdget import etcdget as get 

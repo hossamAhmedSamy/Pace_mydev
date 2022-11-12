@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess, socket
 from etcdput import etcdput as put
 myhost=socket.gethostname()

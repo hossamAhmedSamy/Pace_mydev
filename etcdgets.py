@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess,sys, os
 import json
 from time import sleep
@@ -24,7 +24,7 @@ while err == 2:
 ilist=[]
 try:
  if(prefix !=''):
-  mylist=str(result.stdout)[2:][:-3].split('\\n')
+  mylist=str(result.stdout.decode()).replace('\n\n','\n').split('\n')
   zipped=zip(mylist[0::2],mylist[1::2])
   for x in zipped:
    ilist.append(str(x).replace('run/','').replace('(','[').replace(')',']'))

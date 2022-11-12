@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess,sys, os
 from etcdget import etcdget as get
 from etcdgethostrunning import etcdget as fastget

@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess, socket, sys
 from logqueue import queuethis
 from levelthis import levelthis

@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 from etcdgetpy import etcdget as get
 from logqueue import queuethis
 from etcdput import etcdput as put 

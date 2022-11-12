@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess, socket
 from os import listdir
 from logqueue import queuethis

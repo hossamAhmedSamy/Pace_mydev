@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import sys
 from socket import gethostname as hostname
 from logqueue import queuethis

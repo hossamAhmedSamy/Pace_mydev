@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 from checkleader import checkleader
 from remknown import remknown
 from poolall import getall as getall
