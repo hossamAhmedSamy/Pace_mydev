@@ -18,7 +18,7 @@ def etcddel(etcd, *args):
   cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',args[0]]
   cmdline=['etcdctl','--endpoints='+endpoints,'get',args[0]]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
- mylist=str(result.stdout)[2:][:-3].split('\\n')
+ mylist=str(result.stdout.decode()).replace('\n\n','\n').split('\n')
  zipped=zip(mylist[0::2],mylist[1::2])
  if mylist==['']:
   print('-1')
