@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess,sys, logmsg
 from logqueue import queuethis
 from etcddel import etcddel as etcddel

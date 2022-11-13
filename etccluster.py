@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import socket,sys
 cluster_state='new'
 token=''

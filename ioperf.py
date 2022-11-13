@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess
 from time import time
 from etcdput import etcdput as put 

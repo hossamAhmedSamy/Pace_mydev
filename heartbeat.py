@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 
 import sys, os, subprocess
 from etcdgetpy import etcdget as get

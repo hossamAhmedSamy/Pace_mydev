@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import sys, subprocess, logmsg
 from socket import gethostname as hostname
 from etcddel import etcddel as etcddel

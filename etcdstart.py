@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 # either to pass ips in separate comma then names in separate comma or to leave blank to use the internal hosts ip and name of this server
 import subprocess,socket,sys
 from time import sleep

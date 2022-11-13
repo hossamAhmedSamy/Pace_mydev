@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess,sys, datetime
 from etcdget import etcdget as get
 from etcdput import etcdput as put 

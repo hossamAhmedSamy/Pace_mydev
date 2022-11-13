@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import sys,subprocess
 import socket
 myhost=socket.gethostname()

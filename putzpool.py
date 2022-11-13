@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import subprocess, json,sys
 from socket import gethostname as hostname
 from os import listdir

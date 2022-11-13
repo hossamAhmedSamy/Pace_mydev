@@ -1,4 +1,4 @@
-#!/bin/python3.6
+#!/usr/bin/python3
 import sys, datetime
 from time import time
 from etcdget import etcdget as get
