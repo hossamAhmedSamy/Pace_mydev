@@ -4,6 +4,7 @@ lsscsi=0
 #dmesg -n 1
 rabbitip=`echo $@ | awk '{print $1}'`
 #echo start >> /root/iscsiwatch
+targetn=0
 while true;
 do
 	lsscsinew=`lsscsi -is | wc -c `
@@ -11,8 +12,6 @@ do
 	if [ $lsscsinew -ne $lsscsi ];
 	then
 		lsscsi=$lsscsinew
-		./iscsirefresh.sh
-		./listingtargets.sh $rabbitip
 		./addtargetdisks.sh 
 		./iscsirefresh.sh
 		./listingtargets.sh $rabbitip
@@ -23,7 +22,13 @@ do
 	then
  		./topstorrecvreply.py $rabbitip & disown
 	fi
+	targetnewn=`targetcli ls | wc -c`
+	if [ $targetnewn -ne $targetn ];
+	then
+		targetn=$targetnewn
+		lsscsi=0
 
+	fi
 
 	echo sleeeeeeeeeeeeeping
 	sleep 2
