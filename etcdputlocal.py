@@ -3,16 +3,20 @@ import subprocess,sys, os
 import json
 from time import sleep
 
-def etcdput(*args):
- os.environ['ETCDCTL_API']= '3'
- myip=args[0]
- key=args[1]
- val=args[2]
- endpoints=''
- endpoints='http://'+myip+':2378'
- cmdline=['/usr/bin/etcdctl','--user=root:YN-Password_123','-w','json','--endpoints='+endpoints,'put',key,val]
+def etcdctl(key,prefix):
+ cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints=http://etcd:2379','put',key,prefix]
+ cmdline=['etcdctl','--endpoints=http://etcd:2379','put',key,prefix]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ return result 
+
+
+
+
+def etcdput(etcd, key,val):
+ os.environ['ETCDCTL_API']= '3'
+ etcdctl(etcd, key,val)
+ return 1 
+
 
 if __name__=='__main__':
  etcdput(*sys.argv[1:])
-
