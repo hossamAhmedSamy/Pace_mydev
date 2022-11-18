@@ -12,7 +12,6 @@ from etcdgetlocalpy import etcdget as getlocal
 from time import time as stamp
 from time import sleep
 from etcdput import etcdput as put 
-from socket import gethostname as hostname
 from addknown import addknown
 from putzpool import putzpool
 from etcdputlocal import etcdput as putlocal 
@@ -28,7 +27,7 @@ from concurrent.futures import ProcessPoolExecutor
 from heartbeat import heartbeat
 
 os.environ['ETCDCTL_API']= '3'
-myhost = hostname()
+myhost = get('clusternode')[0] 
 leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
 leader = leaderinfo[0].split('/')[1]
 leaderip = leaderinfo[1]

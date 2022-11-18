@@ -12,9 +12,9 @@ def etcdctl(etcd,key,prefix):
 
 
 
-def etcdput(key,val):
+def etcdput(etcd, key,val):
  os.environ['ETCDCTL_API']= '3'
- etcdctl(key,val)
+ etcdctl(etcd, key,val)
  return 1 
 
 
