@@ -2,9 +2,9 @@
 import subprocess, sys
 from logqueue import queuethis
 from etcdgetpy import etcdget as get
-from etcdput import etcdput as put 
 from broadcasttolocal import broadcasttolocal
-from etcdgetlocalpy import etcdget as getlocal 
+from etcdgetpy import etcdget as getlocal 
+from etcdput import etcdput as put 
 from Evacuatelocal import setall
 from etcddel import etcddel as dels
 from usersyncall import usersyncall
