@@ -8,23 +8,10 @@ from etcdgetpy import etcdget as get
 from etcddel import etcddel as dels 
 from os.path import getmtime
 
-def putzpool(leader='ini',myhost='ini'):
- if 'ini' in (leader or myhost):
-  leader=get('leader','--prefix')[0][0].split('/')[1]
-  myhost = hostname()
+def putzpool(leader, leaderip, myhost, myip):
  perfmon = '0'
- #with open('/pacedata/perfmon','r') as f:
- # perfmon = f.readline() 
- #if '1' in perfmon:
- # queuethis('putzpool.py','start','system')
- #x=subprocess.check_output(['pgrep','-c','putzpool'])
- #x=str(x).replace("b'","").replace("'","").split('\\n')
- #if(x[0]!= '1' ):
- # print('process still running',x[0])
- #exit()
-
  sitechange=0
- readyhosts=get('ready','--prefix')
+ readyhosts=get(myip, 'ready','--prefix')
  knownpools=[f for f in listdir('/TopStordata/') if 'pdhcp' in f and 'pree' not in f ]
  cmdline='/sbin/zpool status'
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
@@ -34,7 +21,7 @@ def putzpool(leader='ini',myhost='ini'):
  drives=[x.split('/dev/')[1].split(' ')[0] for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'zd' not in x and '/sd' in x ]
  lsscsi=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x and 'zd' not in x ]
  freepool=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x and 'zd' not in x ]
- periods=get('Snapperiod','--prefix')
+ periods=get(myip, 'Snapperiod','--prefix')
  raidtypes=['mirror','raidz','stripe']
  availraid=['mirror','raidz']
  raid2=['log','cache','spare']
@@ -233,7 +220,7 @@ def putzpool(leader='ini',myhost='ini'):
     lhosts.add('')
  if len(phosts)==0:
     phosts.add('')
- put('hosts/'+myhost+'/current',json.dumps(zpool))
+ put(leaderip, 'hosts/'+myhost+'/current',json.dumps(zpool))
  for disk in ldisks:
   if disk['changeop']=='free':
    lfreedisks.append(disk)
@@ -241,26 +228,26 @@ def putzpool(leader='ini',myhost='ini'):
    lsparedisks.append(disk)
   elif disk['changeop'] != 'ONLINE': 
    ldefdisks.append(disk)
- put('lists/'+myhost,json.dumps(lists))
- xall=get('pools/','--prefix')
+ put(leaderip, 'lists/'+myhost,json.dumps(lists))
+ xall=get(myip, 'pools/','--prefix')
  x=[y for y in xall if myhost in str(y)]
  xnotfound=[y for y in x if y[0].replace('pools/','') not in str(poolsstatus)]
  xnew=[y for y in poolsstatus if y[0].replace('pools/','') not in str(x)]
  for y in xnotfound:
   if y[0] not in xall:
-   dels(y[0].replace('pools/',''),'--prefix')
+   dels(leaderip, y[0].replace('pools/',''),'--prefix')
   else:
-   dels(y[0])
+   dels(leaderip, y[0])
  for y in xnew:
-  put(y[0],y[1])
+  putleaderip, (y[0],y[1])
  if '1' in perfmon: 
   queuethis('putzpool.py','stop','system')
    
 if __name__=='__main__':
  if len(sys.argv) > 1:
-  leader = sys.argv[1]
-  myhost = sys.argv[2]
- else:
-  leader=get('leader','--prefix')[0][0].split('/')[1]
-  myhost = hostname()
- putzpool(leader, myhost)
+  myip = sys.argv[1]
+  
+  leader=get(myip, 'leader')[0]
+  leaderip = get(myip, 'leaderip')[0]
+  myhost = get(myip, 'clusternode')[0]
+ putzpool(leader, leaderip,  myhost, myip)

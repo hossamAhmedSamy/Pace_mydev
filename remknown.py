@@ -2,17 +2,19 @@
 import subprocess,sys, logmsg
 from logqueue import queuethis
 from etcddel import etcddel as etcddel
-from etcdgetpy import etcdget as get
-from etcdgetlocalpy import etcdget as getlocal
+from etcdgetpy import etcdget as getp
+from etcdgetlocalpy import etcdget as get
 from time import time as stamp
-from etcdput import etcdput as put 
-from socket import gethostname as hostname
+from etcdputlocal import etcdput as put 
+from etcdput import etcdput as putp
 
 stamp = str(stamp())
+leaderip = get('leaderip')[0]
 
 def dosync(leader,*args):
-  put(*args)
-  put(args[0]+'/'+leader,args[1])
+  global leaderip
+  putp(leaderip, *args)
+  putp(leaderip, args[0]+'/'+leader,args[1])
   return 
 
 def remknown(leader,myhost):
@@ -36,12 +38,12 @@ def remknown(leader,myhost):
   
  if str(nextone) != '-1':
   if str(nextone[1]).split('/')[0] not in  str(known):
-   etcddel('nextlead/er')
+   etcddel(leaderip, 'nextlead/er')
    nextone=[]
  if known != []:
   for kno in known:
    kn=kno 
-   heart=getlocal(kn[1],'local','--prefix')
+   heart=getp(kn[1],'local','--prefix')
    if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in kn[1]):
     thelost = kn[0].split('/')[1]
     etcddel(kn[0])
@@ -96,5 +98,5 @@ if __name__=='__main__':
   myhost = sys.argv[2]
  else:
   leader=get('leader','--prefix')[0][0].split('/')[1]
-  myhost = hostname()
+  myhost = get('clusternode')[0] 
  remknown(leader, myhost)
