@@ -4,7 +4,8 @@ import actionreply
 
 
 def callback(ch, method, properties, body):
- actionreply.do(str(body))
+ global myip
+ actionreply.do(myip, str(body))
 
 
 myip=sys.argv[1]

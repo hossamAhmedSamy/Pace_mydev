@@ -22,13 +22,11 @@ def etcdget(key, prefix=''):
    zipped=zip(mylist[0::2],mylist[1::2])
    for x in zipped:
     z.append(x) 
-    print(x)
   elif(prefix == ''):
    if len(str(result.stdout).split(key)) > 2 :	
     z.append(key.join(str(result.stdout).split(key)[1:])[2:][:-3])
    else:
     z.append((str(result.stdout).split(key)[1][2:][:-3]))
-   print(z[0])
   else:
    result = etcdctl(key,'--prefix')
    mylist=str(result.stdout.decode()).replace('\n\n','\n').split('\n')
@@ -36,13 +34,10 @@ def etcdget(key, prefix=''):
    for x in zipped:
     if prefix in str(x):
      z.append(x)
-     print(x)
    if(len(z) == 0):
      z.append(-1)
-     print('-1')
  except:
   z.append(-1)
-  print('-1')
  return z
 if __name__=='__main__':
  etcdget(*sys.argv[1:])

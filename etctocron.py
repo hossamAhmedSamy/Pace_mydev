@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import subprocess,sys, datetime
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
 from etcddel import etcddel as dels 
 

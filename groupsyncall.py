@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import subprocess,sys
-from etcdget import etcdget as get
-from etcdgetlocal import etcdget as getlocal
+from etcdgetpy import etcdget as get
+from etcdgetlocalpy import etcdget as getlocal
 from etcdput import etcdput as put
 from broadcasttolocal import broadcasttolocal
 from ast import literal_eval as mtuple

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import subprocess,sys
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 import json
 enpdev='enp0s8'
 def cleardataip(*args):

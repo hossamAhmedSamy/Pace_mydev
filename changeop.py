@@ -3,7 +3,7 @@ import subprocess,sys
 import json
 from logqueue import queuethis
 from ast import literal_eval as mtuple
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
 from poolall import getall as getall
 from poolall import putall as putall

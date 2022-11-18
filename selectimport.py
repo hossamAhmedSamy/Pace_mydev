@@ -1,14 +1,15 @@
 #!/usr/bin/python3
-from etcdgetpy import etcdget as get
+from etcdgetlocalpy import etcdget as get
+from etcdgetpy import etcdget as getp
 from logqueue import queuethis
 from etcdput import etcdput as put 
 from etcddel import etcddel as deli 
-import socket, sys, subprocess
-from broadcast import broadcast as broadcast 
 from sendhost import sendhost
 from time import time as stamp
 from ast import literal_eval as mtuple
 #from zpooltoimport import zpooltoimport as importables
+
+leaderip  = get('leaderip')[0]
 
 def selecthost(minhost,hostname,hostpools):
 	if len(hostpools) < minhost[1]:
@@ -16,6 +17,7 @@ def selecthost(minhost,hostname,hostpools):
 	return minhost
 
 def selectimport(myhost, allpools, leader, *arg):
+    global leaderip
 	knowns=get('ready','--prefix')
 	knowns = [x[0].split('/')[1] for x in knowns ]
 	for poolpair in allpools:
@@ -34,7 +36,7 @@ def selectimport(myhost, allpools, leader, *arg):
 		#	deli('poolsnxt',nhost)
 		#	put('sync/poolsnxt/Del_poolsnxt_'+nhost+'/request','poolsnxt_'+str(stamp))
 		#	put('sync/poolsnxt/Del_poolsnxt_'+nhost+'/request/'+leader,'poolsnxt_'+str(stamp))
-		hosts=get('hosts','/current')
+		hosts=getp(leaderip, 'hosts','/current')
 		if len(hosts) < 2:
 			continue   # just to clean the poolsnxt or otherwise it would be 'return'
 		minhost = ('',float('inf'))
@@ -46,15 +48,15 @@ def selectimport(myhost, allpools, leader, *arg):
 			hostpools=mtuple(host[1])
 			minhost = selecthost(minhost,hostname,hostpools)
 			print('minhost',minhost)
-		put('poolsnxt/'+pool,minhost[0])
-		put('sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request','poolsnxt_'+stampit)
-		put('sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request/'+leader,'poolsnxt_'+stampit)
+		put(leaderip, 'poolsnxt/'+pool,minhost[0])
+		put(leaderip, 'sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request','poolsnxt_'+stampit)
+		put(leaderip, 'sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request/'+leader,'poolsnxt_'+stampit)
 	return
 
  
 
 if __name__=='__main__':
-	myhost=socket.gethostname()
+	myhost = get('clusternode')[0]
 	leader=get('leader','--prefix')[0][0].replace('leader/','')
 	allpools=get('pools/','--prefix')
 	selectimport(myhost,allpools,leader, *sys.argv[1:])

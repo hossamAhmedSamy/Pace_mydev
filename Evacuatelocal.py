@@ -4,8 +4,8 @@ from logqueue import queuethis
 from etcdput import etcdput as put 
 from time import sleep
 from etcdputlocal import etcdput as putlocal
-from etcdget import etcdget as get 
-from etcdgetlocal import etcdget as getlocal
+from etcdgetpy import etcdget as get 
+from etcdgetlocalpy import etcdget as getlocal
 from etcddel import etcddel as deli 
 from etcddellocal import etcddel as delilocal 
 from socket import gethostname as hostname

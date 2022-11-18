@@ -72,7 +72,7 @@ if __name__=='__main__':
   leader = sys.argv[1]
   myhost = sys.argv[2]
  else:
-  leader=get('leader','--prefix')[0][0].split('/')[1]
+  leader=get('leader')[1]
   myhost = get('clusternode') 
 
  #cmdline='cat /pacedata/perfmon'

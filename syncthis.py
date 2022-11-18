@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import subprocess,sys, datetime
 import json
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 from etcdputlocal import etcdput as putlocal 
 from etcddellocal import etcddel as deli 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys, subprocess, socket
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 
 myhost=socket.gethostname()
 leader=get('leader','--prefix')

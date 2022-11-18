@@ -8,7 +8,7 @@ def checkleader(key, prefix=''):
  cmdline='./getmyip.sh'
  myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
  print(myip)
- from etcdgetlocal import etcdget as getlocal
+ from etcdgetlocalpy import etcdget as getlocal
  leaderinfo = getlocal(myip,'leader','--prefix')[0]
  leader = leaderinfo[0].replace('leader/','')
  leaderip = leaderinfo[1]
@@ -33,7 +33,7 @@ def checkleader(key, prefix=''):
   else:
    return result 
  
- from etcdgetlocal import etcdget as getlocal
+ from etcdgetlocalpy import etcdget as getlocal
  cmdline='./getmyip.sh'
  myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
  leaderinfo = getlocal(myip,'leader','--prefix')[0]

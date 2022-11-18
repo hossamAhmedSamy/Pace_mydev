@@ -29,7 +29,7 @@ do
 		lsscsi=0
 
 	fi
-
+        /pace/putzpool.py
 	echo sleeeeeeeeeeeeeping
 	sleep 2
 	echo cyclingggggggggggggg
