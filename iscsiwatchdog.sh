@@ -21,7 +21,7 @@ do
 		./addtargetdisks.sh $rabbitip
 		./iscsirefresh.sh
 		./listingtargets.sh $rabbitip
-		/TopStor/etcdput.py $rabbitip dirty 0
+		/TopStor/etcdput.py $rabbitip dirty/pool 0
 	fi
 	cd /TopStor
 	pgrep topstorrecvrep

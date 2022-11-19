@@ -28,7 +28,7 @@ from heartbeat import heartbeat
 
 os.environ['ETCDCTL_API']= '3'
 ctask = 1
- 
+dirtydic = { 'pool': 0, 'volume': 0 } 
 def heartbeatpls():
  global leader, myhost
  try:
@@ -101,11 +101,13 @@ def selectimportproc():
    
 
 def zpooltoimportproc():
- global leader, myhost, leaderip, myhostip, etcdip, dirty
- if dirty >= 10:
+ global leader, myhost, leaderip, myhostip, etcdip, dirtydic
+ dirty = int(dirtydic['pool'])
+ if int(dirtydic['pool']) >= 10:
   return
  dirty += 1 
- put(etcdip, 'dirty', str(dirty))
+ put(etcdip, 'dirty/pool', str(dirty))
+ dirtydic['pool'] = dirty
  try:
   zpooltoimport(leader, leaderip, myhost, myhostip, etcdip)
  except Exception as e:
@@ -117,10 +119,12 @@ def zpooltoimportproc():
  
 def volumecheckproc():
  global leader, myhost, leaderip, myhostip, etcdip, dirty
- if dirty < 10 or dirty > 15 :
+ dirty = int(dirtydic['volume'])
+ if dirty > 2  :
   return
  dirty += 1 
- put(etcdip, 'dirty', str(dirty))
+ put(etcdip, 'dirty/volume', str(dirty))
+ dirtydic['volume'] = dirty
  try:
   etcds = get(etcdip, 'volumes','--prefix')
   replis = get(etcdip, 'replivol','--prefix')
@@ -264,6 +268,11 @@ if __name__=='__main__':
  remknown('init', leader, leaderip, myhost, myhostip, etcdip)
  zpooltoimport('init', leader, leaderip, myhost, myhostip, etcdip)
  volumecheck('init', leader, leaderip, myhost, myhostip, etcdip)
+ dirty = get(etcdip, 'dirty','--prefix')
+ for dic in dirtydic:
+  if dic not in str(dirty):
+   print('dic',dic)
+   put(etcdip, 'dirty/'+dic,'1000')
  print('etcd',etcdip)
  #if myhost != leader:
  # getready = str(get('ready','--prefix'))
@@ -299,7 +308,9 @@ if __name__=='__main__':
     for i in range(len(loopers)*2):
      args = loopers[i % len(loopers)]
      res = e.submit(CommonTask,args)
-     dirty = int(get(etcdip, 'dirty')[0])
+     dirty = get(etcdip, 'dirty','--prefix')
+     for dirt in dirty:
+      dirtydic[dirt[0].split('/')[1]] = dirt[1]
      print('---------dirty------',dirty)
     sleep(2)
  exit()

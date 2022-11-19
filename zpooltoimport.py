@@ -54,6 +54,7 @@ def zpooltoimport(*args):
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    if pool in result:
     put(leaderip, 'pools/'+pool,myhost)
+    put(etcdip, 'dirty/volumes','0')
     dosync(leader,'pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+stamp)
     #cmdline= 'systemctl restart zfs-zed  '
     #result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
