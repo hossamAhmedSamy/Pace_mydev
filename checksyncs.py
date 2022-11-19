@@ -12,11 +12,11 @@ from etcdsync import synckeys
 from time import time as timestamp
 from etctocron import etctocron 
 
-syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
+syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'Partnr', 'Snappreiod', 'running','volumes', 'ipaddr' ]
-etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
+wholeetcd = [ 'Partnr', 'Snappreiod', 'running','volumes' ]
+etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ready','known','alias', 'hostipsubnet', 'leader','allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with bash script: sync/Operation/commandline_oper1_oper2_../request Operation_stamp###########
@@ -59,8 +59,9 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
     if sync in 'group':
      print('syncing all groups')
      groupsyncall(leader,leaderip,myhost, myhostip)
-    if sync in ['tz','ntp','gw','dns']: 
+    if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns']: 
      cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
+     print('cmd',cmdline)
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
  if sync in syncs:
   if sync == 'Partnr':
@@ -135,15 +136,12 @@ def syncrequest(leader,leaderip,myhost, myhostip):
        print('opers',opers)
        globals()[opers[1]](*opers[2:])
       else:
-<<<<<<< HEAD
        print('opers',opers)
-       if sync in ['tz','ntp','gw','dns']: 
+       if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns']: 
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
        else:
         cmdline='/TopStor/'+opers[0]+" "+" ".join([leader, leaderip, myhost, myhostip]+opers[1:])
-=======
-       cmdline='/TopStor/'+opers[0]+' '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+opers[1]
->>>>>>> 679e85401089b39893c7e2aed9d1f2b474d85551
+       print('cmd',cmdline)
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in special1 and myhost != leader :
       cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
@@ -153,10 +151,6 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
-<<<<<<< HEAD
-=======
-   
->>>>>>> 679e85401089b39893c7e2aed9d1f2b474d85551
    put(leaderip,syncleft+'/'+myhost, stamp)
    if myhost != leader:
     put(myhostip, syncleft+'/'+myhost, stamp)
@@ -175,13 +169,9 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     dels(myhostip, 'sync', done[1])
     deleted.add(done[1])
  else:
-<<<<<<< HEAD
   print('hihihihi')
   actives = len(get(myhostip,'ActivePartners','--prefix')) + 1
   print('nononon')
-=======
-  actives = len(get(leaderip,'ActivePartners','--prefix')) + 1
->>>>>>> 679e85401089b39893c7e2aed9d1f2b474d85551
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
   toprunedic = dict()
   for prune in toprune:
@@ -206,13 +196,7 @@ if __name__=='__main__':
   leaderip = sys.argv[3]
   myhost = sys.argv[4]
   myhostip = sys.argv[5]
-<<<<<<< HEAD
   if myhost == leader:
    myhostip = leaderip
  
  synctypes[sys.argv[1]](leader,leaderip, myhost,myhostip)
-=======
- myip = initchecks(leader, leaderip, myhost, myhostip)
- print('myip', myip)
- synctypes[sys.argv[1]](leader,leaderip, myhost,myip)
->>>>>>> 679e85401089b39893c7e2aed9d1f2b474d85551

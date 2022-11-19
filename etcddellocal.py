@@ -38,6 +38,8 @@ def etcddel(*args):
  count=0
  for key in todel:
   err = 2
+  if len(str(key)) < 3:
+      continue
   cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'del',key]
   cmdline=['etcdctl','--endpoints='+endpoints,'del',key]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
