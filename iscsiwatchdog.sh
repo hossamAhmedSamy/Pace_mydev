@@ -40,7 +40,7 @@ do
 	then
 		stamp=`date +%s`
 		stamp=$((stamp+300))
-		nmcli conn mod cmynode +ipv4.addresses 10.11.11.254
+		nmcli conn mod cmynode +ipv4.addresses 10.11.11.254/24
 		nmcli conn up cmynode
 		./httpdflask.sh $rabbitip yes
 		initip=2
