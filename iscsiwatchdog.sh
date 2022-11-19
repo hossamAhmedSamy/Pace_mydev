@@ -12,7 +12,7 @@ do
 	if [ $lsscsinew -ne $lsscsi ];
 	then
 		lsscsi=$lsscsinew
-		./addtargetdisks.sh 
+		./addtargetdisks.sh $rabbitip
 		./iscsirefresh.sh
 		./listingtargets.sh $rabbitip
 	fi
@@ -29,7 +29,7 @@ do
 		lsscsi=0
 
 	fi
-        /pace/putzpool.py
+        /pace/putzpool.py $rabbitip
 	echo sleeeeeeeeeeeeeping
 	sleep 2
 	echo cyclingggggggggggggg
