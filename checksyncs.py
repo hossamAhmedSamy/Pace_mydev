@@ -12,7 +12,7 @@ from etcdsync import synckeys
 from time import time as timestamp
 from etctocron import etctocron 
 
-syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns' ]
+syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'Partnr', 'Snappreiod', 'running','volumes' ]
@@ -140,7 +140,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
        if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns']: 
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
        else:
-        cmdline='/TopStor/'+opers[0]+" "+" ".join([leader, leaderip, myhost, myhostip]+opers[1:])
+        cmdline='/TopStor/'+opers[0]+" "+" ".join(opers)
        print('cmd',cmdline)
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in special1 and myhost != leader :
