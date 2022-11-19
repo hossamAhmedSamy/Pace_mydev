@@ -2,8 +2,6 @@
 import subprocess, sys
 from logqueue import queuethis
 from etcdgetpy import etcdget as get
-from broadcasttolocal import broadcasttolocal
-from etcdgetpy import etcdget as getlocal 
 from etcdput import etcdput as put 
 from Evacuatelocal import setall
 from etcddel import etcddel as dels
@@ -28,6 +26,12 @@ syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### synced template for initial sync for known nodes : sync/Operation/initial/node Operation_stamp #######################
 ##### delete request of same sync if ActivePartners qty reached #######################
 
+def initchecks(leader, leaderip, myhost, myhostip):
+    if leader == myhost:
+        return leaderip
+    else:
+        return myhostip
+
 def checksync(hostip='request',*args):
  synctypes[hostip](*args)
 
@@ -35,8 +39,8 @@ def syncinit(leader,leaderip, myhost,myhostip):
  global syncs, syncanitem, forReceivers, etcdonly, allsyncs
  stamp = int(timestamp() + 3600)
  for sync in syncs:
-  put(leaderip,'sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
-  put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+'_'+str(stamp)) 
+  put(leaderip,'sync/'+sync+'/'+'initial/request',sync+str(stamp)) 
+  put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+str(stamp)) 
  return
 
 def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
@@ -131,7 +135,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
        print('opers',opers)
        globals()[opers[1]](*opers[2:])
       else:
-       cmdline='/TopStor/pump.sh '+opers[0]+' '+opers[1]
+       cmdline='/TopStor/'+opers[0]+' '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+opers[1]
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in special1 and myhost != leader :
       cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
@@ -141,12 +145,13 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
-   put(leader,syncleft+'/'+myhost, stamp)
+   
+   put(leaderip,syncleft+'/'+myhost, stamp)
    if myhost != leader:
     put(myhostip, syncleft+'/'+myhost, stamp)
     put(myhostip, syncleft, stamp)
  if myhost != leader:
-  dones = get(leader,'sync','/request/dhcp')
+  dones = get(leaderip,'sync','/request/dhcp')
   otherdones = [ x for x in dones if '/request/dhcp' in str(x) ] 
   localdones = get(myhostip, 'sync', '--prefix')
   for done in otherdones:
@@ -159,7 +164,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     dels(myhostip, 'sync', done[1])
     deleted.add(done[1])
  else:
-  actives = len(get(leader,'ActivePartners','--prefix')) + 1
+  actives = len(get(leaderip,'ActivePartners','--prefix')) + 1
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
   toprunedic = dict()
   for prune in toprune:
@@ -170,7 +175,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     toprunedic[prune[1]].append(prune[0])
   for prune in toprunedic:
    if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
-    dels(leader,'sync',prune) 
+    dels(leaderip,'sync',prune) 
     print(prune,toprunedic[prune])
   
  return     
@@ -184,5 +189,6 @@ if __name__=='__main__':
   leaderip = sys.argv[3]
   myhost = sys.argv[4]
   myhostip = sys.argv[5]
- 
- synctypes[sys.argv[1]](leader,leaderip, myhost,myhostip)
+ myip = initchecks(leader, leaderip, myhost, myhostip)
+ print('myip', myip)
+ synctypes[sys.argv[1]](leader,leaderip, myhost,myip)

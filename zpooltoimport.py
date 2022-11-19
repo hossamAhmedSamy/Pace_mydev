@@ -21,7 +21,8 @@ def selecthost(minhost,hostname,hostpools):
  return minhost
 
 
-def dosync(leader,*args):
+def dosync(leader,sync, *args):
+  dels(leaderip, sync)  
   put(leaderip, *args)
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
@@ -44,7 +45,7 @@ def zpooltoimport(leader, myhost):
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    if pool in result:
     put(leaderip, 'pools/'+pool,myhost)
-    dosync(leader,'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+stamp)
+    dosync(leader,'pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+stamp)
     #cmdline= 'systemctl restart zfs-zed  '
     #result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    dels(leaderip, 'poolsnxt',pool)
