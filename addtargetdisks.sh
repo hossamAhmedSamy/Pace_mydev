@@ -3,7 +3,9 @@
 #exit
 ##########################
 cd /pace
+rabbitip=`echo $@ | awk '{print $1}'`
 myhost=`hostname -s`;
+actives=`/pace/etcdget.py $rabbitip Active --prefix`
 change=0
 #declare -a iscsitargets=(`cat /pacedata/iscsitargets | awk '{print $2}' `);
 mycluster=`nmcli conn show mycluster | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
@@ -55,7 +57,7 @@ for ddisk in "${disks[@]}"; do
   tpgs=(`targetcli ls /iscsi | grep iqn | grep TPG | grep ':t1' | awk -F'iqn' '{print $2}' | awk '{print $1}'`)
   for iqn in "${tpgs[@]}"; do
    echo iqn= $iqn devdisk=$devdisk-${myhost}
-   targetcli iscsi/iqn${iqn}/tpg1/luns/ create /backstores/block/${devdisk}-${myhost}  
+   ################################targetcli iscsi/iqn${iqn}/tpg1/luns/ create /backstores/block/${devdisk}-${myhost}  
    change=1
   done
  fi
@@ -63,7 +65,7 @@ done;
 for target in "${iscsitargets[@]}"; do
  echo $mappedhosts | grep $target &>/dev/null
  if [ $? -ne 0 ]; then
-  targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/acls/ create iqn.1994-05.com.redhat:$target
+  ############################targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/acls/ create iqn.1994-05.com.redhat:$target
   
   #targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1 demo_mode_write_protect=0 
   #targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1 generate_node_acls=1 
@@ -74,7 +76,34 @@ for target in "${iscsitargets[@]}"; do
   change=1
  fi
 done
+targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=true
+tpgs=(`targetcli ls /iscsi | grep iqn | grep TPG | grep ':t1' | awk -F'iqn' '{print $2}' | awk '{print $1}'`)
+for iqn in "${tpgs[@]}"; do
+	node=`echo $iqn | awk -F'.' '{print $4}' | awk -F':' '{print $1}'`
+	echo $actives | grep $node
+	if [ $? -ne 0 ];
+	then
+		targetcli /iscsi delete iqn$iqn
+	fi
+done	
+for ddisk in "${disks[@]}"; do
+	for iqn in "${tpgs[@]}"; do
+ 		devdisk=`echo $ddisk | awk '{print $1}'`
+ 		targetcli iscsi/iqn${iqn}/tpg1/luns/ ls | grep  ${devdisk}-${myhost}  
+		if [ $? -eq 0 ];
+		then
+			echo iqn$iqn has a map for $devdisk
+		else
+			echo iqn$iqn is not mapped to  $devdisk
+  			targetcli iscsi/iqn${iqn}/tpg1/acls/ create iqn.1994-05.com.redhat:$myhost
+   			targetcli iscsi/iqn${iqn}/tpg1/luns/ create /backstores/block/${devdisk}-${myhost}  
+		fi
+	done
+done
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=false
+
+
+
 targetcli saveconfig
 if [ $change -eq 1 ];
 then
