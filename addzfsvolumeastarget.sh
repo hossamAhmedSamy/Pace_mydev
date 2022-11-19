@@ -45,6 +45,7 @@ targetcli iscsi/iqn${iqn} set global auto_add_mapped_luns=false
 targetcli iscsi/iqn.2016-03.com.$myhost:data/${tpg}/portals delete 0.0.0.0 3260
 targetcli iscsi/iqn${iqn}/${tpg}/luns/ create /backstores/block/$diskids  
 targetcli iscsi/iqn${iqn}/${tpg}/acls/ create $target
+echo targetcli iscsi/iqn${iqn}/${tpg}/acls/ create $target
 cluns=`targetcli iscsi/iqn${iqn}/${tpg}/acls/$target ls`
 echo $cluns | grep $diskids 
 if [ $? -ne 0 ];

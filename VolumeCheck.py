@@ -14,42 +14,55 @@ def dosync(*args):
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
 
+def getippos(vtype):
+    if ('cifs' or 'home') in vtype:
+        return 7
+    else: 
+        return 0
+def getdirtyvols(vtype, etcds, replis, dockers):
+    global leader, leaderip, myhost, myhostip, etcdip
+    cmdline = '/TopStor/getvols.sh '+vtype
+    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
+    result = [x for x in result if 'pdhc' in x]
+    resultdisabled = [ x for x in result if 'disable' in str(x) ]
+    resultactive = [ x for x in result if 'active' in str(x) ]
+    etcddisabled= [ x for x in etcds if 'disable' in str(x) ]
+    etcdactive= [ x for x in etcds if 'active' in str(x) ]
+    dirtyset = set()
+    ipset = set()
+    print('###############3')
+    for res in result:
+        reslist=res.split('/')
+        ippos = getippos(vtype)
+        if reslist[-1] == 'active':
+            if reslist[1] in str(etcddisabled):
+                dirtyset.add(res)
+        else:
+            if reslist[1] in str(etcdactive):
+                dirtyset.add(res)
+        if reslist[1] not in str(etcds):
+            dirtyset.add(res)
+        for dckr in dockers.split('\n'):
+            if reslist[7] in dckr and reslist[-1] =='active':
+                dckrname=dckr.split(' ')[-1]
+                cmdline = 'docker inspect '+dckrname
+                result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+                print(dckrname, reslist[1],reslist)
+                if reslist[1] not in str(result):
+                    print('not in')
+                    dirtyset.add(res)
+        if reslist[7] not in dockers:
+            dirtyset.add(res)
+    return dirtyset
+
+    
 def cifs( etcds, replis, dockers):
  global leader, leaderip, myhost, myhostip, etcdip
- cmdline = '/TopStor/getvols.sh cifs'
- result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
- result = [x for x in result if 'pdhc' in x]
- resultdisabled = [ x for x in result if 'disable' in str(x) ]
- resultactive = [ x for x in result if 'active' in str(x) ]
- etcddisabled= [ x for x in etcds if 'disable' in str(x) ]
- etcdactive= [ x for x in etcds if 'active' in str(x) ]
- print('###############3')
- for res in result:
-  reslist=res.split('/')
-  dirty = 0
-  if reslist[-1] == 'active':
-    if reslist[1] in str(etcddisabled):
-        dirty = 1
-  else:
-    if reslist[1] in str(etcdactive):
-        dirty = 1
-  if reslist[1] not in str(etcds):
-        dirty = 1
-  for dckr in dockers.split('\n'):
-    if reslist[7] in dckr and reslist[-1] =='active':
-        dckrname=dckr.split(' ')[-1]
-        cmdline = 'docker inspect '+dckrname
-        result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
-        print('hihihih')
-        print(dckrname, reslist[1],reslist)
-        if reslist[1] not in str(result):
-            print('not in')
-            dirty = 1
-  if reslist[7] not in dockers:
-    dirty = 1
-  if dirty:
+ dirtyset = getdirtyvols('cifs', etcds, replis, dockers)
+ print(dirtyset)
+ for res in dirtyset:
+   reslist=res.split('/')
    print('update',reslist[1])
-
    cmdline = '/TopStor/undockerthis.sh '+reslist[7]
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    if 'DOMAIN' in str(res):
