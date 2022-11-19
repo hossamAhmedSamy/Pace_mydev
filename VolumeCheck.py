@@ -14,20 +14,32 @@ def dosync(*args):
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
 
-def cifs( etcds, replis):
+def cifs( etcds, replis, dockers):
  global leader, leaderip, myhost, myhostip, etcdip
- cmdline = 'docker ps'
- dockers = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
  cmdline = '/TopStor/getvols.sh cifs'
  result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
  result = [x for x in result if 'pdhc' in x]
+ resultdisabled = [ x for x in result if 'disable' in str(x) ]
+ resultactive = [ x for x in result if 'active' in str(x) ]
+ etcddisabled= [ x for x in etcds if 'disable' in str(x) ]
+ etcdactive= [ x for x in etcds if 'active' in str(x) ]
  print('###############3')
- print('cifs result', result)
  for res in result:
   reslist=res.split('/')
-  print('reslsit',reslist)
+  dirty = 0
+  if reslist[-1] == 'active':
+    if reslist[1] in str(etcddisabled):
+        dirty = 1
+  else:
+    if reslist[1] in str(etcdactive):
+        dirty = 1
   if reslist[1] not in str(etcds):
-   print('update',reslist[1], str(etcds))
+        dirty = 1 
+  if dirty:
+   print('update',reslist[1])
+
+   cmdline = '/TopStor/undockerthis.sh '+reslist[7]
+   result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
    if 'DOMAIN' in res:
     left='volumes/CIFS_'+reslist[9]+'/'+myhost+'/'+'/'.join(reslist[0:2])
    else:
@@ -35,8 +47,8 @@ def cifs( etcds, replis):
    put(leaderip, left,res)
    dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
    #broadcasttolocal(left,res)
-  if 'active' in res:
-   if ('cifs-'+reslist[7]) not in dockers:
+  print('reslist',reslist[7])
+  if reslist[7] not in dockers or dirty:
     if 'DOMAIN' in res:
      #cmdline='/TopStor/cifsmember.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs '+' '.join(reslist[9:])
      print('/TopStor/VolumeActivateCIFSdom '+leaderip+' vol='+reslist[1]+' user=system')
@@ -48,10 +60,8 @@ def cifs( etcds, replis):
     result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     print(result)
 
-def homes(etcds, replis):
+def homes(etcds, replis, dockers):
   global leader, leaderip, myhost, myhostip, etcdip
-  cmdline = 'docker ps'
-  dockers = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
   cmdline = '/TopStor/getvols.sh home'
   result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
   result = [x for x in result if 'pdhc' in x]
@@ -94,17 +104,23 @@ def iscsi(etcds, replis):
    cmdline='/TopStor/VolumeActivateISCSI '+leaderip+' vol='+reslist[1]+' user=system'
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    print(cmdline)
+
+
 def volumecheck(etcds, replis, *args):
  global leader, leaderip, myhost, myhostip, etcdip
- if etcds=='init':
+ if str(etcds)=='init':
      leader = replis 
      leaderip = args[0]
      myhost = args[1]
      myhostip = args[2]
      etcdip = args[3]
      return
- cifs(etcds, replis)
- homes(etcds, replis)
+
+ cmdline = 'docker ps'
+ dockers = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
+ 
+ cifs(etcds, replis, dockers)
+ homes(etcds, replis, dockers)
  iscsi(etcds, replis)
   
    
@@ -117,7 +133,8 @@ if __name__=='__main__':
    etcdip = leaderip
   else:
    etcdip = myhostip
+   
  
   etcds = get(etcdip, 'volumes','--prefix')
   replis = get(etcdip, 'replivol','--prefix')
-  volumecheck(leader, myhost, etcds, replis)
+  volumecheck(etcds, replis)
