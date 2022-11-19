@@ -191,12 +191,12 @@ def syncrequest(leader,leaderip,myhost, myhostip):
 runcmd={'Snapperiod':'etctocron'} 
 synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
 if __name__=='__main__':
- if len(sys.argv) > 2: 
-  leader = sys.argv[2]
-  leaderip = sys.argv[3]
-  myhost = sys.argv[4]
-  myhostip = sys.argv[5]
-  if myhost == leader:
-   myhostip = leaderip
+    leaderip=sys.argv[2]
+    print('hihih')
+    leader = get(leaderip,'leader')[0]
+    myhost = get(leaderip,'clusternode')[0]
+    myhostip = get(leaderip,'clusternodeip')[0]
+    if myhost == leader:
+        myhostip = leaderip
  
- synctypes[sys.argv[1]](leader,leaderip, myhost,myhostip)
+    synctypes[sys.argv[1]](leader,leaderip, myhost,myhostip)

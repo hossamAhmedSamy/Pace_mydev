@@ -1,7 +1,7 @@
 #!/usr/bin/sh
 fapipy() {
 cd /TopStor
-/TopStor/fapi.py 1>/root/fapi.log 2>/root/fapierr.log 
+ docker exec flask /TopStor/fapi.py 
 }
 
 while true;

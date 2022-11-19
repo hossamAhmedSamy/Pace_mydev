@@ -6,6 +6,9 @@ rabbitip=`echo $@ | awk '{print $1}'`
 #echo start >> /root/iscsiwatch
 targetn=0
 initip=1
+
+/pace/syncrequestlooper.sh $rabbitip & disown
+/pace/fapilooper.sh & disown
 while true;
 do
 	lsscsinew=`lsscsi -is | wc -c `
