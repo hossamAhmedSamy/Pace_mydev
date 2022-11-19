@@ -1,27 +1,25 @@
 #!/usr/bin/python3
 import subprocess,sys, os
-from socket import gethostname as hostname
+#from socket import gethostname as hostname
 from levelthis import levelthis
-from logqueue import queuethis
-import json
+from logqueue import queuethis, initqueue
 from raidrank import getraidrank
-from putzpool import putzpool
 from ast import literal_eval as mtuple
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
 from etcddel import etcddel as dels 
-from deltolocal import deltolocal as delstolocal
+#from deltolocal import deltolocal as delstolocal
 from poolall import getall as getall
 from time import sleep
 from sendhost import sendhost
 #from syncpools import syncmypools
-import logmsg
 os.environ['ETCDCTL_API']= '3'
 newop=[]
 disksvalue=[]
 usedfree=[]
 myhost = '' 
-def mustattach(cmdline,disksallowed,raid,myhost):
+def mustattach(cmdline,disksallowed,raid):
+   global leader, leaderip, myhost, myhostip, etcdip
    print('################################################')
    if len(disksallowed) < 1 : 
     return 'na'
@@ -30,21 +28,21 @@ def mustattach(cmdline,disksallowed,raid,myhost):
    spare=disksallowed
    print('spare',spare)
    print('###########################')
-   spareplsclear=get('clearplsdisk/'+spare['actualdisk'])
-   spareiscleared=get('cleareddisk/'+spare['actualdisk']) 
+   spareplsclear=get(etcdip, 'clearplsdisk/'+spare['actualdisk'])
+   spareiscleared=get(etcdip, 'cleareddisk/'+spare['actualdisk']) 
    if spareiscleared[0] != spareplsclear[0] or spareiscleared[0] == -1:
     print('asking to clear')
-    put('clearplsdisk/'+spare['actualdisk'],spare['host'])
-    dels('cleareddisk/'+spare['actualdisk']) 
-    hostip=get('ready/'+spare['host'])
-    z=['/TopStor/pump.sh','Zpoolclrrun',spare['actualdisk']]
+    put(etcdip, 'clearplsdisk/'+spare['actualdisk'],spare['host'])
+    dels(etcdip , 'cleareddisk/'+spare['actualdisk']) 
+    hostip=get(etcdip, 'ready/'+spare['host'])
+    z=['/TopStor/Zpoolclrrun',spare['actualdisk']]
     msg={'req': 'Zpool', 'reply':z}
     sendhost(hostip[0], str(msg),'recvreply',myhost)
     print('returning')
     print(raid)
     return 'wait' 
-   dels('clearplsdisk/'+spare['actualdisk']) 
-   dels('cleareddisk/'+spare['actualdisk']) 
+   dels(etcdip, 'clearplsdisk/'+spare['actualdisk']) 
+   dels(etcdip, 'cleareddisk/'+spare['actualdisk']) 
    print('cmd',cmd)
    print('raidname',raid)
    if 'stripe' in raid['name']:
@@ -91,6 +89,8 @@ def norm(val):
 
 def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
  global newop
+ global leader, leaderip, myhost, myhostip, etcdip
+  
  print('################################################################################33')
  print('diskB', diskB)
  print('diskA', diskA)
@@ -294,11 +294,12 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
     w+=sizediff+10*int(raidhosts[diskA['host']] -1)
     return w
   
-def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
+def selectthedisk(freedisks,raid,allraids,allhosts):
+ global leader, leaderip, myhost, myhostip, etcdip
  weights=[]
  finalw=[]
  hostcounts=allhosts.copy()
- balancetype=get('balancetype/'+raid['pool'])
+ balancetype=get(etcdip, 'balancetype/'+raid['pool'])
  for disk in raid['disklist']:
   if 'ONLINE' in disk['status']:
    if disk['host'] in hostcounts.keys():
@@ -336,11 +337,12 @@ def selectthedisk(freedisks,raid,allraids,allhosts,myhost):
  return finalw[0] 
 
  
-def solvestriperaids(striperaids,freedisks,allraids,myhost):
+def solvestriperaids(striperaids,freedisks,allraids):
+ global leader, leaderip, myhost, myhostip, etcdip
  global usedfree
  sparefit={}
  for raid in striperaids:
-  sparelist=selectthedisk(freedisks,raid,allraids,{},myhost)
+  sparelist=selectthedisk(freedisks,raid,allraids,{})
   if len(sparelist) > 0:
    try:
     sparefit[sparelist['newd']['actualdisk']].append(sparelist)
@@ -354,13 +356,14 @@ def solvestriperaids(striperaids,freedisks,allraids,myhost):
   newd=sparefit[k][0]['newd'] 
   olddpool=sparefit[k][0]['oldd']['pool'] 
  cmdline=['/sbin/zpool', 'attach','-f', olddpool]
- ret=mustattach(cmdline,newd,oldd,myhost)
+ ret=mustattach(cmdline,newd,oldd)
  if 'fault' not in ret:
   usedfree.append(ret)
  return
  
 def solvedegradedraid(raid,disksfree):
- hosts=get('ready','--prefix')
+ global leader, leaderip, myhost, myhostip, etcdip
+ hosts=get(etcdip, 'ready','--prefix')
  hosts=[host[0].split('/')[1] for host in hosts]
  raidhosts= set()
  defdisk = [] 
@@ -426,11 +429,11 @@ def solvedegradedraid(raid,disksfree):
    print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
    print('returncode',forget.returncode)
    if forget.returncode == 0:
-    put(dmstuplst[0][0],'inuse/'+dmstup)
+    put(etcdip, dmstuplst[0][0],'inuse/'+dmstup)
    else:
     if forget.returncode != 255:
-     dels(dmstuplst[0][0], '--prefix')
-     delstolocal(dmstuplst[0][0], '--prefix')
+     dels(etcdip, dmstuplst[0][0], '--prefix')
+     #delstolocal(dmstuplst[0][0], '--prefix')
      return disksfree 
  print('################## start replace in solvedegradedraid')
  if len(disksample) == 0 :
@@ -465,7 +468,7 @@ def solvedegradedraid(raid,disksfree):
   cmdline=['/sbin/zpool', 'attach', '-f', raid['pool']]
  else:
   cmdline=['/sbin/zpool', 'replace', '-f',raid['pool']]
- ret=mustattach(cmdline,sparedisk,raid,myhost)
+ ret=mustattach(cmdline,sparedisk,raid)
  if ret == 0:
   return sparedisklst[1:]
  else:
@@ -474,9 +477,19 @@ def solvedegradedraid(raid,disksfree):
 def spare2(*args):
  global newop
  global usedfree 
- leader=get('leader','--prefix')[0][0].split('/')[1]
- myhost = hostname()
- needtoreplace=get('needtoreplace', myhost) 
+ global leader, leaderip, myhost, myhostip, etcdip
+ if args[0]=='init':
+        leader = args[1]
+        leaderip = args[2]
+        myhost = args[3]
+        myhostip = args[4]
+        etcdip = args[5]
+        initqueue(leaderip, myhost) 
+        getall('init',leader, leaderip, myhost, myhostip, etcdip)
+        return
+
+
+ needtoreplace=get(etcdip, 'needtoreplace', myhost) 
  if myhost in str(needtoreplace):
   print('need to replace',needtoreplace)
   for raidinfo in needtoreplace:
@@ -495,11 +508,10 @@ def spare2(*args):
  
  if myhost not in leader:
   return
- putzpool()
  freedisks=[]
  allraids=[]
  freeraids=[]
- hosts=get('ready','--prefix')
+ hosts=get(etcdip, 'ready','--prefix')
  allhosts=set()
  for host in hosts:
   allhosts.add(host[0].replace('ready/',''))
@@ -507,7 +519,7 @@ def spare2(*args):
  striperaids=[]
  if newop==[-1]:
   return
- availability = get('balance','--prefix')
+ availability = get(etcdip, 'balance','--prefix')
  degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['status']]
  for spool in newop['pools']:
   for sraid in spool['raidlist']:
@@ -523,10 +535,10 @@ def spare2(*args):
  for raid in degradedraids:
   for disk in raid['disklist']:
    if 'ONLINE' not in disk['changeop']:
-     dels('disk',disk['actualdisk'])
-     delstolocal('disk',disk['actualdisk'])
- onlinedisks=get('disks','ONLINE')    
- errordisks=get('errdiskpool','--prefix')
+     dels(etcdip, 'disk',disk['actualdisk'])
+     #delstolocal('disk',disk['actualdisk'])
+ onlinedisks=get(etcdip, 'disks','ONLINE')    
+ errordisks=get(etcdip, 'errdiskpool','--prefix')
  freedisks=[ x for x in newop['disks']  if 'free' in x['raid'] or (x['name'] in str(onlinedisks) and 'OFFLINED' not in x['status'] and 'ONLINE' not in x['changeop']) ]  
    
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
@@ -543,7 +555,7 @@ def spare2(*args):
 
 #####################################  set the right replacements for all raids
  newop=getall()
- getcurrent = get('hosts','current')
+ getcurrent = get(etcdip, 'hosts','current')
  allraids = []
  for hostinfo in newop:
   pools = mtuple(hostinfo[1])['pools']
@@ -571,7 +583,7 @@ def spare2(*args):
   print(raid['name'],raid['raidrank'])
  replacements = dict() 
  foundranks = [] 
- currentneedtoreplace = get('needtoreplace','--prefix')
+ currentneedtoreplace = get(etcdip, 'needtoreplace','--prefix')
  for raid in allraids:
   combinedrank = abs(raid['raidrank'][0])*1000 + raid['raidrank'][1]
   if combinedrank == 0:
@@ -588,12 +600,12 @@ def spare2(*args):
      bestrank = (rdisk,fdisk,raid,thiscombinedrank)
      foundranks.append(bestrank)
  if len(foundranks) == 0:
-  dels('needtoreplace','--prefix')
+  dels(etcdip, 'needtoreplace','--prefix')
   print('no need to re- optmize raid groups')
   return  
  for cnt in currentneedtoreplace:
    if cnt[1].split('/')[1] not in str(foundranks):
-    dels('needtorepalce', cnt[1])
+    dels(etcdip, 'needtorepalce', cnt[1])
  foundranks = sorted(foundranks, key = lambda x: x[3], reverse = True)
  diskraids = set() 
  ranks = set()
@@ -602,12 +614,12 @@ def spare2(*args):
  for rank in foundranks:
   if rank[1]['name'] not in diskraids and rank[2]['name'] not in diskraids:
    print('needtoreplace/'+rank[0]['actualdisk'],'with',rank[0]['name'],'for raid',rank[2]['name'], 'combined rank = ',rank[3])
-   dels('neeedtoreplace',rank[1]['name'])
-   dels('neeedtoreplace',rank[2]['name'])
+   dels(etcdip, 'neeedtoreplace',rank[1]['name'])
+   dels(etcdip, 'neeedtoreplace',rank[2]['name'])
    diskraids.add(rank[1]['name'])
    diskraids.add(rank[2]['name'])
    print(rank[0])
-  put('needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['actualdisk']+'/'+rank[1]['name'])
+  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['actualdisk']+'/'+rank[1]['name'])
  return
  
   
@@ -624,12 +636,14 @@ if __name__=='__main__':
  # perfmon = f.readline() 
  #if '1' in perfmon:
  # queuethis('selectspare.py','start','system')
- if len(sys.argv) > 1:
-  leader = sys.argv[1]
+  leaderip = sys.argv[1]
   myhost = sys.argv[2]
- else:
-  leader=get('leader','--prefix')[0][0].split('/')[1]
-  myhost = hostname()
- spare2(leader, myhost)
+  leader=get(leaderip, 'leader')[0]
+  myhostip=get(leaderip,'ready/'+myhost)[1] 
+  if myhost == leader:
+   etcdip = leaderip
+  else:
+   etcdip = myhostip
+  spare2()
  #if '1' in perfmon:
  # queuethis('selectspare.py','stop','system')

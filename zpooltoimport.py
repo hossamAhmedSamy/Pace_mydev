@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 import subprocess, sys
 from ioperf import ioperf
-from logqueue import queuethis
+from logqueue import queuethis, initqueue
 from etcdput import etcdput as put
-from etcdgetlocalpy import etcdget as get 
-from etcdgetpy import etcdget as getp 
+from etcdgetpy import etcdget as get 
 from etcddel import etcddel as dels
 from poolstoimport import getpoolstoimport
 from time import time as stamp
@@ -14,7 +13,6 @@ from ast import literal_eval as mtuple
 #leader=get('leader','--prefix')[0][0].split('/')[1]
 stamp = str(stamp())
 
-leaderip = get('leaderip')[0]
 def selecthost(minhost,hostname,hostpools):
  if len(hostpools) < minhost[1]:
   minhost = (hostname, len(hostpools))
@@ -22,14 +20,25 @@ def selecthost(minhost,hostname,hostpools):
 
 
 def dosync(leader,sync, *args):
+  global leaderip, myhost
   dels(leaderip, sync)  
   put(leaderip, *args)
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
 
-def zpooltoimport(leader, myhost):
- needtoimport=get('poolsnxt', myhost) 
- cpools = get('pools/','--prefix')
+def zpooltoimport(*args):
+ global leader, leaderip, myhost, myhostip, etcdip
+ if args[0]=='init':
+     leader = args[1]
+     leaderip = args[2]
+     myhost = args[3]
+     myhostip = args[4]
+     etcdip = args[5]
+     initqueue(leaderip, myhost) 
+     return
+
+ needtoimport=get(etcdip, 'poolsnxt', myhost) 
+ cpools = get(etcdip, 'pools/','--prefix')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
  else:
@@ -37,7 +46,7 @@ def zpooltoimport(leader, myhost):
    pool = poolline[0].replace('poolsnxt/','')
    if pool in str(cpools):
     continue
-   ioperf()
+   ioperf(leaderip, myhost)
    print('pool', pool)
    cmdline= '/usr/sbin/zpool import  '+pool
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
@@ -53,10 +62,11 @@ def zpooltoimport(leader, myhost):
  if myhost != leader:
   return
 
- knowns=get('ready','--prefix')
- hosts=getp(leaderip,'hosts','/current')
+ knowns=get(etcdip, 'ready','--prefix')
+ hosts=get(leaderip,'hosts','/current')
  pools = getpoolstoimport()
- needtoimport=get('poolsnxt', '--prefix') 
+ print('pools',pools)
+ needtoimport=get(etcdip, 'poolsnxt', '--prefix') 
  for pool in pools:
   if pool not in str(needtoimport):
    minhost=(myhost,float('inf'))
@@ -69,17 +79,18 @@ def zpooltoimport(leader, myhost):
      
        
 if __name__=='__main__':
- if len(sys.argv) > 1:
-  leader = sys.argv[1]
-  myhost = sys.argv[2]
- else:
-  leader=get('leader')[1]
-  myhost = get('clusternode') 
+    if len(sys.argv) > 1:
+        leader = sys.argv[1]
+        leaderip = sys.argv[2]
+        myhost = sys.argv[3]
+        myhostip = sys.argv[4]
+        etcdip = sys.argv[5]
+        
 
+        zpooltoimport(*sys.argv)
  #cmdline='cat /pacedata/perfmon'
  #perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
  #if '1' in perfmon:
  # queuethis('zpooltoimport.py','start','system')
- zpooltoimport(leader, myhost)
  #if '1' in perfmon:
  # queuethis('zpooltoimport.py','stop','system')

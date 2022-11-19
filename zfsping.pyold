@@ -27,6 +27,10 @@ from concurrent.futures import ProcessPoolExecutor
 from heartbeat import heartbeat
 
 os.environ['ETCDCTL_API']= '3'
+myhost = get('clusternode')[0] 
+leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+leader = leaderinfo[0].split('/')[1]
+leaderip = leaderinfo[1]
 ctask = 1
  
 def heartbeatpls():
@@ -101,13 +105,9 @@ def selectimportproc():
    
 
 def zpooltoimportproc():
- global leader, myhost, leaderip, myhostip, etcdip, dirty
- if dirty >= 10:
-  return
- dirty += 1 
- put(etcdip, 'dirty', str(dirty))
+ global leader, myhost
  try:
-  zpooltoimport(leader, leaderip, myhost, myhostip, etcdip)
+  zpooltoimport(leader, myhost)
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in zpooltoimport:',e)
@@ -116,15 +116,13 @@ def zpooltoimportproc():
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
  
 def volumecheckproc():
- global leader, myhost, leaderip, myhostip, etcdip, dirty
- if dirty < 10 or dirty > 15 :
-  return
- dirty += 1 
- put(etcdip, 'dirty', str(dirty))
+ global leader, myhost
  try:
-  etcds = get(etcdip, 'volumes','--prefix')
-  replis = get(etcdip, 'replivol','--prefix')
-  volumecheck(etcds, replis)
+  etcds = get('volumes','--prefix')
+  replis = get('replivol','--prefix')
+  cmdline = 'pcs resource'
+  pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
+  volumecheck(leader, myhost, etcds, replis, pcss)
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in volumecheckproc:',e)
@@ -217,8 +215,7 @@ def activeusersproc():
 
 
 
-#loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc ]
-loopers = [ zpooltoimportproc, volumecheckproc ]
+loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc ]
 
 def CommonTask(task):
  print("''''''''' task started",task,"'''''''''''''''''''''''''''''''''''''''")
@@ -247,41 +244,28 @@ def lazylooper():
         if x == len(loopers):
          x = 0
 if __name__=='__main__':
- print('hihihih')
- leaderip = sys.argv[1]
- myhost = sys.argv[2]
- myhostip = get(leaderip, 'ready/'+myhost)[0]
- leader = get(leaderip, 'leader')[0]
- #leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
- #leader = leaderinfo[0].split('/')[1]
- #leaderip = leaderinfo[1]
- #cleader = leader
- if myhost == leader:
-  etcdip = leaderip
+
+ leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+ leader = leaderinfo[0].split('/')[1]
+ leaderip = leaderinfo[1]
+ cleader = leader
+ if myhost != leader:
+  getready = str(get('ready','--prefix'))
+  while leader not in getready:
+   sleep(1)
+   getready = str(get('ready','--prefix'))
+ myip = get('ActivePartners/'+myhost)[0]
+ myalias = get('alias/'+myhost)[0]
+ put('ready/'+myhost,myip)
+ put('nextlead/er',myhost+'/'+myip)
+ stampit = str(stamp())
+ dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
+ dosync(leader,'sync/nextlead/Add_er_'+myhost+'::'+myip+'/request','next_'+stampit)
+ if myhost == cleader:
+  logmsg.sendlog('Partsu03','info','system',myalias,myip)
  else:
-  etcdip = myhostip
- selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
- remknown('init', leader, leaderip, myhost, myhostip, etcdip)
- zpooltoimport('init', leader, leaderip, myhost, myhostip, etcdip)
- volumecheck('init', leader, leaderip, myhost, myhostip, etcdip)
- print('etcd',etcdip)
- #if myhost != leader:
- # getready = str(get('ready','--prefix'))
- # while leader not in getready:
- #  sleep(1)
- #  getready = str(get('ready','--prefix'))
- #myip = get('ActivePartners/'+myhost)[0]
- #myalias = get('alias/'+myhost)[0]
- #put('ready/'+myhost,myip)
- #put('nextlead/er',myhost+'/'+myip)
- #stampit = str(stamp())
- #dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
- #dosync(leader,'sync/nextlead/Add_er_'+myhost+'::'+myip+'/request','next_'+stampit)
- #if myhost == cleader:
- # logmsg.sendlog('Partsu03','info','system',myalias,myip)
- #else:
- # logmsg.sendlog('Partsu04','info','system',myalias,myip)
- #refreshall() 
+  logmsg.sendlog('Partsu04','info','system',myalias,myip)
+ refreshall() 
  #infloop = lazyloop()
  while True:
   zload = getload()
@@ -299,8 +283,5 @@ if __name__=='__main__':
     for i in range(len(loopers)*2):
      args = loopers[i % len(loopers)]
      res = e.submit(CommonTask,args)
-     dirty = int(get(etcdip, 'dirty')[0])
-     print('---------dirty------',dirty)
-    sleep(2)
  exit()
 

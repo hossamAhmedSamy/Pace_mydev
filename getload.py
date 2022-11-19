@@ -2,7 +2,6 @@
 import subprocess,sys, os
 import json
 from time import sleep
-from checkleader import checkleader
 
 dev = 'enp0s8'
 os.environ['ETCDCTL_API']= '3'
