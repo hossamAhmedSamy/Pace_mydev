@@ -244,10 +244,19 @@ def putzpool(leaderip, myhost, myip):
   queuethis('putzpool.py','stop','system')
    
 if __name__=='__main__':
- if len(sys.argv) > 1:
-  myip = sys.argv[1]
-  
-  leader=get(myip, 'leader')[0]
+ if len(sys.argv)> 1:
+   myip = sys.argv[1]
+   leader=get(myip, 'leader')[0]
+   leaderip = get(myip, 'leaderip')[0]
+   myhost = get(myip, 'clusternode')[0]
+ else:
+  cmdline = 'docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
+  myip = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode().split()[0]
+  cmdline = 'docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
+  myhost = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode().split()[0]
+  cmdline = 'docker exec etcdclient /TopStor/etcdgetlocal.py leader'
+  leader = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode().split()[0]
   leaderip = get(myip, 'leaderip')[0]
-  myhost = get(myip, 'clusternode')[0]
+  if leader == myhost:
+   myip = leaderip
  putzpool(leaderip,  myhost, myip)
