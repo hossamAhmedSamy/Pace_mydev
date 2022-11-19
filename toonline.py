@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 from etcddel import etcddel as etcddel
 from etcdput import etcdput as put 
-from etcdget import etcdget as get 
-import socket, sys, subprocess
+from etcdgetpy import etcdget as get 
+import sys, subprocess
 
 def toonline(*args):
 # myhostorg=socket.gethostname()

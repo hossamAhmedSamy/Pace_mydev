@@ -2,9 +2,7 @@
 import subprocess,sys
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
-from broadcasttolocal import broadcasttolocal
 from ast import literal_eval as mtuple
-from socket import gethostname as hostname
 
 myip = '0'
 

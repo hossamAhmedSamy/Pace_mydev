@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import subprocess,sys
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
 import json
 def setnamespace(*args):

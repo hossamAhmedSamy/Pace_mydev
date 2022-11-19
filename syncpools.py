@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import subprocess, socket, binascii
-from etcdput import etcdput as put
-from etcdget import etcdget as get 
+from etcdputpy import etcdput as put
+from etcdgetpy import etcdget as get 
 from broadcast import broadcast as broadcast 
 from os import listdir
 from os import remove 

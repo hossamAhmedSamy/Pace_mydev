@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import sys, datetime
 from time import time
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 from ast import literal_eval as mtuple
 from socket import gethostname as hostname
 from sendhost import sendhost

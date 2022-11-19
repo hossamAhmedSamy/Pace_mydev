@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 from etcddellocal import etcddel as dellocal 
 
 def delbroadcastlocal(*args):

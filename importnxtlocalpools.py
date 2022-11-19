@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import sys,subprocess
 from threading import Thread
-from etcdgetlocal import etcdget as get
+from etcdgetlocalpy import etcdget as get
 from etcdputlocal import etcdput as put
 from etcddellocal import etcddel as dels
 from ast import literal_eval as mtuple

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys, subprocess
-from etcdgetlocal import etcdget as getlocal
+from etcdgetlocalpy import etcdget as getlocal
 
 ip=sys.argv[1].split('.')
 etcdserver='nohost'

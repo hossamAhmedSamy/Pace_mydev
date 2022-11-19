@@ -22,7 +22,7 @@ def checkleader(key, prefix=''):
   else:
    return result 
  
- from etcdgetlocal import etcdget as getlocal
+ from etcdgetlocalpy import etcdget as getlocal
  from socket import gethostname as hostname
  cmdline='./getmyip.sh'
  myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode().replace('\n','')

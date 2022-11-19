@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import subprocess,sys, datetime
 import json
-from etcdgetlocal import etcdget as get
+from etcdgetlocalpy import etcdget as get
 from ast import literal_eval as mtuple
 from socket import gethostname as hostname
 from sendhost import sendhost

@@ -5,19 +5,18 @@ from time import sleep
 
 os.environ['ETCDCTL_API']= '3'
 
-def etcdgetjson(etcd, *argv):
+def etcdgetjson(*argv):
  key=argv[0]
  try:
   prefix=argv[1]
  except:
   prefix='nothing'
- endpoints='http://'+etcd+':3279'
- if 'prefix' in prefix:
-  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
- elif 'nothing' in prefix: 
-  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key]
+ endpoints = '--endpoints=http://etcd:2379'
+ if 'nothing' in prefix: 
+  cmdline=['etcdctl','--user=root:YN-Password_123',endpoints,'get',key]
+  cmdline=['etcdctl',endpoints,'get',key]
  else: 
-  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,'--prefix']
+  cmdline=['etcdctl',endpoints,'get',key,prefix]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  err = result.returncode
  ilist=[]
@@ -38,12 +37,12 @@ def etcdgetjson(etcd, *argv):
     if 'prefix' not in prefix:
      hosts=[x for x in hosts if prefix in str(x)]
    #return str(hosts).replace('"','').replace("'",'"')
-   print(hosts)
+   #print(hosts)
 
    return hosts
    
   else:
-   print(dict(str(result.stdout).split(key)[1][2:][:-3].replace("'",'"')))
+   #print(dict(str(result.stdout).split(key)[1][2:][:-3].replace("'",'"')))
 
    return dict(str(result.stdout).split(key)[1][2:][:-3].replace("'",'"'))
  

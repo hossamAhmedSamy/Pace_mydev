@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 import subprocess,sys, datetime
 import json
-from etcdgetlocal import etcdget as getlocal
-from etcdget import etcdget as get
+from etcdgetlocalpy import etcdget as getlocal
+from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
 from etcddel import etcddel as deli 
 

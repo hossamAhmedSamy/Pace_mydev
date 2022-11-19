@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import subprocess,sys, os
-from etcdgetlocal import etcdget as get
+from etcdgetlocalpy import etcdget as get
 from etcdput import etcdput as put 
 
 def broadcasttolocal(*args):

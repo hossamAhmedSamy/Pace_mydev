@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import subprocess,sys, os
-from etcdget import etcdget as get
+from etcdgetpy import etcdget as get
 from etcdgethostrunning import etcdget as fastget
 import json
 from time import sleep
