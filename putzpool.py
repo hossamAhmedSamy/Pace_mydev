@@ -8,7 +8,7 @@ from etcdgetpy import etcdget as get
 from etcddel import etcddel as dels 
 from os.path import getmtime
 
-def putzpool(leader, leaderip, myhost, myip):
+def putzpool(leaderip, myhost, myip):
  perfmon = '0'
  sitechange=0
  readyhosts=get(myip, 'ready','--prefix')
@@ -250,4 +250,4 @@ if __name__=='__main__':
   leader=get(myip, 'leader')[0]
   leaderip = get(myip, 'leaderip')[0]
   myhost = get(myip, 'clusternode')[0]
- putzpool(leader, leaderip,  myhost, myip)
+ putzpool(leaderip,  myhost, myip)
