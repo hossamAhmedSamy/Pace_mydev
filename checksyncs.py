@@ -60,7 +60,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
      print('syncing all groups')
      groupsyncall(leader,leaderip,myhost, myhostip)
     if sync in ['tz','ntp','gw','dns']: 
-     cmdline='/TopStor/pump.sh HostManualconfig'+sync.upper()
+     cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
  if sync in syncs:
   if sync == 'Partnr':
@@ -135,7 +135,15 @@ def syncrequest(leader,leaderip,myhost, myhostip):
        print('opers',opers)
        globals()[opers[1]](*opers[2:])
       else:
+<<<<<<< HEAD
+       print('opers',opers)
+       if sync in ['tz','ntp','gw','dns']: 
+        cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
+       else:
+        cmdline='/TopStor/'+opers[0]+" "+" ".join([leader, leaderip, myhost, myhostip]+opers[1:])
+=======
        cmdline='/TopStor/'+opers[0]+' '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+opers[1]
+>>>>>>> 679e85401089b39893c7e2aed9d1f2b474d85551
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in special1 and myhost != leader :
       cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
@@ -145,7 +153,10 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
+<<<<<<< HEAD
+=======
    
+>>>>>>> 679e85401089b39893c7e2aed9d1f2b474d85551
    put(leaderip,syncleft+'/'+myhost, stamp)
    if myhost != leader:
     put(myhostip, syncleft+'/'+myhost, stamp)
@@ -164,7 +175,13 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     dels(myhostip, 'sync', done[1])
     deleted.add(done[1])
  else:
+<<<<<<< HEAD
+  print('hihihihi')
+  actives = len(get(myhostip,'ActivePartners','--prefix')) + 1
+  print('nononon')
+=======
   actives = len(get(leaderip,'ActivePartners','--prefix')) + 1
+>>>>>>> 679e85401089b39893c7e2aed9d1f2b474d85551
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
   toprunedic = dict()
   for prune in toprune:
@@ -189,6 +206,13 @@ if __name__=='__main__':
   leaderip = sys.argv[3]
   myhost = sys.argv[4]
   myhostip = sys.argv[5]
+<<<<<<< HEAD
+  if myhost == leader:
+   myhostip = leaderip
+ 
+ synctypes[sys.argv[1]](leader,leaderip, myhost,myhostip)
+=======
  myip = initchecks(leader, leaderip, myhost, myhostip)
  print('myip', myip)
  synctypes[sys.argv[1]](leader,leaderip, myhost,myip)
+>>>>>>> 679e85401089b39893c7e2aed9d1f2b474d85551
