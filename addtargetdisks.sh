@@ -11,10 +11,24 @@ change=0
 mycluster=`nmcli conn show mycluster | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
 declare -a iscsitargets=(`docker exec etcdclient /pace/iscsiclients.py $mycluster | grep target | awk -F'/' '{print $2}'`);
 currentdisks=`targetcli ls /iscsi`
-disks=(`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -vw sda | grep -v LIO | awk '{print $1}'`)
-diskids=`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -vw sda | grep -v LIO | awk '{print $1" "$2}'`
+disks=(`lsblk -nS -o name,serial,vendor | grep -v sr0 |  grep -v LIO | awk '{print $1}'`)
+diskids=`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -v LIO | awk '{print $1" "$2}'`
 mappedhosts=`targetcli ls /iscsi | grep Mapped`;
 targets=`targetcli ls backstores/block | grep -v deactivated |  grep dev | awk -F'[' '{print $2}' | awk '{print $1}'`
+blocks=`targetcli ls backstores/block `
+echo targets $blocks
+for ddisk in  "${disks[@]}"; do
+	echo $blocks | grep $ddisk
+	if [ $? -ne 0 ];
+	then
+		echo $ddisk not a part in the targets
+		scsidisk=`ls -l /dev/disk/by-id/ | grep $ddisk | grep -v part | grep scsi | head -1 | awk '{print $9}'`
+  		targetcli backstores/block create ${ddisk}-${myhost} /dev/disk/by-id/$scsidisk
+		
+	else
+		echo $ddisk is a part in the targets
+	fi
+done
 #myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
 myip=`nmcli conn show mynode | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
 declare -a newdisks=();
@@ -35,18 +49,11 @@ if [ $? -ne 0 ]; then
 fi
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=true
 i=0;
-echo diskids="${diskids[@]}"
-for ddisk in "${disks[@]}"; do
- devdisk=`echo $ddisk | awk '{print $1}'`
- idisk=`echo "$diskids" | grep $ddisk | awk '{print $2}'`
- echo devid = $devdisk $idisk
-done
 for ddisk in "${disks[@]}"; do
  devdisk=$ddisk 
  echo ddisk===$ddisk
  idisk=`echo "$diskids" | grep -w $ddisk | awk '{print $2}'`
- echo devdisk-ddisk=$ddisk $idisk
-
+ echo compare devdisk-ddisk=$ddisk $idisk
  echo $currentdisks | grep $idisk &>/dev/null
  if [ $? -ne 0 ]; then
   echo Imhere
