@@ -12,11 +12,11 @@ from etcdsync import synckeys
 from time import time as timestamp
 from etctocron import etctocron 
 
-syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','tz','ntp','gw','dns' ]
+syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'Partnr', 'Snappreiod', 'running','volumes', 'ipaddr' ]
-etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ready','known','alias', 'hostipsubnet', 'namespace','leader','allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
+wholeetcd = [ 'Partnr', 'Snappreiod', 'running','volumes' ]
+etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ready','known','alias', 'hostipsubnet', 'leader','allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with bash script: sync/Operation/commandline_oper1_oper2_../request Operation_stamp###########
@@ -59,8 +59,9 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
     if sync in 'group':
      print('syncing all groups')
      groupsyncall(leader,leaderip,myhost, myhostip)
-    if sync in ['tz','ntp','gw','dns']: 
+    if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns']: 
      cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
+     print('cmd',cmdline)
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
  if sync in syncs:
   if sync == 'Partnr':
@@ -136,10 +137,11 @@ def syncrequest(leader,leaderip,myhost, myhostip):
        globals()[opers[1]](*opers[2:])
       else:
        print('opers',opers)
-       if sync in ['tz','ntp','gw','dns']: 
+       if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns']: 
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
        else:
         cmdline='/TopStor/'+opers[0]+" "+" ".join([leader, leaderip, myhost, myhostip]+opers[1:])
+       print('cmd',cmdline)
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in special1 and myhost != leader :
       cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
