@@ -5,6 +5,7 @@ lsscsi=0
 rabbitip=`echo $@ | awk '{print $1}'`
 #echo start >> /root/iscsiwatch
 targetn=0
+initip=1
 while true;
 do
 	lsscsinew=`lsscsi -is | wc -c `
@@ -30,6 +31,27 @@ do
 
 	fi
         /pace/putzpool.py $rabbitip
+	if [ $initip -eq 1 ];
+	then
+		stamp=`date +%s`
+		stamp=$((stamp+300))
+		nmcli conn mod cmynode +ipv4.addresses 10.11.11.254
+		nmcli conn up cmynode
+		./httpdflask.sh $rabbitip yes
+		initip=2
+	fi
+	if [ $initip -eq 2 ];
+	then
+		stamp2=`date +%s`
+		if [ $stamp2 -ge $stamp ];
+		then
+			nmcli conn mod cmynode -ipv4.addresses 10.11.11.254
+			nmcli conn up cmynode
+			./httpdflask.sh $rabbitip no 
+			initip=0
+		fi
+	fi
+
 	echo sleeeeeeeeeeeeeping
 	sleep 2
 	echo cyclingggggggggggggg
