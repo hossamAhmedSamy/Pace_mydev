@@ -6,7 +6,9 @@ rabbitip=`echo $@ | awk '{print $1}'`
 #echo start >> /root/iscsiwatch
 targetn=0
 initip=1
-
+initstamp=`date +%s`
+echo $initstamp > /TopStordata/initstamp
+echo $initstamp 
 /pace/syncrequestlooper.sh $rabbitip & disown
 /pace/fapilooper.sh & disown
 while true;
