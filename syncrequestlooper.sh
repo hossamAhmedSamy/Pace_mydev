@@ -1,16 +1,13 @@
 #!/usr/bin/sh
-leader=`echo $@ | awk '{print $1}'`
-leaderip=`echo $@ | awk '{print $2}'`
-myhost=`echo $@ | awk '{print $3}'`
-myhostip=`echo $@ | awk '{print $4}'`
+leaderip=`echo $@ | awk '{print $1}'`
 syncrequest() {
-cd /TopStor
-/TopStor/checksyncs.py syncrequest $leader $leaderip $myhost $myhostip 1>/root/syncreq.log 2>/root/syncreqerr.log 
+cd /pace
+/pace/checksyncs.py syncrequest $leaderip  1>/root/syncreq.log 2>/root/syncreqerr.log 
 }
 
-while true;
+while true 
 do
- syncrequest() 
- sleep 3 
+ syncrequest
+ sleep 2 
 done
 
