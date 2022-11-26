@@ -12,7 +12,7 @@ from etcdsync import synckeys
 from time import time as timestamp
 from etctocron import etctocron 
 
-syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns' ]
+syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'Partnr', 'Snappreiod', 'running','volumes' ]
