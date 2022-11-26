@@ -140,7 +140,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
        if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns']: 
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
        else:
-        cmdline='/TopStor/'+opers[0]+" "+" ".join([leader, leaderip, myhost, myhostip]+opers[1:])
+        cmdline='/TopStor/'+opers[0]+" "+" ".join(opers)
        print('cmd',cmdline)
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in special1 and myhost != leader :
