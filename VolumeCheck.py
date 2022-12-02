@@ -2,19 +2,20 @@
 import subprocess,sys, os
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
-from broadcasttolocal import broadcasttolocal 
+#from broadcasttolocal import broadcasttolocal 
 from time import time as stamp
 
-from socket import gethostname as hostname
 
 #leader=get('leader','--prefix')[0][0].split('/')[1]
 
-def dosync(leader, *args):
-  put(*args)
-  put(args[0]+'/'+leader,args[1])
+def dosync(*args):
+  global leaderip, leader
+  put(leaderip, *args)
+  put(leaderip, args[0]+'/'+leader,args[1])
   return 
 
-def cifs(leader, myhost, etcds, replis, pcss):
+def cifs( etcds, replis):
+ global leader, leaderip, myhost, myhostip, etcdip
  cmdline = 'docker ps'
  dockers = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
  cmdline = '/TopStor/getvols.sh cifs'
@@ -27,19 +28,20 @@ def cifs(leader, myhost, etcds, replis, pcss):
   if reslist[1] not in str(etcds):
    print('update',reslist[1], str(etcds))
    left='volumes/CIFS/'+myhost+'/'+'/'.join(reslist[0:2])
-   put(left,res)
-   dosync(leader, 'sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
+   put(leaderip, left,res)
+   dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
    #broadcasttolocal(left,res)
   if 'active' in res:
-   if (('cifs-'+reslist[7]) not in dockers) or (('cifs-'+reslist[7]) not in pcss):
+   if ('cifs-'+reslist[7]) not in dockers:
     if 'DOMAIN' in res:
-     cmdline='/TopStor/cifsmember.sh '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs '+' '.join(reslist[9:])
+     cmdline='/TopStor/cifsmember.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs '+' '.join(reslist[9:])
     else:
-     cmdline='/TopStor/cifs.sh '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
+     cmdline='/TopStor/cifs.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
     result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     print(result)
 
-def homes(leader, myhost, etcds, replis, pcss):
+def homes(etcds, replis):
+  global leader, leaderip, myhost, myhostip, etcdip
   cmdline = 'docker ps'
   dockers = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
   cmdline = '/TopStor/getvols.sh home'
@@ -50,17 +52,18 @@ def homes(leader, myhost, etcds, replis, pcss):
    reslist=res.split('/')
    if reslist[1] not in str(etcds):
     left='volumes/HOME/'+myhost+'/'+'/'.join(reslist[0:2])
-    put(left,res)
-    dosync(leader, 'sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
+    put(leaderip, left,res)
+    dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
     #broadcasttolocal(left,res)
-   if reslist[7] not in dockers or reslist[7] not in pcss:
+   if reslist[7] not in dockers:
     print(reslist)
     cmdline='/TopStor/cifs.sh '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
     result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     print(result)
     
    
-def iscsi(leader, myhost, etcds, replis, pcss):
+def iscsi(etcds, replis):
+ global leader, leaderip, myhost, myhostip, etcdip
  cmdline = 'targetcli ls '
  targets = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
  cmdline = '/TopStor/getvols.sh iscsi'
@@ -71,31 +74,39 @@ def iscsi(leader, myhost, etcds, replis, pcss):
   reslist=res.split('/')
   if reslist[1] not in str(etcds):
    left='volumes/ISCSI/'+myhost+'/'+'/'.join(reslist[0:2])
-   put(left,res)
-   dosync(leader, 'sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
+   put(leaderip, left,res)
+   dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
    #broadcasttolocal(left,res)
-  if reslist[1] not in targets or reslist[2] not in pcss:
+  if reslist[1] not in targets:
    print(reslist)
-   cmdline='/TopStor/iscsi.sh '+reslist[0]+' '+reslist[1]+' '+reslist[2]+' '+reslist[3]+' '+ \
+   cmdline='/TopStor/iscsi.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[2]+' '+reslist[3]+' '+ \
            reslist[4]+' '+reslist[5]+' '+reslist[6]+' '+reslist[7]
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    print(cmdline)
-def volumecheck(leader, myhost, etcds, replis, pcss):
- cifs(leader,myhost, etcds, replis, pcss)
- homes(leader, myhost, etcds, replis, pcss)
- iscsi(leader, myhost, etcds, replis, pcss)
+def volumecheck(etcds, replis, *args):
+ global leader, leaderip, myhost, myhostip, etcdip
+ if etcds=='init':
+     leader = replis 
+     leaderip = args[0]
+     myhost = args[1]
+     myhostip = args[2]
+     etcdip = args[3]
+     return
+ cifs(etcds, replis)
+ homes(etcds, replis)
+ iscsi(etcds, replis)
   
    
 if __name__=='__main__':
- if len(sys.argv) > 1:
-  leader = sys.argv[1]
+  leaderip = sys.argv[1]
   myhost = sys.argv[2]
- else:
-  leader=get('leader','--prefix')[0][0].split('/')[1]
-  myhost = hostname()
+  leader=get(leaderip, 'leader')[0]
+  myhostip=get(leaderip,'ready/'+myhost)[0] 
+  if myhost == leader:
+   etcdip = leaderip
+  else:
+   etcdip = myhostip
  
- etcds = get('volumes','--prefix')
- replis = get('replivol','--prefix')
- cmdline = 'pcs resource'
- pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
- volumecheck(leader, myhost, etcds, replis, pcss)
+  etcds = get(etcdip, 'volumes','--prefix')
+  replis = get(etcdip, 'replivol','--prefix')
+  volumecheck(leader, myhost, etcds, replis)

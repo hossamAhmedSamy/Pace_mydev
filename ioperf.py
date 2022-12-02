@@ -3,10 +3,8 @@ import subprocess
 from time import time
 from etcdput import etcdput as put 
 from etcddel import etcddel as dels
-import socket
 
-def ioperf():
- myhost=socket.gethostname()
+def ioperf(leaderip,myhost):
  cmdline="/TopStor/loadavg.sh"
  cores=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split(' ')
  print( 'cores',100*float(cores[1])/float(cores[0]))
@@ -16,7 +14,7 @@ def ioperf():
  tcpu = 0
  tcpu = round(float(cpures[0])+float(cpures[2]),2)
  tcpu = 100*float(cores[1])/float(cores[0])
- put('cpuperf/'+myhost,str(tcpu))
+ put(leaderip, 'cpuperf/'+myhost,str(tcpu))
  diskres = result[6:]
  diskresdict = {}
  for dsk in diskres:
@@ -33,10 +31,10 @@ def ioperf():
   if res[1] in diskresdict:
    disks[res[1]] = diskresdict[res[1]].copy()
    disks[res[1]]['name'] = res[0]
- dels('dskperf',myhost)
+ dels(leaderip, 'dskperf',myhost)
  for dsk in disks:
   thedsk = disks[dsk]
-  put('dskperf/'+myhost+'/'+thedsk['name'], str(thedsk['tps'])+'/'+str(thedsk['throuput'])+'/'+str(thedsk['read'])+'/'+dsk)
+  put(leaderip, 'dskperf/'+myhost+'/'+thedsk['name'], str(thedsk['tps'])+'/'+str(thedsk['throuput'])+'/'+str(thedsk['read'])+'/'+dsk)
   with open('/pacedata/perfmon') as f:
    perfmon = f.readline()
   #if '1' in perfmon:
