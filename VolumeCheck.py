@@ -34,9 +34,12 @@ def cifs( etcds, replis):
   if 'active' in res:
    if ('cifs-'+reslist[7]) not in dockers:
     if 'DOMAIN' in res:
-     cmdline='/TopStor/cifsmember.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs '+' '.join(reslist[9:])
+     #cmdline='/TopStor/cifsmember.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs '+' '.join(reslist[9:])
+     cmdline='/TopStor/VolumeActivateCIFSdom '+leaderip+' vol='+reslist[1]+' user=system'
     else:
-     cmdline='/TopStor/cifs.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
+     #cmdline='/TopStor/cifs.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
+     cmdline='/TopStor/VolumeActivateCIFS '+leaderip+' vol='+reslist[1]+' user=system'
+    print(cmdline)
     result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     print(result)
 
@@ -57,7 +60,9 @@ def homes(etcds, replis):
     #broadcasttolocal(left,res)
    if reslist[7] not in dockers:
     print(reslist)
-    cmdline='/TopStor/cifs.sh '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
+    cmdline='/TopStor/cifs.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
+    cmdline='/TopStor/VolumeActivateHome '+leaderip+' vol='+reslist[1]+' user=system'
+    print(cmdline)
     result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     print(result)
     
@@ -79,8 +84,9 @@ def iscsi(etcds, replis):
    #broadcasttolocal(left,res)
   if reslist[1] not in targets:
    print(reslist)
-   cmdline='/TopStor/iscsi.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[2]+' '+reslist[3]+' '+ \
-           reslist[4]+' '+reslist[5]+' '+reslist[6]+' '+reslist[7]
+   #cmdline='/TopStor/iscsi.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[2]+' '+reslist[3]+' '+ \
+   #        reslist[4]+' '+reslist[5]+' '+reslist[6]+' '+reslist[7]
+   cmdline='/TopStor/VolumeActivateISCSI '+leaderip+' vol='+reslist[1]+' user=system'
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    print(cmdline)
 def volumecheck(etcds, replis, *args):
