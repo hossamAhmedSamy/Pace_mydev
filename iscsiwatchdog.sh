@@ -3,6 +3,7 @@ cd /pace/
 lsscsi=0
 #dmesg -n 1
 rabbitip=`echo $@ | awk '{print $1}'`
+myhost=`echo $@ | awk '{print $2}'`
 #echo start >> /root/iscsiwatch
 targetn=0
 initip=1
@@ -11,6 +12,7 @@ echo $initstamp > /TopStordata/initstamp
 echo $initstamp 
 /pace/syncrequestlooper.sh $rabbitip & disown
 /pace/fapilooper.sh & disown
+/pace/zfsping.py $rabbitip $myhost & disown
 while true;
 do
 	lsscsinew=`lsscsi -is | wc -c `

@@ -25,9 +25,13 @@ def cifs( etcds, replis):
  print('cifs result', result)
  for res in result:
   reslist=res.split('/')
+  print('reslsit',reslist)
   if reslist[1] not in str(etcds):
    print('update',reslist[1], str(etcds))
-   left='volumes/CIFS/'+myhost+'/'+'/'.join(reslist[0:2])
+   if 'DOMAIN' in res:
+    left='volumes/CIFS_'+reslist[9]+'/'+myhost+'/'+'/'.join(reslist[0:2])
+   else:
+    left='volumes/CIFS/'+myhost+'/'+'/'.join(reslist[0:2])
    put(leaderip, left,res)
    dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
    #broadcasttolocal(left,res)
@@ -35,6 +39,7 @@ def cifs( etcds, replis):
    if ('cifs-'+reslist[7]) not in dockers:
     if 'DOMAIN' in res:
      #cmdline='/TopStor/cifsmember.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs '+' '.join(reslist[9:])
+     print('/TopStor/VolumeActivateCIFSdom '+leaderip+' vol='+reslist[1]+' user=system')
      cmdline='/TopStor/VolumeActivateCIFSdom '+leaderip+' vol='+reslist[1]+' user=system'
     else:
      #cmdline='/TopStor/cifs.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
