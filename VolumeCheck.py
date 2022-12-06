@@ -35,8 +35,8 @@ def cifs( etcds, replis):
    put(leaderip, left,res)
    dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
    #broadcasttolocal(left,res)
-  if 'active' in res:
-   if ('cifs-'+reslist[7]) not in dockers:
+  print('reslist',reslist[7])
+  if reslist[7] not in dockers:
     if 'DOMAIN' in res:
      #cmdline='/TopStor/cifsmember.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs '+' '.join(reslist[9:])
      print('/TopStor/VolumeActivateCIFSdom '+leaderip+' vol='+reslist[1]+' user=system')
