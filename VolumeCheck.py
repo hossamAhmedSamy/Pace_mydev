@@ -34,31 +34,43 @@ def cifs( etcds, replis, dockers):
     if reslist[1] in str(etcdactive):
         dirty = 1
   if reslist[1] not in str(etcds):
-        dirty = 1 
+        dirty = 1
+  for dckr in dockers.split('\n'):
+    if reslist[7] in dckr and reslist[-1] =='active':
+        dckrname=dckr.split(' ')[-1]
+        cmdline = 'docker inspect '+dckrname
+        result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+        print('hihihih')
+        print(dckrname, reslist[1],reslist)
+        if reslist[1] not in str(result):
+            print('not in')
+            dirty = 1
+  if reslist[7] not in dockers:
+    dirty = 1
   if dirty:
    print('update',reslist[1])
 
    cmdline = '/TopStor/undockerthis.sh '+reslist[7]
-   result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
-   if 'DOMAIN' in res:
+   result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+   if 'DOMAIN' in str(res):
     left='volumes/CIFS_'+reslist[9]+'/'+myhost+'/'+'/'.join(reslist[0:2])
    else:
     left='volumes/CIFS/'+myhost+'/'+'/'.join(reslist[0:2])
    put(leaderip, left,res)
    dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
    #broadcasttolocal(left,res)
-  print('reslist',reslist[7])
-  if reslist[7] not in dockers or dirty:
-    if 'DOMAIN' in res:
+   if 'DOMAIN' in str(res):
      #cmdline='/TopStor/cifsmember.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs '+' '.join(reslist[9:])
-     print('/TopStor/VolumeActivateCIFSdom '+leaderip+' vol='+reslist[1]+' user=system')
-     cmdline='/TopStor/VolumeActivateCIFSdom '+leaderip+' vol='+reslist[1]+' user=system'
-    else:
-     #cmdline='/TopStor/cifs.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
-     cmdline='/TopStor/VolumeActivateCIFS '+leaderip+' vol='+reslist[1]+' user=system'
-    print(cmdline)
-    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
-    print(result)
+     cmdline='/TopStor/cifs.py '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' CIFS_'+reslist[9]+' '+' '.join(reslist[9:])
+     print('cmdline',cmdline)
+
+     #cmdline='/TopStor/VolumeActivateCIFSdom '+leaderip+' vol='+reslist[1]+' user=system'
+   else:
+     cmdline='/TopStor/cifs.py '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' CIFS '+' '.join(reslist[9:])
+    #cmdline='/TopStor/VolumeActivateCIFS '+leaderip+' vol='+reslist[1]+' user=system'
+   result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+   print(result)
+   put(etcdip,'dirty/volume','0')
 
 def homes(etcds, replis, dockers):
   global leader, leaderip, myhost, myhostip, etcdip
