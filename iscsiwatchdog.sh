@@ -13,6 +13,7 @@ echo $initstamp
 /pace/syncrequestlooper.sh $rabbitip & disown
 /pace/fapilooper.sh & disown
 /pace/zfsping.py $rabbitip $myhost & disown
+/pace/rebootmeplslooper.sh $rabbitip $myhost & disown
 while true;
 do
 	lsscsinew=`lsscsi -is | wc -c `
