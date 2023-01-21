@@ -4,6 +4,7 @@ from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
 #from broadcasttolocal import broadcasttolocal 
 from time import time as stamp
+from glob import glob
 
 
 #leader=get('leader','--prefix')[0][0].split('/')[1]
@@ -55,7 +56,11 @@ def getdirtyvols(vtype, etcds, replis, dockers):
             dirtyset.add(res)
     return dirtyset
 
+def nfs( etcds, replis):
+    global leader, leaderip, myhost, myhostip, etcdip
+    #dirtyset = getdirtyvols('nfs', etcds, replis, )
     
+    return    
 def cifs( etcds, replis, dockers):
  global leader, leaderip, myhost, myhostip, etcdip
  dirtyset = getdirtyvols('cifs', etcds, replis, dockers)
@@ -143,8 +148,14 @@ def volumecheck(etcds, replis, *args):
 
  cmdline = 'docker ps'
  dockers = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
- 
+ #cmdline = 'ls /TopStordata'
+ #exports = subprocess.run(cmdline.split(),shell=True, stdout=subprocess.PIPE).stdout.decode('utf-8')
+ exports = glob('/TopStordata/exportip*')
+ exports = [ x.split('exportip.')[1] for x in exports ]
+ print('exports',exports)
+ return 
  cifs(etcds, replis, dockers)
+ nfs(etcds, replis, exports)
  homes(etcds, replis, dockers)
  iscsi(etcds, replis)
   
