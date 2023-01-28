@@ -68,24 +68,29 @@ def nfs( etcds, replis, exports):
             print(pool,vol)
             exportetctip = 0
             for line in f:
+                if len(line) < 5:
+                    continue
                 print('theline',line)
                 if 'SUMMARY' in line:
                     exportetc = line.split(' ')[3]
                     exportetcip = exportetc.split('/')[-3]
                     exportetcsub = exportetc.split('/')[-2]
-                    print('exportetcip',exportetcip)
+                    exportetcactive = exportetc.split('/')[-1]
                     if exportetc not in str(etcds):
                         dels(leaderip, 'volumes', vol)
                         put(leaderip,'volumes/NFS/'+myhost+'/'+pool+'/'+vol,exportetc)
-                        print(leaderip,'volumes/NFS/'+myhost+'/'+pool+'/'+vol,exportetc)
                         flag = 1
                 else:
-                    with open('/TopStordata/exportip.'+vol+'_'+exportetcip, 'w') as fip:
-                        fip.write(line)
+                    if 'active' in exportetcactive: 
+                        with open('/TopStordata/exportip.'+vol+'_'+exportetcip, 'w') as fip:
+                            fip.write(line)
+                        cmdline = '/TopStor/nfs.sh '+exportetcip+' '+exportetcsub
+                        subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+                    else:
+                        cmdline = '/TopStor/nfsumount.sh '+vol
+                        subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     if flag:
         dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
-        cmdline = '/TopStor/nfs.sh '+exportetcip+' '+exportetcsub
-        subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
         
     return    
 def cifs( etcds, replis, dockers):
@@ -180,6 +185,8 @@ def volumecheck(etcds, replis, *args):
  cmdline = 'rm -rf /TopStordata/exportip*'
  subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
  exports = glob('/pdhc*/exports*')
+ with open('/root/volumecheck','w') as f:
+  f.write(str(etcds))
  #exports = [ x.split('exports.')[1] for x in exports ]
  cifs(etcds, replis, dockers)
  nfs(etcds, replis, exports)
