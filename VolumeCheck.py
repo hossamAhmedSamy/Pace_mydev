@@ -2,6 +2,7 @@
 import subprocess,sys, os
 from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
+from etcddel import etcddel as dels 
 #from broadcasttolocal import broadcasttolocal 
 from time import time as stamp
 from glob import glob
@@ -56,10 +57,36 @@ def getdirtyvols(vtype, etcds, replis, dockers):
             dirtyset.add(res)
     return dirtyset
 
-def nfs( etcds, replis):
+def nfs( etcds, replis, exports):
     global leader, leaderip, myhost, myhostip, etcdip
     #dirtyset = getdirtyvols('nfs', etcds, replis, )
-    
+    flag = 0
+    for export in exports:
+        with open(export) as f:
+            pool = export.split('/')[1]
+            vol = export.split('.')[1]
+            print(pool,vol)
+            exportetctip = 0
+            for line in f:
+                print('theline',line)
+                if 'SUMMARY' in line:
+                    exportetc = line.split(' ')[3]
+                    exportetcip = exportetc.split('/')[-3]
+                    exportetcsub = exportetc.split('/')[-2]
+                    print('exportetcip',exportetcip)
+                    if exportetc not in str(etcds):
+                        dels(leaderip, 'volumes', vol)
+                        put(leaderip,'volumes/NFS/'+myhost+'/'+pool+'/'+vol,exportetc)
+                        print(leaderip,'volumes/NFS/'+myhost+'/'+pool+'/'+vol,exportetc)
+                        flag = 1
+                else:
+                    with open('/TopStordata/exportip.'+vol+'_'+exportetcip, 'w') as fip:
+                        fip.write(line)
+    if flag:
+        dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
+        cmdline = '/TopStor/nfs.sh '+exportetcip+' '+exportetcsub
+        subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+        
     return    
 def cifs( etcds, replis, dockers):
  global leader, leaderip, myhost, myhostip, etcdip
@@ -150,10 +177,10 @@ def volumecheck(etcds, replis, *args):
  dockers = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
  #cmdline = 'ls /TopStordata'
  #exports = subprocess.run(cmdline.split(),shell=True, stdout=subprocess.PIPE).stdout.decode('utf-8')
- exports = glob('/TopStordata/exportip*')
- exports = [ x.split('exportip.')[1] for x in exports ]
- print('exports',exports)
- return 
+ cmdline = 'rm -rf /TopStordata/exportip*'
+ subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
+ exports = glob('/pdhc*/exports*')
+ #exports = [ x.split('exports.')[1] for x in exports ]
  cifs(etcds, replis, dockers)
  nfs(etcds, replis, exports)
  homes(etcds, replis, dockers)
