@@ -13,7 +13,7 @@ def putzpool(leaderip, myhost, myip):
  sitechange=0
  readyhosts=get(myip, 'ready','--prefix')
  knownpools=[f for f in listdir('/TopStordata/') if 'pdhcp' in f and 'pree' not in f ]
- cmdline='/sbin/zpool status'
+ cmdline='/sbin/zpool status -L'
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
  sty=str(result)[2:][:-3].replace('\\t','').split('\\n')
  cmdline='/bin/lsscsi -is'
@@ -66,7 +66,9 @@ def putzpool(leaderip, myhost, myip):
     for lss in lsscsi:
      if any('/dev/'+b[0] in lss for drive in drives):
       b[0]='scsi-'+lss.split()[6]
-      
+   #print('b0',b[0]) 
+   #print(drives) 
+   
   #print('strb',str(b))
   if "pdhc" in str(b) and  'pool' not in str(b):
    raidlist=[]
