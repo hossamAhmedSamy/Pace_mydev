@@ -12,7 +12,7 @@ from etcdsync import synckeys
 from time import time as timestamp
 from etctocron import etctocron 
 
-syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns' ]
+syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'Partnr', 'Snappreiod', 'running','volumes' ]
@@ -59,7 +59,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
     if sync in 'group':
      print('syncing all groups')
      groupsyncall(leader,leaderip,myhost, myhostip)
-    if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns']: 
+    if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
      cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
      print('cmd',cmdline)
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
@@ -137,7 +137,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
        globals()[opers[1]](*opers[2:])
       else:
        print('opers',opers)
-       if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns']: 
+       if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
        else:
         cmdline='/TopStor/'+opers[0]+" "+" ".join(opers)
