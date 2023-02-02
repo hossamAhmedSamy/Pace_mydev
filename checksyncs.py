@@ -39,8 +39,8 @@ def syncinit(leader,leaderip, myhost,myhostip):
  global syncs, syncanitem, forReceivers, etcdonly, allsyncs
  stamp = int(timestamp() + 3600)
  for sync in syncs:
-  put(leaderip,'sync/'+sync+'/'+'initial/request',sync+str(stamp)) 
-  put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+str(stamp)) 
+  put(leaderip,'sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
+  put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+'_'+str(stamp)) 
  return
 
 def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
@@ -103,7 +103,9 @@ def syncrequest(leader,leaderip,myhost, myhostip):
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) or ('request/' and '/'+myhost) in str(x) ] 
  myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
- myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
+ if len(myrequests) > 1:
+    print(myrequests)
+    myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
  for syncinfo in myrequests:
   if '/initial/' in str(syncinfo):
@@ -183,7 +185,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
   for prune in toprunedic:
    if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
     dels(leaderip,'sync',prune) 
-    print(prune,toprunedic[prune])
+    #print(prune,toprunedic[prune])
   
  return     
 
