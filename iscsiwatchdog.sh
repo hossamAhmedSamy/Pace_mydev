@@ -1,4 +1,5 @@
 #!/usr/bin/sh
+:q
 cd /pace/
 lsscsi=0
 #dmesg -n 1
@@ -14,6 +15,12 @@ echo $initstamp
 /pace/fapilooper.sh & disown
 /pace/zfsping.py $rabbitip $myhost & disown
 /pace/rebootmeplslooper.sh $rabbitip $myhost & disown
+isinitn=`cat /root/nodeconfigured`'s'
+echo $isinitn | grep 'yess'
+if [ $? -ne 0 ];
+then
+ /pace/senddiscovery.sh & disown
+fi
 while true;
 do
 	lsscsinew=`lsscsi -is | wc -c `
