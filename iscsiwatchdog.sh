@@ -61,7 +61,7 @@ do
 		stamp2=`date +%s`
 		if [ $stamp2 -ge $stamp ];
 		then
-			nmcli conn mod cmynode -ipv4.addresses 10.11.11.254
+			nmcli conn mod cmynode -ipv4.addresses 10.11.11.254/24
 			nmcli conn up cmynode
 			./httpdflask.sh $rabbitip no 
 			initip=0
