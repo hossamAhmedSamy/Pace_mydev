@@ -17,4 +17,5 @@ done
 echo will join the cluster $clusterip
 echo yes > /root/nodeconfigured
 nmcli conn mod mycluster ipv4.addresses $clusterip 
+./etcddel.py 10.11.11.253 possible/$myhost
 /TopStor/docker_setup.sh reboot
