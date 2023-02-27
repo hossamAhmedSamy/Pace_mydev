@@ -11,10 +11,11 @@ initip=1
 initstamp=`date +%s`
 echo $initstamp > /TopStordata/initstamp
 echo $initstamp 
-/pace/syncrequestlooper.sh $rabbitip & disown
+leaderip=`docker exec etcdclient /TopStor/etcdgetlocal.py leaderip`
+/pace/syncrequestlooper.sh $leaderip $myhost & disown
 /pace/fapilooper.sh & disown
-/pace/zfsping.py $rabbitip $myhost & disown
-/pace/rebootmeplslooper.sh $rabbitip $myhost & disown
+/pace/zfsping.py $leaderip $myhost & disown
+/pace/rebootmeplslooper.sh $leaderip $myhost & disown
 isinitn=`cat /root/nodeconfigured`'s'
 echo $isinitn | grep 'yess'
 if [ $? -ne 0 ];

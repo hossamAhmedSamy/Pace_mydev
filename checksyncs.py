@@ -194,10 +194,10 @@ runcmd={'Snapperiod':'etctocron'}
 synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
 if __name__=='__main__':
     leaderip=sys.argv[2]
+    myhost=sys.argv[3]
     print('hihih')
     leader = get(leaderip,'leader')[0]
-    myhost = get(leaderip,'clusternode')[0]
-    myhostip = get(leaderip,'clusternodeip')[0]
+    myhostip = get(leaderip,'ActivePartners/'+myhost)[0]
     if myhost == leader:
         myhostip = leaderip
  
