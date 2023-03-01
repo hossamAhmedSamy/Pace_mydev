@@ -6,7 +6,7 @@ from etcdput import etcdput as put
 from Evacuatelocal import setall
 from etcddel import etcddel as dels
 from usersyncall import usersyncall
-from groupsyncall import groupsyncall
+from groupsyncall import groupsyncall, grpfninit
 from socket import gethostname as hostname
 from etcdsync import synckeys
 from time import time as timestamp
@@ -52,29 +52,30 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  if sync in syncanitem and sync not in noinit:
     if 'Snapperiod'in sync:
      print('found etctocron')
-     etctocron()
+     etctocron(leaderip)
     if sync in 'user':
      print('syncing all users')
      usersyncall(leader,leaderip,myhost,myhostip) 
     if sync in 'group':
      print('syncing all groups')
-     groupsyncall(leader,leaderip,myhost, myhostip)
+     grpfninit(leader,leaderip, myhost,myhostip)
+     groupsyncall()
     if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
      cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
      print('cmd',cmdline)
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
  if sync in syncs:
   if sync == 'Partnr':
-   synckeys(leader,leaderip, myhost,myhostip, 'Partner','Partner')
+   synckeys(leaderip, myhostip, 'Partner','Partner')
   else:
-   synckeys(leader,leaderip, myhost,myhostip, sync,sync)
+   synckeys(leaderip, myhostip, sync,sync)
   print('sycs',sync, myhost)
      
  if sync not in syncs:
   print('there is a sync that is not defined:',sync)
   return 
  put(leaderip,syncleft+'/'+myhost, stamp)
- synckeys(leader,leaderip,myhost,myhostip, syncleft, syncleft)
+ synckeys(leaderip,myhostip, syncleft, syncleft)
 
  return
 
@@ -91,7 +92,7 @@ def syncall(leader,leaderip,myhost, myhostip):
  
  for done in otherrequests:
       put(leaderip,done[0]+'/'+myhost,done[1])
-      synckeys(leader,leaderip,myhost,myhostip, done[0], done[0]) 
+      synckeys(leaderip,myhostip, done[0], done[0]) 
 
 
  return
@@ -110,18 +111,20 @@ def syncrequest(leader,leaderip,myhost, myhostip):
  for syncinfo in myrequests:
   if '/initial/' in str(syncinfo):
    if myhost != leader:
+    print(leader,leaderip,myhost,myhostip, syncinfo)
     doinitsync(leader,leaderip,myhost,myhostip, syncinfo)
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]
    sync = syncleft.split('/')[1]
    opers= syncleft.split('/')[2].split('_')
+   print('#########################################################################')
    print('the sync',sync)
    if sync in wholeetcd :
     if sync == 'Partnr':
-      synckeys(leader,leaderip,myhost, myhostip, 'Partner', 'Partner')
+      synckeys(leaderip, myhostip, 'Partner', 'Partner')
     else:
-      synckeys(leader,leaderip,myhost,myhostip, sync,sync)
+      synckeys(leaderip,myhostip, sync,sync)
    if sync in etcdonly and myhost != leader:
      if opers[0] == 'Add':
       if 'Split' in opers[1]:
@@ -133,7 +136,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
       if sync in 'Snapperiod' :
-       etctocron()
+       etctocron(leaderip)
       elif 'syncfn' in opers[0]:
        print('opers',opers)
        globals()[opers[1]](*opers[2:])
@@ -201,4 +204,5 @@ if __name__=='__main__':
     if myhost == leader:
         myhostip = leaderip
  
+    grpfninit(leader,leaderip, myhost,myhostip)
     synctypes[sys.argv[1]](leader,leaderip, myhost,myhostip)

@@ -1,10 +1,8 @@
 #!/usr/bin/python3
 import subprocess,sys, datetime
 from etcdgetpy import etcdget as get
-from etcdput import etcdput as put 
-from etcddel import etcddel as dels 
 
-def etctocron(period='--prefix'):
+def etctocron(leaderip, period='--prefix'):
  cmdline='/bin/crontab -l'
  crons=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
  crons=str(crons).replace("b'","").split('\\n')
@@ -12,7 +10,7 @@ def etctocron(period='--prefix'):
  cronstr=''
  for x in crons:
   cronstr+=x+'\n'
- etccron=get('Snapperiod',period)
+ etccron=get(leaderip,'Snapperiod',period)
  for x in etccron:
   y=x[1].replace('%',' ')
   cronstr+=y+'\n'

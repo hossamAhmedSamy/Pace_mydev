@@ -15,7 +15,7 @@ leaderip=`docker exec etcdclient /TopStor/etcdgetlocal.py leaderip`
 /pace/syncrequestlooper.sh $leaderip $myhost & disown
 /pace/fapilooper.sh & disown
 /pace/zfsping.py $leaderip $myhost & disown
-/pace/rebootmeplslooper.sh $leaderip $myhost & disown
+#/pace/rebootmeplslooper.sh $leaderip $myhost & disown
 isinitn=`cat /root/nodeconfigured`'s'
 echo $isinitn | grep 'yess'
 if [ $? -ne 0 ];
