@@ -9,11 +9,11 @@ def toonline(*args):
 # myhost='run/'+myhostorg
  allinfo=get('run','--prefix')
  disks=[x for x in allinfo if 'uuid' in str(x)]
- free=[x for x in disks if 'free' in str(x) and '/-1/' not in str(x)]
+ free=[x for x in disks if 'free' in str(x) and '/_1/' not in str(x)]
  if len(free) < 1:
   return
- faulty=[(x[0].split('/')[5],x[1]) for x in disks if '/-1/' in str(x)]
- notfree=[(x[0].split('/')[5],x[1],x[0].split('/')[3]) for x in disks if 'free' not in str(x) and '/-1/' not in str(x)]
+ faulty=[(x[0].split('/')[5],x[1]) for x in disks if '/_1/' in str(x)]
+ notfree=[(x[0].split('/')[5],x[1],x[0].split('/')[3]) for x in disks if 'free' not in str(x) and '/_1/' not in str(x)]
  if len(notfree) < 1:
   return
  status=[x[0].split('/')[5] for x in allinfo if 'DEGRADED' in str(x) and 'status' in str(x) and 'disk' not in str(x)]

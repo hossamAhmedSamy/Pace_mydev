@@ -7,7 +7,7 @@ from etcddel import etcddel as dels
 def synckeys(fromhost, tohost, fromkey, tokey):
  fromlist=get(fromhost,fromkey,'--prefix')
  dels(tohost,tokey,'--prefix')
- if '-1' in fromlist:
+ if '_1' in fromlist:
   exit()
  for item in fromlist:
   lefti = item[0].replace(fromkey,tokey)

@@ -144,10 +144,10 @@ def putzpool(leaderip, myhost, myip):
    missingdisks[0] += 1
     
   elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5):
-    diskid='-1'
-    host='-1'
-    size='-1' 
-    devname='-1'
+    diskid='_1'
+    host='_1'
+    size='_1' 
+    devname='_1'
     disknotfound=1
     if  len(a.split('scsi')[0]) < (spaces+2) or (len(raidlist) < 1 and len(zpool)> 0):
      disklist=[]
@@ -173,8 +173,8 @@ def putzpool(leaderip, myhost, myip):
       break
     if disknotfound == 1:
       diskid=0
-      host='-1'
-      size='-1'
+      host='_1'
+      size='_1'
       devname=b[0]
       
      #else:
@@ -184,7 +184,7 @@ def putzpool(leaderip, myhost, myip):
     if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop']:
      b[1] = 'ONLINE' 
     changeop=b[1]
-    if host=='-1':
+    if host=='_1':
      raidlist[len(raidlist)-1]['changeop']='Warning'
      zpool[len(zpool)-1]['changeop']='Warning'
      changeop='Removed'

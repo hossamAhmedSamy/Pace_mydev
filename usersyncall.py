@@ -69,9 +69,9 @@ def usersyncall(tosync='usersinfo'):
     delusers.append(user)
   myusers= [ x for x in myusers if x[0].replace('usersinfo/','') in delusers ]
  threads=[]
- if '-1' in allusers:
+ if '_1' in allusers:
   allusers=[]
- if '-1' in myusers:
+ if '_1' in myusers:
   myusers=[]
  for user in allusers:
   thread_add(user)
@@ -96,7 +96,7 @@ def oneusersync(oper,usertosync):
  print('args',oper,usertosync)
  myusers=get(myhostip,'usersinfo','--prefix')
  user=get(leaderip,'usersinfo', usertosync)[0]
- if user == -1:
+ if user == '_1':
   return
  if oper == 'Add':
   thread_add(user)

@@ -38,7 +38,7 @@ def selectimport(*args):
         stampit=str(int(stamp()))
         print('nohost',nhost,chost)
         print('knowns',knowns)
-        #if nhost != '-1':
+        #if nhost != '_1':
         #	deli('poolsnxt',nhost)
         #	put('sync/poolsnxt/Del_poolsnxt_'+nhost+'/request','poolsnxt_'+str(stamp))
         #	put('sync/poolsnxt/Del_poolsnxt_'+nhost+'/request/'+leader,'poolsnxt_'+str(stamp))
