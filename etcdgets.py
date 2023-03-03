@@ -15,7 +15,7 @@ while err == 2:
  data=json.load(open('/pacedata/runningetcdnodes.txt'));
  for x in data['members']:
   endpoints=endpoints+str(x['clientURLs'])[2:][:-2]+','
- endpoints = endpoints[:('_1')]
+ endpoints = endpoints[:-1]
  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints='+endpoints,'get',key,prefix]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  err = result.returncode

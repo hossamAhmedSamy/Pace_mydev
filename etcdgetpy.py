@@ -35,9 +35,9 @@ def etcdget(etcd, key, prefix=''):
     if prefix in str(x):
      z.append(x)
    if(len(z) == 0):
-     z.append(('_1'))
+     z.append('_1')
  except:
-  z.append(('_1'))
+  z.append('_1')
  return z
 if __name__=='__main__':
  etcdget(*sys.argv[1:])
