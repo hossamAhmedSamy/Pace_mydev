@@ -38,11 +38,11 @@ def etcdget(key, prefix=''):
      z.append(x)
      print(x)
    if(len(z) == 0):
-     z.append(-1)
-     print('-1')
+     z.append(('_1'))
+     print('('_1')')
  except:
-  z.append(-1)
-  print('-1')
+  z.append(('_1'))
+  print('('_1')')
  return z
 if __name__=='__main__':
  etcdget(*sys.argv[1:])

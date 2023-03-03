@@ -5,7 +5,7 @@ from etcdgetpy import etcdget as get
 from etcdput import etcdput as put 
 from Evacuatelocal import setall
 from etcddel import etcddel as dels
-from usersyncall import usersyncall
+from usersyncall import usersyncall, usrfninit
 from groupsyncall import groupsyncall, grpfninit
 from socket import gethostname as hostname
 from etcdsync import synckeys
@@ -55,7 +55,8 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
      etctocron(leaderip)
     if sync in 'user':
      print('syncing all users')
-     usersyncall(leader,leaderip,myhost,myhostip) 
+     usrfninit(leader,leaderip, myhost,myhostip)
+     usersyncall() 
     if sync in 'group':
      print('syncing all groups')
      grpfninit(leader,leaderip, myhost,myhostip)
@@ -130,6 +131,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       if 'Split' in opers[1]:
        put(myhostip,sync,opers[2].replace(':::','_').replace('::','/'))
       else:
+       print('oper', opers, sync)
        put(myhostip,sync+'/'+opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
      else:
       print(sync,opers)
@@ -205,4 +207,5 @@ if __name__=='__main__':
         myhostip = leaderip
  
     grpfninit(leader,leaderip, myhost,myhostip)
+    usrfninit(leader,leaderip, myhost,myhostip)
     synctypes[sys.argv[1]](leader,leaderip, myhost,myhostip)

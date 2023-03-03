@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 import subprocess,sys
 from etcdgetpy import etcdget as get
-from etcdgetlocalpy import etcdget as getlocal
 from etcdput import etcdput as put
-from broadcasttolocal import broadcasttolocal
 from ast import literal_eval as mtuple
 from socket import gethostname as hostname
 
@@ -81,7 +79,6 @@ def groupsyncall(tosync='usrsigroup'):
    gethosts = get(leaderip, 'modified/group/'+group)[0]
    if myhost not in gethosts:
     put(leaderip, 'modified/group/'+group,gethosts+'/'+myhost)
-    #broadcasttolocal('modified/group/'+group,gethosts+'/'+myhost)
  
  # thread_add(user)
 #x=Thread(target=thread_add,name='addingusers',args=user)

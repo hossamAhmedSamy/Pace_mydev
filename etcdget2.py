@@ -47,7 +47,7 @@ def etcdgetjson(*argv):
    return dict(str(result.stdout).split(key)[1][2:][:-3].replace("'",'"'))
  
  except:
-  return dict([{'result':'-1'}]) 
+  return dict([{'result':'_1'}]) 
 
 if __name__=='__main__':
  etcdgetjson(*sys.argv[1:])
