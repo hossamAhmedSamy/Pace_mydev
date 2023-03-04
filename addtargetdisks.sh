@@ -40,10 +40,10 @@ for node in "${nodes[@]}"; do
  echo $mappedhosts | grep $node
  if [ $? -ne 0 ];
  then
-  nodeip=`docker exec etcdclient /TopStor/etcdgetlocalpy ready/$node`
+  #nodeip=`docker exec etcdclient /TopStor/etcdgetlocalpy ready/$node`
   targetcli iscsi/ create iqn.2016-03.com.${node}:t1 
   targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals delete 0.0.0.0 3260
-  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals create $nodeip 3266
+  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals create $myip 3266
  fi
 done
 targetcli ls iscsi/ | grep ".$myhost:t1" &>/dev/null
