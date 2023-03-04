@@ -36,19 +36,19 @@ done
 
 #echo hi3 >> /root/targetadd
 declare -a newdisks=();
-for node in "${nodes[@]}"; do
- echo $mappedhosts | grep $node
- if [ $? -ne 0 ];
- then
+#for node in "${nodes[@]}"; do
+# echo $mappedhosts | grep $node
+# if [ $? -ne 0 ];
+# then
   #nodeip=`docker exec etcdclient /TopStor/etcdgetlocalpy ready/$node`
-  targetcli iscsi/ create iqn.2016-03.com.${node}:t1 
-  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals delete 0.0.0.0 3260
-  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals create $myip 3266
- fi
-done
+#  targetcli iscsi/ create iqn.2016-03.com.${node}:t1 
+#  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals delete 0.0.0.0 3260
+#  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals create $myip 3266
+# fi
+#done
 targetcli ls iscsi/ | grep ".$myhost:t1" &>/dev/null
 if [ $? -ne 0 ]; then
-# echo hicreate $myhost >> /root/targetadd
+ echo hicreate $myhost >> /root/targetadd
 
  targetcli iscsi/ create iqn.2016-03.com.${myhost}:t1 
  targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals delete 0.0.0.0 3260
@@ -129,7 +129,8 @@ for iqn in "${tpgs[@]}"; do
 done	
 
 #echo hi7 >> /root/targetadd
-for ddisk in "${disks[@]}"; do
+for node in "${nodes[@]}"; do
+ for ddisk in "${disks[@]}"; do
 	for iqn in "${tpgs[@]}"; do
  		devdisk=`echo $ddisk | awk '{print $1}'`
  		targetcli iscsi/iqn${iqn}/tpg1/luns/ ls | grep  ${devdisk}-${myhost}  
@@ -138,12 +139,12 @@ for ddisk in "${disks[@]}"; do
 			echo iqn$iqn has a map for $devdisk
 		else
 			echo iqn$iqn is not mapped to  $devdisk
-  			targetcli iscsi/iqn${iqn}/tpg1/acls/ create iqn.1994-05.com.redhat:$myhost
+  			targetcli iscsi/iqn${iqn}/tpg1/acls/ create iqn.1994-05.com.redhat:$node
    			targetcli iscsi/iqn${iqn}/tpg1/luns/ create /backstores/block/${devdisk}-${myhost}  
 		fi
 	done
+ done
 done
-
 #echo hi8 >> /root/targetadd
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=false
 
