@@ -11,7 +11,6 @@ nextleadip=`echo $@ | awk '{print $6}'`
 clusterip=`echo $@ | awk '{print $7}'`
 losthost=`echo $@ | awk '{print $8}'`
 enpdev='enp0s8'
-docker exec etcdclient /TopStor/logmsg.py Partst02 warning system $losthost
 
 rm -rf /etc/chrony.conf
 cp /TopStor/chrony.conf /etc/
@@ -32,6 +31,7 @@ if [ $? -eq 0 ]; then
  docker exec etcdclient /TopStor/logqueue.py AddingMePrimary start system 
 fi
 stamp=`date +%s%N`
+docker exec etcdclient /TopStor/logmsg.py Partst02 warning system $losthost
 /pace/etcddel.py $leaderip sync/leader/Add --prefix
 /pace/etcdput.py $leaderip sync/leader/Add_${myhost}_$myip/request leader_$stamp
 /pace/etcdput.py $leaderip sync/leader/Add_${myhost}_$myip/request/$myhost leader_$stamp
