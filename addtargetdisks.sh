@@ -7,6 +7,7 @@ etcdip=`echo $@ | awk '{print $1}'`
 myhost=`echo $@ | awk '{print $2}'`
 actives=`/pace/etcdget.py $etcdip Active --prefix`
 change=0
+#echo hi1 $myhost>> /root/targetadd
 #declare -a iscsitargets=(`cat /pacedata/iscsitargets | awk '{print $2}' `);
 myip=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip`
 mycluster=`nmcli conn show mycluster | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
@@ -17,6 +18,7 @@ diskids=`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -v LIO | awk '{pri
 mappedhosts=`targetcli ls /iscsi | grep Mapped`;
 targets=`targetcli ls backstores/block | grep -v deactivated |  grep dev | awk -F'[' '{print $2}' | awk '{print $1}'`
 blocks=`targetcli ls backstores/block `
+#echo hi2 $myhost >> /root/targetadd
 echo targets $blocks
 for ddisk in  "${disks[@]}"; do
 	echo $blocks | grep $ddisk
@@ -30,16 +32,22 @@ for ddisk in  "${disks[@]}"; do
 		echo $ddisk is a part in the targets
 	fi
 done
+
+#echo hi3 >> /root/targetadd
 declare -a newdisks=();
 targetcli ls iscsi/ | grep ".$myhost:t1" &>/dev/null
 if [ $? -ne 0 ]; then
+# echo hicreate $myhost >> /root/targetadd
 
- targetcli iscsi/ create iqn.2016-03.com.${myhost}:t1 &>/dev/null
- targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals delete 0.0.0.0 3260
- targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals create $myip 3266
+ targetcli iscsi/ create iqn.2016-03.com.${myhost}:t1 
+ targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals delete 0.0.0.0 3260
+ targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals create $myip 3266
  change=1
 fi
-
+echo `targetcli /iscsi ls` >> /root/targetadd
+tpgs1=(`targetcli ls /iscsi | grep iqn`) 
+#echo hi$tpgs1 >> /root/targetadd
+#echo hi4 >> /root/targetadd
 targetcli ls iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals | grep $myip &>/dev/null
 if [ $? -ne 0 ]; then
  targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals ls | grep 3266 | awk -F'o-' '{print $2}' | awk -F':' '{print $1}'
@@ -70,6 +78,8 @@ for ddisk in "${disks[@]}"; do
   done
  fi
 done;
+
+#echo hi5 >> /root/targetadd
 for target in "${iscsitargets[@]}"; do
  echo $mappedhosts | grep $target &>/dev/null
  if [ $? -ne 0 ]; then
@@ -85,21 +95,29 @@ for target in "${iscsitargets[@]}"; do
  fi
 done
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=true
+tpgs1=(`targetcli ls /iscsi | grep iqn | grep TPG | grep ':t1'`)
 tpgs=(`targetcli ls /iscsi | grep iqn | grep TPG | grep ':t1' | awk -F'iqn' '{print $2}' | awk '{print $1}'`)
 
+#echo hi6.5 >> /root/targetadd
 for iqn in "${tpgs[@]}"; do
 	node=`echo $iqn | awk -F'.' '{print $4}' | awk -F':' '{print $1}'`
-echo '##############################################################'
-echo $node
-echo $actives
-echo '##############################################################'
+#echo hi6 >> /root/targetadd
 	echo $actives | grep $node
 	if [ $? -ne 0 ];
 	then
-		
+#echo '##############################################################'>> /root/targetadd
+#echo hi$tpgs1 >> /root/targetadd
+#echo hi$iqn >> /root/targetadd
+#echo hi$node >> /root/targetadd
+#echo hi$actives >> /root/targetadd
+#echo '##############################################################' >> /root/targetadd
+#		echo hidelete >> /root/targetadd
+			
 		targetcli /iscsi delete iqn$iqn
 	fi
 done	
+
+#echo hi7 >> /root/targetadd
 for ddisk in "${disks[@]}"; do
 	for iqn in "${tpgs[@]}"; do
  		devdisk=`echo $ddisk | awk '{print $1}'`
@@ -114,11 +132,15 @@ for ddisk in "${disks[@]}"; do
 		fi
 	done
 done
+
+#echo hi8 >> /root/targetadd
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=false
 
+#echo hi9 >> /root/targetadd
 targetcli saveconfig
 #if [ $change -eq 1 ];
 #then
 # targetcli saveconfig /pacedata/targetconfig
 # sleep 1 
+#:wq
 #fi
