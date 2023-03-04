@@ -14,6 +14,7 @@ mycluster=`nmcli conn show mycluster | grep ipv4.addresses | awk '{print $2}' | 
 declare -a iscsitargets=(`docker exec etcdclient /pace/iscsiclients.py $etcdip | grep target | awk -F'/' '{print $2}'`);
 currentdisks=`targetcli ls /iscsi`
 disks=(`lsblk -nS -o name,serial,vendor | grep -v sr0 |  grep -v LIO | awk '{print $1}'`)
+nodes=(`docker exec etcdclient /TopStor/etcdgetlocal.py Active --prefix | awk -F'Partners/' '{print $2}' | awk -F"'" '{print $1}'`)
 diskids=`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -v LIO | awk '{print $1" "$2}'`
 mappedhosts=`targetcli ls /iscsi | grep Mapped`;
 targets=`targetcli ls backstores/block | grep -v deactivated |  grep dev | awk -F'[' '{print $2}' | awk '{print $1}'`
@@ -35,6 +36,16 @@ done
 
 #echo hi3 >> /root/targetadd
 declare -a newdisks=();
+for node in "${nodes[@]}"; do
+ echo $mappedhosts | grep $node
+ if [ $? -ne 0 ];
+ then
+  nodeip=`docker exec etcdclient /TopStor/etcdgetlocalpy ready/$node`
+  targetcli iscsi/ create iqn.2016-03.com.${node}:t1 
+  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals delete 0.0.0.0 3260
+  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals create $nodeip 3266
+ fi
+done
 targetcli ls iscsi/ | grep ".$myhost:t1" &>/dev/null
 if [ $? -ne 0 ]; then
 # echo hicreate $myhost >> /root/targetadd
