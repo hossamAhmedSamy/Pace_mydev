@@ -15,8 +15,8 @@ for host in "${nodes[@]}" ; do
   needrescan=1;
   #hostpath=`ls /var/lib/iscsi/nodes/ | grep "$host"`;
   echo '#############################################################'
-  echo /sbin/iscsiadm -m discovery --portal ${host}:3266 --type sendtargets \| grep $myhost \| awk \'{print \$2}\'
-  hostiqn=`/sbin/iscsiadm -m discovery --portal ${host}:3266 --type sendtargets | grep $myhost | awk '{print $2}'`
+  echo /sbin/iscsiadm -m discovery --portal ${host}:3266 --type sendtargets \| grep $host \| awk \'{print \$2}\'
+  hostiqn=`/sbin/iscsiadm -m discovery --portal ${host}:3266 --type sendtargets | grep $host | awk '{print $2}'`
   echo hostiqn=$hostiqn
   /sbin/iscsiadm -m node --targetname $hostiqn --portal ${host}:3266 -u
   echo /sbin/iscsiadm -m node --targetname $hostiqn --portal ${host}:3266 -l
