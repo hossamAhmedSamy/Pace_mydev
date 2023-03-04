@@ -56,7 +56,7 @@ for host in "${hosts[@]}"; do
     echo "$host" $devformatted $diskid $diskgiga $diskstatus >> $iscsimapping;
    fi
   done;
-  ./diskstatus.py $host >> $iscsimapping;
+  /pace/diskstatus.py $host >> $iscsimapping;
   i=$((i+1));
  fi
 done

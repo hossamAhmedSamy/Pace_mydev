@@ -113,4 +113,5 @@ if __name__=='__main__':
  myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
  myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ 
  onegroupsync(*sys.argv[1:])

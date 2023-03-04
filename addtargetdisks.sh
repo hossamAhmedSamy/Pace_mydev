@@ -3,13 +3,13 @@
 #exit
 ##########################
 cd /pace
-rabbitip=`echo $@ | awk '{print $1}'`
-myhost=`hostname -s`;
-actives=`/pace/etcdget.py $rabbitip Active --prefix`
+etcdip=`echo $@ | awk '{print $1}'`
+myhost=`echo $@ | awk '{print $2}'`
+actives=`/pace/etcdget.py $etcdip Active --prefix`
 change=0
 #declare -a iscsitargets=(`cat /pacedata/iscsitargets | awk '{print $2}' `);
 mycluster=`nmcli conn show mycluster | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
-declare -a iscsitargets=(`docker exec etcdclient /pace/iscsiclients.py $mycluster | grep target | awk -F'/' '{print $2}'`);
+declare -a iscsitargets=(`docker exec etcdclient /pace/iscsiclients.py $etcdip | grep target | awk -F'/' '{print $2}'`);
 currentdisks=`targetcli ls /iscsi`
 disks=(`lsblk -nS -o name,serial,vendor | grep -v sr0 |  grep -v LIO | awk '{print $1}'`)
 diskids=`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -v LIO | awk '{print $1" "$2}'`
