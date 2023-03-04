@@ -6,8 +6,9 @@ cd /pace
 sessions='sessions'`/sbin/iscsiadm -m session --rescan `
 needrescan=0;
 #mycluster=`nmcli conn show mycluster | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
-hosts=`docker exec etcdclient /TopStor/etcdget.py $etcdip ready --prefix | awk -F"', " '{print $2}' | awk -F"'" '{print $2}'`
-for host in $hosts ; do
+nodes=(`docker exec etcdclient /TopStor/etcdget.py $etcdip ready --prefix | awk -F"', " '{print $2}' | awk -F"'" '{print $2}'`)
+#nodes=(`docker exec etcdclient /TopStor/etcdgetlocal.py ready --prefix | awk -F'Partners/' '{print $2}' | awk -F"'" '{print $1}'`)
+for host in "${nodes[@]}" ; do
  echo $sessions  | grep $host
  if [ $? -ne 0 ]; then
   echo sessions=$sessions
