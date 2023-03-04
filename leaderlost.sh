@@ -9,7 +9,10 @@ myip=$myhostip
 nextlead=`echo $@ | awk '{print $5}'`
 nextleadip=`echo $@ | awk '{print $6}'`
 clusterip=`echo $@ | awk '{print $7}'`
+losthost=`echo $@ | awk '{print $8}'`
 enpdev='enp0s8'
+docker exec etcdclient /TopStor/logmsg.py Partst02 warning system $losthost
+
 rm -rf /etc/chrony.conf
 cp /TopStor/chrony.conf /etc/
 sed -i "s/MASTERSERVER/$nextleadip/g" /etc/chrony.conf
@@ -32,7 +35,6 @@ stamp=`date +%s%N`
 /pace/etcddel.py $leaderip sync/leader/Add --prefix
 /pace/etcdput.py $leaderip sync/leader/Add_${myhost}_$myip/request leader_$stamp
 /pace/etcdput.py $leaderip sync/leader/Add_${myhost}_$myip/request/$myhost leader_$stamp
-docker exec etcdclient /TopStor/logmsg.py Partst02 warning system $leader 
 echo importing all pools >> /root/zfspingtmp2
 ./etcddel.py $leaderip toimport/$myhost 
  
