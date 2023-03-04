@@ -106,4 +106,12 @@ def oneusersync(oper,usertosync):
   
 if __name__=='__main__':
 # usersyncall(*sys.argv[1:])
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
+ leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
+ leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
+ myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
+ myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  oneusersync(*sys.argv[1:])

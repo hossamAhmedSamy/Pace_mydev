@@ -104,12 +104,13 @@ def onegroupsync(oper,usertosync):
 if __name__=='__main__':
  with open('/root/sync2','w') as f:
   f.write('Starting\n')
+
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
- leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+ leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
- leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+ leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
- myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+ myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
- myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+ myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  onegroupsync(*sys.argv[1:])
