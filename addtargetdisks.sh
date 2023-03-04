@@ -8,6 +8,7 @@ myhost=`echo $@ | awk '{print $2}'`
 actives=`/pace/etcdget.py $etcdip Active --prefix`
 change=0
 #declare -a iscsitargets=(`cat /pacedata/iscsitargets | awk '{print $2}' `);
+myip=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip`
 mycluster=`nmcli conn show mycluster | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
 declare -a iscsitargets=(`docker exec etcdclient /pace/iscsiclients.py $etcdip | grep target | awk -F'/' '{print $2}'`);
 currentdisks=`targetcli ls /iscsi`
@@ -29,16 +30,16 @@ for ddisk in  "${disks[@]}"; do
 		echo $ddisk is a part in the targets
 	fi
 done
-#myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
-myip=`nmcli conn show mynode | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
 declare -a newdisks=();
 targetcli ls iscsi/ | grep ".$myhost:t1" &>/dev/null
 if [ $? -ne 0 ]; then
+
  targetcli iscsi/ create iqn.2016-03.com.${myhost}:t1 &>/dev/null
  targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals delete 0.0.0.0 3260
  targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals create $myip 3266
  change=1
 fi
+
 targetcli ls iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals | grep $myip &>/dev/null
 if [ $? -ne 0 ]; then
  targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals ls | grep 3266 | awk -F'o-' '{print $2}' | awk -F':' '{print $1}'
@@ -85,11 +86,17 @@ for target in "${iscsitargets[@]}"; do
 done
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=true
 tpgs=(`targetcli ls /iscsi | grep iqn | grep TPG | grep ':t1' | awk -F'iqn' '{print $2}' | awk '{print $1}'`)
+
 for iqn in "${tpgs[@]}"; do
 	node=`echo $iqn | awk -F'.' '{print $4}' | awk -F':' '{print $1}'`
+echo '##############################################################'
+echo $node
+echo $actives
+echo '##############################################################'
 	echo $actives | grep $node
 	if [ $? -ne 0 ];
 	then
+		
 		targetcli /iscsi delete iqn$iqn
 	fi
 done	
@@ -109,11 +116,9 @@ for ddisk in "${disks[@]}"; do
 done
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=false
 
-
-
 targetcli saveconfig
-if [ $change -eq 1 ];
-then
- targetcli saveconfig /pacedata/targetconfig
- sleep 1 
-fi
+#if [ $change -eq 1 ];
+#then
+# targetcli saveconfig /pacedata/targetconfig
+# sleep 1 
+#fi
