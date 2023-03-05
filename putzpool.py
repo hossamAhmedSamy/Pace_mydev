@@ -1,16 +1,14 @@
 #!/usr/bin/python3
 import subprocess, json,sys
-from socket import gethostname as hostname
 from os import listdir
-from logqueue import queuethis
+from logqueue import queuethis, initqueue
 from etcdput import etcdput as put
 from etcdgetpy import etcdget as get 
 from etcddel import etcddel as dels 
 from os.path import getmtime
 
-def putzpool(leader, leaderip, myhost, myip):
- if leader == myhost:
-   myip = leaderip
+def putzpool():
+ global leader, leaderip, myhost, myip
  perfmon = '0'
  sitechange=0
  readyhosts=get(myip, 'ready','--prefix')
@@ -22,6 +20,8 @@ def putzpool(leader, leaderip, myhost, myip):
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
  drives=[x.split('/dev/')[1].split(' ')[0] for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'zd' not in x and '/sd' in x ]
  lsscsi=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x and 'zd' not in x ]
+ internalls=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' not in x and 'zd' not in x ]
+ 
  freepool=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x and 'zd' not in x ]
  periods=get(myip, 'Snapperiod','--prefix')
  raidtypes=['mirror','raidz','stripe']
@@ -32,6 +32,7 @@ def putzpool(leader, leaderip, myhost, myip):
  spaces=-2
  raidlist=[]
  disklist=[]
+ missingdisks=[0]
  lpools=[]
  ldisks=[]
  ldefdisks=[]
@@ -156,22 +157,28 @@ def putzpool(leader, leaderip, myhost, myip):
      b[1] = 'NA'
      if 'Availability' in zdict['availtype'] : 
       b[1] = 'DEGRADED' 
-     rdict={ 'name':'stripe-'+str(stripecount), 'pool':zdict['name'],'changeop':b[1],'status':b[1],'host':myhost,'disklist':disklist, 'missingdisks':[0] }
+      rname='mirror-temp'+str(stripecount)
+     else:
+        rname='stripe-'+str(stripecount)
+     stripecount+=1
+         
+     rdict={ 'name':rname, 'pool':zdict['name'],'changeop':b[1],'status':b[1],'host':myhost,'disklist':disklist, 'missingdisks':[0] }
      raidlist.append(rdict)
      lraids.append(rdict)
-     stripecount+=1
      disknotfound=1
     for lss in lsscsi:
      z=lss.split()
-     if z[6] in b[0] and len(z[6]) > 3 and 'OFF' not in b[1] :
+     print(z)
+     if (z[6] in b[0] and len(z[6]) > 3 and 'OFF' not in b[1]) or (z[3].split('-')[0] in str(internalls)):
       diskid=lsscsi.index(lss)
       host=z[3].split('-')[1]
       lhosts.add(host)
       phosts.add(host)
       size=z[7]
       devname=z[5].replace('/dev/','')
-      freepool.remove(lss)
       disknotfound=0
+      if z[3].split('-')[0] not in str(internalls):
+        freepool.remove(lss)
       break
     if disknotfound == 1:
       diskid=0
@@ -192,8 +199,6 @@ def putzpool(leader, leaderip, myhost, myip):
      changeop='Removed'
      sitechange=1
     if 'dm-' in b[0]:
-        changeop='ONLINE' 
-        b[1] = 'ONLINE'
         size = 0
         
     ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
@@ -248,9 +253,20 @@ def putzpool(leader, leaderip, myhost, myip):
   else:
    dels(leaderip, y[0])
  for y in xnew:
-  putleaderip, (y[0],y[1])
+  put(leaderip, y[0],y[1])
  if '1' in perfmon: 
   queuethis('putzpool.py','stop','system')
+ 
+def initputzpool(*args):
+    global leader, leaderip, myhost, myip 
+    if len(args) > 0:
+        leader = args[0]
+        leaderip = args[1]
+        myhost = args[2]
+        myip = args[3]
+    if leader == myhost:
+        myip = leaderip
+    initqueue(leaderip, myhost)
    
 if __name__=='__main__':
  if len(sys.argv)> 4:
@@ -267,4 +283,5 @@ if __name__=='__main__':
     myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
     cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
     myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
- putzpool(leader, leaderip,  myhost, myip)
+ initputzpool()
+ putzpool()

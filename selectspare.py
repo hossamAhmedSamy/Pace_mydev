@@ -12,12 +12,20 @@ from etcddel import etcddel as dels
 from poolall import getall as getall
 from time import sleep
 from sendhost import sendhost
+from time import time as stamp
 #from syncpools import syncmypools
 os.environ['ETCDCTL_API']= '3'
 newop=[]
 disksvalue=[]
 usedfree=[]
 myhost = '' 
+
+def dosync(*args):
+ global leader, leaderip, myhost, myhostip, etcdip
+ put(leaderip, *args)
+ put(leaderip, args[0]+'/'+leader,args[1])
+
+
 def mustattach(cmdline,disksallowed,raid):
    global leader, leaderip, myhost, myhostip, etcdip
    print('################################################')
@@ -58,8 +66,8 @@ def mustattach(cmdline,disksallowed,raid):
     return
    dmcmd = 'zpool status '+raid['pool']
    dmstup = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
-   if 'dm-' not in dmstup:
-    print('somthing wrong, no stup found for this degraded group')
+   if 'dm-' in dmstup:
+    print('somthing wrong, there is already a stup found for this degraded group')
     return
    dmstup = 'dm-'+dmstup.split('dm-')[1].split(' ')[0]
    cmd = cmd+[dmstup, '/dev/disk/by-id/'+spare['name']] 
@@ -376,7 +384,7 @@ def solvedegradedraid(raid,disksfree):
    raidhosts.add(disk['host'])
   else:
    if 'stripe' in raid['name']:
-    cmdline2=['/sbin/zpool', 'detach','-f',raid['pool'], disk['actualdisk']]
+    cmdline2=['/sbin/zpool', 'detach',raid['pool'], disk['actualdisk']]
     forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print('detaching the faulty disk',forget.stderr.decode())
     #cmdline2=['systemctl', 'restart','zfs-zed']
@@ -416,12 +424,21 @@ def solvedegradedraid(raid,disksfree):
       eindex = faultdisk.index(fa)
       break
     diskuid = faultdisk[eindex-1].split(':')[1]
+   if 'dm-' in str(raid):
+    return
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], diskuid,'/dev/'+dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   cmdline2=['/sbin/zpool', 'offline',raid['pool'],'/dev/'+dmstup]
+   forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   cmdline2=['/sbin/zpool', 'detach',raid['pool'],diskuid]
+   forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   cmdline2=['/pace/putzpool.py']
+   forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    with open('/root/dmproblem','w') as f:
     f.write('cmdline '+ " ".join(cmdline2)+'\n')
     f.write('result: '+forget.stdout.decode()+'\n')
     f.write('result: '+forget.stderr.decode()+'\n')
+   
    #sleep(3)
    #cmdline2=['/sbin/zpool', 'offline',raid['pool'], '/dev/'+dmstup]
    #subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -490,23 +507,39 @@ def spare2(*args):
         return
 
 
+ print('hihiihihihih',etcdip)
  needtoreplace=get(etcdip, 'needtoreplace', myhost) 
  print('needtoreplace',needtoreplace)
  if myhost in str(needtoreplace):
+  print('"""""""""""""""""""""""""""""""""""""')
   print('need to replace',needtoreplace)
   for raidinfo in needtoreplace:
    poolname = raidinfo[0].split('/')[-1]
    raidname = raidinfo[0].split('/')[-2]
-   rmdisk = raidinfo[1].split('/')[0]
-   adisk = raidinfo[1].split('/')[1]
-   print('will do:', poolname, raidname, rmdisk, adisk)
-   cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
-   forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   rmdisks = raidinfo[1].split('/')[:-1]
+   print('rmdisks',rmdisks)
+   adisk = raidinfo[1].split('/')[-1]
+   cmdline2=['/sbin/zpool', 'status',poolname]
+   cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
+   print('cpoolinfo', cpoolinfo)
+   for rmdisk in rmdisks:
+    print(rmdisk)
+    if rmdisk in cpoolinfo:
+        print('will do:', poolname, raidname, rmdisk, adisk)
+        if 'mirror-temp' in raidname:
+            cmdline2=['/sbin/zpool', 'attach',poolname, rmdisk,adisk]
+        else:
+            cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
+        forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print('forget',forget.returncode)
+        print('cmdline2'," ".join(cmdline2))
+        print('thereuslt',forget.stdout.decode())
+        print('return code',forget.returncode)
    #cmd = ['systemctl', 'restart', 'zfs-zed']
    #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-   print('cmdline2'," ".join(cmdline2))
-   print('thereuslt',forget.stdout.decode())
-   print('return code',forget.returncode)
+   dels(etcdip,'needtoreplace',raidname)
+   dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
+   return
  
  if myhost not in leader:
   return
@@ -515,26 +548,33 @@ def spare2(*args):
  freeraids=[]
  hosts=get(etcdip, 'ready','--prefix')
  allhosts=set()
+ print('slddddddddddddddddddddddddddddd')
  for host in hosts:
   allhosts.add(host[0].replace('ready/',''))
  newop=getall(myhost)
  striperaids=[]
  if len(str(newop)) < 10:
   return
-
+ raidsset = set()
  availability = get(etcdip, 'balance','--prefix')
  degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['status']]
  for spool in newop['pools']:
   for sraid in spool['raidlist']:
    if len(availability) > 0:
     if 'ree' not in sraid['name'] and spool['name'] in str(availability):
-     allraids.append(sraid)
-   else:
+     raidsset.add(sraid['name'])
     if 'ree' not in sraid['name']:
-     allraids.append(sraid)
+     raidsset.add(sraid['name'])
+  for sraid in spool['raidlist']:
+    if sraid['name'] in raidsset:
+        allraids.append(sraid)
+ 
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
+ print('ddddddddddddddddddddddddddddddddddddddddddddddddd')
+ print(allraids)
+ print(len(degradedraids))
  for raid in degradedraids:
   for disk in raid['disklist']:
    if 'ONLINE' not in disk['changeop']:
@@ -560,32 +600,61 @@ def spare2(*args):
 #####################################  set the right replacements for all raids
  newop=getall()
  getcurrent = get(etcdip, 'hosts','current')
- allraids = []
+ allraids = [] 
+ raidsset = set()
  for hostinfo in newop:
   pools = mtuple(hostinfo[1])['pools']
+  print('ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp') 
+  print(pools)
+  print('ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp') 
   for spool in pools:
    if spool['name'] not in str(getcurrent) or 'ree' in spool['name']:
     continue
    for sraid in spool['raidlist']:
+    print('hihihihihihihihihi',spool['name'], sraid['name'],sraid['host'])
     if len(availability) > 0:
+     print('sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss')
      if spool['name'] in str(availability):
-      allraids.append(sraid)
-    else:
-     if sraid['name'] in str(getcurrent):
-      allraids.append(sraid)
+      raidsset.add(sraid['name'])
+    if sraid['name'] in str(getcurrent):
+      raidsset.add(sraid['name'])
+   for sraid in spool['raidlist']:
+    if sraid['name'] in raidsset:
+        allraids.append(sraid)
  diskreplace = {}
  allraidsranked = []
  if len(allraids) == 0:
   print(' no raids in the system')
   return
+  
  for raid in allraids:
-  for disk in raid['disklist']:
-   if disk['changeop'] == 'ONLINE':
-    rankdisk = disk
-    break
-  raid = getraidrank(raid,rankdisk,rankdisk)
-  print('raidname,raidrank',raid['name'],raid['raidrank'])
+    rankdisks=[]
+    raid['raidrank']=[10000000,10000000]
+    print('raiddisklist',raid['disklist'])
+    raiddms = [x for x in raid['disklist'] if 'dm-' in x['name']]
+    raiddmsc = len(raiddms)
+    for disk in raid['disklist']:
+        if disk['changeop'] == 'ONLINE':
+            rankdisk = disk
+            rankdisks.append(disk)
+        print('hihihihihihihi',disk['changeop'], disk['status'])
+        if 'Removed' in disk['changeop'] and 'OFFLINE' not in disk['status'] and 'OFFLINE' in str(raid):
+            cmdline2=['/sbin/zpool', 'detach', raid['pool'], disk['actualdisk']]
+            forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print('unavailable',' '.join(cmdline2))
+        if raiddmsc > 1 and 'dm-' in disk['name']:
+            if 'dm-' in disk['name'] and 'dm-' not in str(raid).replace(disk['name'],''):
+                continue
+            cmdline2=['/sbin/zpool', 'detach', raid['pool'], disk['name']]
+            raiddmsc -= 1
+            forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print('many dms',' '.join(cmdline2))
+    for disk in rankdisks:
+        raid = getraidrank(raid,rankdisk,rankdisk)
+        print('----originalrank----------raidname,raidrank',raid['name'],raid['raidrank'])
+        break
  replacements = dict() 
+ currentraid = raid.copy()
  foundranks = [] 
  currentneedtoreplace = get(etcdip, 'needtoreplace','--prefix')
  for raid in allraids:
@@ -596,15 +665,18 @@ def spare2(*args):
   for fdisk in freedisks:
    replacements[fdisk['name']] = []
    for rdisk in raid['disklist']:
-    #if '_1' in rdisk['size']:
-     #   continue
+    if '_1' in str(rdisk['size']):
+        continue
     if fdisk['name'] == rdisk['name'] or levelthis(fdisk['size']) < levelthis(rdisk['size']):
      continue
     thisrank = getraidrank(raid,rdisk,fdisk)
+
     thiscombinedrank = abs(thisrank['raidrank'][0])*1000 + thisrank['raidrank'][1]
     if thiscombinedrank < combinedrank:
-     bestrank = (rdisk,fdisk,raid,thiscombinedrank)
+     print('----foundnewrank----------raidname,raidrank',raid['name'],raid['raidrank'])
+     bestrank = (rdisk,fdisk,thisrank,thiscombinedrank)
      foundranks.append(bestrank)
+
  if len(foundranks) == 0:
   dels(etcdip, 'needtoreplace','--prefix')
   print('no need to re- optmize raid groups')
@@ -620,12 +692,23 @@ def spare2(*args):
  for rank in foundranks:
   if rank[1]['name'] not in diskraids and rank[2]['name'] not in diskraids:
    print('needtoreplace/'+rank[0]['actualdisk'],'with',rank[0]['name'],'for raid',rank[2]['name'], 'combined rank = ',rank[3])
-   dels(etcdip, 'neeedtoreplace',rank[1]['name'])
-   dels(etcdip, 'neeedtoreplace',rank[2]['name'])
    diskraids.add(rank[1]['name'])
    diskraids.add(rank[2]['name'])
-   print('rank',rank[0])
-  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['actualdisk']+'/'+rank[1]['name'])
+  print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
+  print('rank1',rank[1]['devname'],rank[1]['actualdisk'])
+  print('rank2',rank[2]['name'],rank[2]['host'])
+  print('rank0',rank[0]['devname'],rank[0]['actualdisk'])
+  print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
+  dels(etcdip, 'neeedtoreplace',rank[1]['devname'])
+  dels(etcdip, 'neeedtoreplace',rank[2]['name'])
+  raiddisk = rank[0].copy
+  if 'mirror-temp' in rank[2]['name']:
+    for rdisk in raid['disklist']:
+        if rdisk['changeop'] == 'ONLINE':
+            raiddisk = rdisk.copy()
+            break
+  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rdisk['name']+'/'+rdisk['devname']+'/'+rdisk['actualdisk']+'/'+rank[1]['devname'])
+  dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
  return
  
   

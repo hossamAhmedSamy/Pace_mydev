@@ -16,8 +16,9 @@ dirtydic = { 'pool': 0, 'volume': 0 }
 syncanitem = ['dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
+wholeetcd = [ 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
 etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
+restartetcd = wholeetcd + etcdonly
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with bash script: sync/Operation/commandline_oper1_oper2_../request Operation_stamp###########
@@ -130,7 +131,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     if sync == 'Partnr':
       synckeys(leaderip, myhostip, 'Partner', 'Partner')
     else:
-      synckeys(leaderip,myhostip, sync,sync)
+        synckeys(leaderip,myhostip, sync,sync)
    if sync in etcdonly and myhost != leader:
      if opers[0] == 'Add':
       if 'Split' in opers[1]:
@@ -210,9 +211,15 @@ def syncrequest(leader,leaderip,myhost, myhostip):
   
  return     
 
-
+def restetcd(leader,leaderip, myhost,myhostip):
+    for sync in wholeetcd :
+        if sync == 'Partnr':
+            synckeys(leaderip, myhostip, 'Partner', 'Partner')
+        else:
+            synckeys(leaderip,myhostip, sync,sync)
+ 
 runcmd={'Snapperiod':'etctocron'} 
-synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall }
+synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall , 'restetcd': restetcd}
 if __name__=='__main__':
     leaderip=sys.argv[2]
     myhost=sys.argv[3]
