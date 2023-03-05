@@ -20,7 +20,7 @@ from addactive import addactive
 from selectimport import selectimport
 from zpooltoimport import zpooltoimport
 from selectspare import spare2  
-from checksyncs import syncrequest
+from checksyncs import syncrequest, initchecks
 from VolumeCheck import volumecheck
 from multiprocessing import Process
 from concurrent.futures import ProcessPoolExecutor
