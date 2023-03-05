@@ -12,7 +12,7 @@ from etcdsync import synckeys
 from time import time as timestamp
 from etctocron import etctocron 
 
-syncanitem = ['losthost','replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
+syncanitem = ['losthost','diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'Partnr', 'Snappreiod', 'running','volumes','ready','known' ]
@@ -139,6 +139,9 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if sync in syncanitem:
       if sync in 'Snapperiod' :
        etctocron(leaderip)
+      elif sync in 'diskref':
+        cmdline='/pace/diskref.sh'
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       elif 'syncfn' in opers[0]:
        print('opers',opers)
        globals()[opers[1]](*opers[2:])
