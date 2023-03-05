@@ -30,7 +30,7 @@ def mustattach(cmdline,disksallowed,raid):
    print('###########################')
    spareplsclear=get(etcdip, 'clearplsdisk/'+spare['actualdisk'])
    spareiscleared=get(etcdip, 'cleareddisk/'+spare['actualdisk']) 
-   if spareiscleared[0] != spareplsclear[0] or spareiscleared[0] == -1:
+   if spareiscleared[0] != spareplsclear[0] or spareiscleared[0] == '_1':
     print('asking to clear')
     put(etcdip, 'clearplsdisk/'+spare['actualdisk'],spare['host'])
     dels(etcdip , 'cleareddisk/'+spare['actualdisk']) 
@@ -517,7 +517,7 @@ def spare2(*args):
   allhosts.add(host[0].replace('ready/',''))
  newop=getall(myhost)
  striperaids=[]
- if newop==[-1]:
+ if '_1' in str(newop):
   return
  availability = get(etcdip, 'balance','--prefix')
  degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['status']]

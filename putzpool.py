@@ -144,10 +144,10 @@ def putzpool(leaderip, myhost, myip):
    missingdisks[0] += 1
     
   elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5):
-    diskid='-1'
-    host='-1'
-    size='-1' 
-    devname='-1'
+    diskid='_1'
+    host='_1'
+    size='_1' 
+    devname='_1'
     disknotfound=1
     if  len(a.split('scsi')[0]) < (spaces+2) or (len(raidlist) < 1 and len(zpool)> 0):
      disklist=[]
@@ -173,8 +173,8 @@ def putzpool(leaderip, myhost, myip):
       break
     if disknotfound == 1:
       diskid=0
-      host='-1'
-      size='-1'
+      host='_1'
+      size='_1'
       devname=b[0]
       
      #else:
@@ -184,7 +184,7 @@ def putzpool(leaderip, myhost, myip):
     if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop']:
      b[1] = 'ONLINE' 
     changeop=b[1]
-    if host=='-1':
+    if host=='_1':
      raidlist[len(raidlist)-1]['changeop']='Warning'
      zpool[len(zpool)-1]['changeop']='Warning'
      changeop='Removed'
@@ -246,19 +246,20 @@ def putzpool(leaderip, myhost, myip):
   queuethis('putzpool.py','stop','system')
    
 if __name__=='__main__':
- if len(sys.argv)> 1:
-   myip = sys.argv[1]
-   leader=get(myip, 'leader')[0]
-   leaderip = get(myip, 'leaderip')[0]
-   myhost = get(myip, 'clusternode')[0]
+ if len(sys.argv)> 4:
+    leader = sys.argv[1]
+    leaderip = sys.argv[2]
+    myhost = sys.argv[3]
+    myip = sys.argv[4]
  else:
-  cmdline = 'docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
-  myip = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode().split()[0]
-  cmdline = 'docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
-  myhost = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode().split()[0]
-  cmdline = 'docker exec etcdclient /TopStor/etcdgetlocal.py leader'
-  leader = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode().split()[0]
-  leaderip = get(myip, 'leaderip')[0]
-  if leader == myhost:
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
+    leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
+    leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
+    myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
+    myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ if leader == myhost:
    myip = leaderip
  putzpool(leaderip,  myhost, myip)

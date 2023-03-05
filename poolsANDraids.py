@@ -64,9 +64,9 @@ for a in y:
   zdict={ 'name':b[0], 'status':'NA','disklist':disklist }
   raidlist.append(zdict)
  elif 'scsi' in a:
-   diskid='-1'
-   host='-1'
-   size='-1' 
+   diskid='_1'
+   host='_1'
+   size='_1' 
    if  len(a.split('scsi')[0]) < (spaces+2) or (len(raidlist) < 1 and len(zpool)> 0):
     print(spaces,len(a.split('scsi')[0]))
     disklist=[]

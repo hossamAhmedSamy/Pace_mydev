@@ -250,24 +250,30 @@ def lazylooper():
         x = x + 1
         if x == len(loopers):
          x = 0
+
+def zfspinginit():
+    global etcdip, leader, leaderip, myhost, myhostip
+    myhostip = get(leaderip, 'ready/'+myhost)[0]
+    leader = get(leaderip, 'leader')[0]
+    #leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
+    #leader = leaderinfo[0].split('/')[1]
+    #leaderip = leaderinfo[1]
+    #cleader = leader
+    if myhost == leader:
+        etcdip = leaderip
+    else:
+        etcdip = myhostip
+    selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
+    remknown('init', leader, leaderip, myhost, myhostip, etcdip)
+    zpooltoimport('init', leader, leaderip, myhost, myhostip, etcdip)
+    volumecheck('init', leader, leaderip, myhost, myhostip, etcdip)
+   
+
 if __name__=='__main__':
  print('hihihih')
  leaderip = sys.argv[1]
  myhost = sys.argv[2]
- myhostip = get(leaderip, 'ready/'+myhost)[0]
- leader = get(leaderip, 'leader')[0]
- #leaderinfo = checkleader('leader','--prefix').stdout.decode('utf-8').split('\n')
- #leader = leaderinfo[0].split('/')[1]
- #leaderip = leaderinfo[1]
- #cleader = leader
- if myhost == leader:
-  etcdip = leaderip
- else:
-  etcdip = myhostip
- selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
- remknown('init', leader, leaderip, myhost, myhostip, etcdip)
- zpooltoimport('init', leader, leaderip, myhost, myhostip, etcdip)
- volumecheck('init', leader, leaderip, myhost, myhostip, etcdip)
+ zfspinginit()
  dirty = get(etcdip, 'dirty','--prefix')
  for dic in dirtydic:
   if dic not in str(dirty):
@@ -293,6 +299,7 @@ if __name__=='__main__':
  #refreshall() 
  #infloop = lazyloop()
  while True:
+  zfspinginit()
   zload = getload()
   counter = 0
   while zload > 65:
