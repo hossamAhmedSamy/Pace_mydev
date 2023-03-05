@@ -63,24 +63,26 @@ def heartbeat(*args):
     while True:
         print('looping')
         sleep(1)
-        knowns = [('ready/'+leader, leaderip)]
-        if myhost == leader:
-            knowns = knowns + get(etcd, 'ready','--prefix')
+        knowns = get(etcd, 'ready','--prefix')
         for known in knowns:
             host = known[0].split('/')[1]
             if host == myhost:
                 continue
-            hostip = known[1]
+            if host == leader:
+                hostip = leaderip
+            else:
+                hostip = known[1]
             print('nmapping')
             result = 'failed'
             tries = 0
             cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+hostip 
-            while tries < 5:
+            while tries < 4:
                 tries +=1
                 result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                 result =(host,'ok') if 'open' in result  else (host,'lost')
                 if 'ok' in str(result):
                     break
+                sleep(1)
             print(result)
             if 'ok' not in str(result):
                 if host == leader:
