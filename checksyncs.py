@@ -12,7 +12,8 @@ from etcdsync import synckeys
 from time import time as timestamp
 from etctocron import etctocron 
 
-syncanitem = ['losthost','diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
+dirtydic = { 'pool': 0, 'volume': 0 } 
+syncanitem = ['dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
@@ -101,6 +102,10 @@ def syncall(leader,leaderip,myhost, myhostip):
 
 def syncrequest(leader,leaderip,myhost, myhostip):
  global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
+ if leader == myhost:
+    etcdip = leaderip
+ else:
+    etcdip = myhostip
  allsyncs = get(leaderip,'sync','request') 
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) or ('request/' and '/'+myhost) in str(x) ] 
@@ -142,6 +147,12 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       elif sync in 'diskref':
         cmdline='/pace/diskref.sh '+leader+' '+ leaderip+' '+ myhost+' '+ myhostip
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      elif sync in 'hostdown':
+        cmdline='/pace/hostdown.sh '+opers[0]
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      elif sync in 'dirty':
+        for dirt in dirtydic:
+            put(etcdip, 'dirty/'+dirt, str(dirtydic[dirt]))
       elif 'syncfn' in opers[0]:
        print('opers',opers)
        globals()[opers[1]](*opers[2:])
@@ -180,8 +191,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     deleted.add(done[1])
  else:
   print('hihihihi')
-  actives = len(get(myhostip,'ActivePartners','--prefix')) + 1
-  print('nononon')
+  actives = len(get(myhostip,'ActivePartners','--prefix')) 
+  print('pruuuuuuuuuuuuuuuuuuuuuning')
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
   toprunedic = dict()
   for prune in toprune:
@@ -191,7 +202,9 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     toprunedic[prune[1]][0] += 1
     toprunedic[prune[1]].append(prune[0])
   for prune in toprunedic:
-   if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
+   #if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
+   print(actives,'prune',prune, 'ready/Del' in str(toprunedic[prune][1:]))
+   if toprunedic[prune][0] >= actives or ((('ready/Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0]+1 >= actives):
     dels(leaderip,'sync',prune) 
     #print(prune,toprunedic[prune])
   

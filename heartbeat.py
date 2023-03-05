@@ -89,26 +89,33 @@ def heartbeat(*args):
                     print('leader lost. nextleader is ',nextleader, 'while my host',myhost)
                     leader = nextleader 
                     put(myhostip,'leader',leader)
-                if myhost == nextleader:
-                    clusterip=get(myhostip,'namespace/mgmtip')[0]
-                    cmdline='/pace/leaderlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+nextleader+' '+nextleaderip+' '+clusterip+' '+host
-                    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-                    etcd = leaderip
-                else:
-                    sleep(2)
-                    result='failed'
-                    while 'ok' not in str(result):
-                        print('hceking new leader')
-                        cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+leaderip 
+                    if myhost == nextleader:
+                        clusterip=get(myhostip,'namespace/mgmtip')[0]
+                        cmdline='/pace/leaderlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+nextleader+' '+nextleaderip+' '+clusterip+' '+host
                         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-                        result =(host,'ok') if 'open' in result  else (host,'lost')
+                        etcd = leaderip
+                    else:
+                        sleep(2)
+                        result='failed'
+                        while 'ok' not in str(result):
+                            print('chceking new leader')
+                            cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+leaderip 
+                            result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+                            result =(host,'ok') if 'open' in result  else (host,'lost')
+                    put(etcd,'refreshdisown','yes')
+                dels(leaderip, 'sync/hostdown/'+host,'--prefix')
+                stampit = str(stamp())
+                put(leaderip,'sync/hostdown/'+host+'_/request','hostdown_0')
+                put(leaderip,'sync/hostdown/'+host+'_/request/'+myhost,'hostdown_0')
+                cmdline='/pace/hostlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+host
+                result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                 dels(leaderip,'ready/'+host)
                 dels(leaderip, 'running/', host)
                 dels(leaderip, 'host', host)
                 dels(leaderip, 'known/'+host)
                 dels(leaderip, 'pools',host)
-                stampit = str(stamp())
-                dosync('sync/known/Del_known_'+host+'/request','known_'+stampit)
+                dels(leaderip, 'sync/hostdown',host)
+                #dosync('sync/known/Del_known_'+host+'/request','known_'+stampit)
                 dosync('sync/ready/Del_ready_'+host+'/request','ready_'+stampit)
                 dosync('sync/running/____/request','running_'+stampit)
                 dosync('sync/pools/Del_pools_'+host+'/request','pools_'+stampit)
@@ -118,7 +125,7 @@ def heartbeat(*args):
                 #etcds = etcdctlheart(myip,myport,'volumes','--prefix')
                 #replis = etcdctlheart(myip,myport, 'replivol','--prefix')
                 #volumecheck(leadern, myhost, etcds, replis, pcss)
-                #addactive(leadern,myhost)
+                #ddactive(leadern,myhost)
                 #spare2(leadern, myhost)
                 #spare2(leadern, myhost)
                 #spare2(leadern, myhost)

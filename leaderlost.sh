@@ -36,5 +36,5 @@ docker exec etcdclient /TopStor/logmsg.py Partst02 warning system $losthost
 /pace/etcdput.py $leaderip sync/leader/Add_${myhost}_$myip/request leader_$stamp
 /pace/etcdput.py $leaderip sync/leader/Add_${myhost}_$myip/request/$myhost leader_$stamp
 echo importing all pools >> /root/zfspingtmp2
-./etcddel.py $leaderip toimport/$myhost 
+/pace/etcddel.py $leaderip toimport/$myhost 
  

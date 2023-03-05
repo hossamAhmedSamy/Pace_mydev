@@ -14,7 +14,6 @@ from time import sleep
 from etcdput import etcdput as put 
 from addknown import addknown
 from putzpool import putzpool
-from etcdputlocal import etcdput as putlocal 
 from activeusers import activeusers
 from addactive import addactive
 from selectimport import selectimport
@@ -66,9 +65,9 @@ def fapiproc():
   result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
 
 def putzpoolproc():
- global leader, myhost
+ global leaderip, leader, myhost, myhostip
  try:
-  putzpool(leader,myhost)
+  putzpool(leader, leaderip,myhost, myhostip)
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in putzpool:',e)
@@ -88,9 +87,9 @@ def addactiveproc():
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def selectimportproc():
- global leader, myhost
+ global leader, leaderip, myhost, myhost, myhostip, etcdip
  try:
-  allpools=get('pools/','--prefix')
+  allpools=get(etcdip, 'pools/','--prefix')
   selectimport(myhost,allpools,leader)
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
@@ -120,7 +119,7 @@ def zpooltoimportproc():
 def volumecheckproc():
  global leader, myhost, leaderip, myhostip, etcdip, dirty
  dirty = int(dirtydic['volume'])
- if dirty > 2  :
+ if dirty > 12  :
   return
  dirty += 1 
  put(etcdip, 'dirty/volume', str(dirty))
@@ -137,18 +136,15 @@ def volumecheckproc():
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def refreshall():
- global leader, myhost
- cmdline='/pace/iscsiwatchdog.sh'
- result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
- putzpool(leader,myhost)
- allpools=get('pools/','--prefix')
+ global leaderip, leader, myhost, myhostip, etcdip
+ print('putzpool',leader, leaderip,myhost,myhostip)
+ putzpool(leader, leaderip,myhost,myhostip)
+ allpools=get(etcdip, 'pools/','--prefix')
  selectimport(myhost,allpools,leader)
  zpooltoimport(leader, myhost)
- etcds = get('volumes','--prefix')
- replis = get('replivol','--prefix')
- cmdline = 'pcs resource'
- pcss = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8') 
- volumecheck(leader, myhost, etcds, replis, pcss)
+ etcds = get(etcdip,'volumes','--prefix')
+ replis = get(etcdip, 'replivol','--prefix')
+ volumecheck(etcds, replis)
  spare2(leader, myhost)
  spare2(leader, myhost)
  spare2(leader, myhost)
@@ -222,7 +218,7 @@ def activeusersproc():
 
 
 #loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc ]
-loopers = [ zpooltoimportproc, volumecheckproc ]
+loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc ]
 
 def CommonTask(task):
  print("''''''''' task started",task,"'''''''''''''''''''''''''''''''''''''''")
@@ -264,6 +260,7 @@ def zfspinginit():
     else:
         etcdip = myhostip
     selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
+    spare2('init', leader, leaderip, myhost, myhostip, etcdip)
     remknown('init', leader, leaderip, myhost, myhostip, etcdip)
     zpooltoimport('init', leader, leaderip, myhost, myhostip, etcdip)
     volumecheck('init', leader, leaderip, myhost, myhostip, etcdip)

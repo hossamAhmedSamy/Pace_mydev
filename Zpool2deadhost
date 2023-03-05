@@ -2,8 +2,10 @@
 export ETCDCTL_API=3
 echo $@ > /root/Zpoolparam
 echo starting zpooldeadhost
-thehost=`echo $@ | awk '{print $1}'`
-pool=`echo $@ | awk '{print $2}'`
+leaderip=`echo $@ | awk '{print $1}'`
+etcdip=`echo $@ | awk '{print $2}'`
+thehost=`echo $@ | awk '{print $3}'`
+pool=`echo $@ | awk '{print $4}'`
 success=0;
 myhost=`hostname`
 echo importing the $pool nicely 
@@ -19,14 +21,14 @@ fi
 echo success=$success >> /root/Zpoolparam
 if [ $success -eq 1 ]; 
 then
- ETCDCTL_API=3 /TopStor/logmsg.py Zpsu02 info system $pool &
- ETCDCTL_API=3 /pace/etcdput.py pools/$pool $myhost 
- ETCDCTL_API=3 /pace/broadcasttolocal.py pools/$pool $myhost 
+ docker exec etcdclient /TopStor/logmsg.py Zpsu02 info system $pool 
+ ETCDCTL_API=3 /pace/etcdput.py $leaderip pools/$pool $myhost 
+# ETCDCTL_API=3 /pace/broadcasttolocal.py pools/$pool $myhost 
  /pace/putzpool.py
  #ETCDCTL_API=3 /pace/syncpools.py thispool $pool.
- ETCDCTL_API=3 /pace/etcddel.py poolsnxt/$pool
- ETCDCTL_API=3 /pace/etcddel.py cannot $pool
- /TopStor/VolumeActivateCIFS pool=$pool host=$thehost user=system &
- /TopStor/VolumeActivateHome pool=$pool host=$thehost user=system &
- /TopStor/VolumeActivateNFS pool=$pool host=$thehost user=system &
+ ETCDCTL_API=3 /pace/etcddel.py $leaderip poolsnxt/$pool
+ ETCDCTL_API=3 /pace/etcddel.py $leaderip cannot $pool
+ #/TopStor/VolumeActivateCIFS pool=$pool host=$thehost user=system &
+ #/TopStor/VolumeActivateHome pool=$pool host=$thehost user=system &
+ #/TopStor/VolumeActivateNFS pool=$pool host=$thehost user=system &
 fi 
