@@ -14,3 +14,5 @@ else
 	etcdip=$myhostip
 fi
 /pace/iscsirefresh.sh $etcdip $myhost
+/pace/addtargetdisks.sh $etcdip $myhost
+/pace/iscsirefresh.sh $etcdip $myhost

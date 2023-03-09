@@ -9,6 +9,7 @@ actives=`/pace/etcdget.py $etcdip Active --prefix`
 change=0
 #echo hi1 $myhost>> /root/targetadd
 #declare -a iscsitargets=(`cat /pacedata/iscsitargets | awk '{print $2}' `);
+initialtarget=`targetcli ls | wc -l`
 myip=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip`
 mycluster=`nmcli conn show mycluster | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
 declare -a iscsitargets=(`docker exec etcdclient /pace/iscsiclients.py $etcdip | grep target | awk -F'/' '{print $2}'`);
@@ -150,6 +151,13 @@ targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=fa
 
 #echo hi9 >> /root/targetadd
 targetcli saveconfig
+
+endingtarget=`targetcli ls | wc -l`
+if [[ $initialtarget != $endingtarget ]];
+then
+  stamp=`date +%s%N`
+  /TopStor/etcdput.py $mycluster sync/diskref/______/request diskref_$stamp
+fi
 #if [ $change -eq 1 ];
 #then
 # targetcli saveconfig /pacedata/targetconfig
