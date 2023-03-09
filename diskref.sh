@@ -1,6 +1,7 @@
 #!/usr/bin/sh
 # needed the operands to be like : one:two:three:four
 #
+echo $@ > /root/diskref
 leader=`echo $@ | awk '{print $1}'`
 leaderip=`echo $@ | awk '{print $2}'`
 myhost=`echo $@ | awk '{print $3}'`
