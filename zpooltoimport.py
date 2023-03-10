@@ -64,7 +64,7 @@ def zpooltoimport(*args):
   return
 
  knowns=get(etcdip, 'ready','--prefix')
- hosts=get(leaderip,'hosts','/current')
+ hosts=get(leaderip,'host','/current')
  pools = getpoolstoimport()
  print('pools',pools)
  needtoimport=get(etcdip, 'poolsnxt', '--prefix') 
