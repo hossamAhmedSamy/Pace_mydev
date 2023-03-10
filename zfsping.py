@@ -222,7 +222,7 @@ def activeusersproc():
 
 
 #loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc ]
-loopers = [ zpooltoimportproc, volumecheckproc ]
+loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc ]
 
 def CommonTask(task):
  print("''''''''' task started",task,"'''''''''''''''''''''''''''''''''''''''")
@@ -264,6 +264,7 @@ def zfspinginit():
     else:
         etcdip = myhostip
     selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
+    spare2('init', leader, leaderip, myhost, myhostip, etcdip)
     remknown('init', leader, leaderip, myhost, myhostip, etcdip)
     zpooltoimport('init', leader, leaderip, myhost, myhostip, etcdip)
     volumecheck('init', leader, leaderip, myhost, myhostip, etcdip)
