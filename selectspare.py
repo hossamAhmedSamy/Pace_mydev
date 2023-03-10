@@ -39,7 +39,7 @@ def mustattach(cmdline,disksallowed,raid):
     msg={'req': 'Zpool', 'reply':z}
     sendhost(hostip[0], str(msg),'recvreply',myhost)
     print('returning')
-    print(raid)
+    print('raid',raid)
     return 'wait' 
    dels(etcdip, 'clearplsdisk/'+spare['actualdisk']) 
    dels(etcdip, 'cleareddisk/'+spare['actualdisk']) 
@@ -48,7 +48,7 @@ def mustattach(cmdline,disksallowed,raid):
    if 'stripe' in raid['name']:
     print('############start attaching')
     cmd = cmd+[raid['disklist'][0]['name'],'/dev/disk/by-id/'+spare['name']] 
-    print(' '.join(cmd))
+    print('thecmd',' '.join(cmd))
     res = subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if res.returncode !=0:
      print('somehting went wrong', res.stderr.encode())
@@ -119,91 +119,91 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
    return w
 ######### RAID DiskB online DiskA free policy: useability #####################
  elif 'free' in diskA['changeop'] and 'ONLINE' in diskB['status']:# DiskB online
-  print('spare2')
+  print('spar2')
   if 'useable' in balancetype:
-   print('spare2_1')
+   print('spar2_1')
    sizediff=(norm(diskA['size'])-norm(diskB['size'])) # tendency to same size
  ########### Mirror and DiskB online diskA free policy: useability ############
    if 'mirror' in diskB['raid']:    # useable type not to mirror large disks
-    print('spare2_2')
+    print('spar2_2')
     if norm(diskA['size']) > norm(diskB['size']):
-     print('spare2_3')
+     print('spar2_3')
      w=100002
      return w
-    print('spare2_4')
+    print('spar2_4')
     w+=10*sizediff+int(diskA['host'] in diskB['host'])
     return w
  ########### RAID and DiskB online diskA free policy: Availability #########
   else:
-   print('spare2_5')
+   print('spar2_5')
    minB=min(onlinedisks,key=lambda x:norm(x['size']))
    if norm(minB['size']) > norm(diskA['size']):
-    print('spare2_6')
+    print('spar2_6')
     w=1000000
     return w
-   print('spare2_7')
+   print('spar2_7')
    raidhosts[diskA['host']]+=1
    raidhosts[diskB['host']]-=1
    if 'raidz' in diskB['raid']:
-    print('spare2_8')
+    print('spar2_8')
     sizediff=norm(diskA['size'])-norm(diskB['size']) 
     if diskA['host']==diskB['host'] and norm(diskA['size']) >= norm(diskB['size']) :
-     print('spare2_9')
+     print('spar2_9')
      w=2200000
      return w
    if 'raidz1' in diskB['raid']:
-    print('spare2_10')
+    print('spar2_10')
     if raidhosts[diskA['host']] > 1:
-     print('spare2_11')
+     print('spar2_11')
      w=2000000
      return w
     elif raidhosts[diskA['host']]==1 and raidhosts[diskB['host']]<1:
-     print('spare2_12')
+     print('spar2_12')
      w=2100000
      return w
     elif raidhosts[diskA['host']]<=1 and raidhosts[diskB['host']] >=raidhosts[diskA['host']]:
-     print('spare2_13')
+     print('spar2_13')
      w+=sizediff+10*int(raidhosts[diskA['host']]-raidhosts[diskB['host']])
      return w
     else:
-      print('spare2_14')
+      print('spar2_14')
       print('Error',raidhosts)
 
    elif 'raidz2' in diskB['raid']:
-    print('spare2_15')
+    print('spar2_15')
     if raidhosts[diskA['host']] > 2:
-     print('spare2_16')
+     print('spar2_16')
      w=2000000
      return w
     elif raidhosts[diskA['host']]==2 and raidhosts[diskB['host']]<2:
-     print('spare2_17')
+     print('spar2_17')
      w=2100000
      return w
     elif raidhosts[diskA['host']]==1 and raidhosts[diskB['host']]<0:
-     print('spare2_18')
+     print('spar2_18')
      w=2200000
      return w
     elif raidhosts[diskA['host']]<=2 and raidhosts[diskB['host']] >=raidhosts[diskA['host']]:
-     print('spare2_19')
+     print('spar2_19')
      w+=sizediff+10*int(raidhosts[diskA['host']]-raidhosts[diskB['host']])
      return w
     else:
-      print('spare2_20')
+      print('spar2_20')
       print('Error',raidhosts)
     
  ########### Mirror and DiskB online diskA free policy: Availability #########
    elif 'mirror' in diskB['raid']:
-    print('spare2_21')
+    print('spar2_21')
     if raidhosts[diskA['host']]==2:
      w=3100000
      return w
-    print('spare2_22')
+    print('spar2_22')
     sizediff=norm(diskA['size'])-norm(diskB['size']) 
     if sizediff >= 0 and hostcounts[diskB['host']]==1:
-     print('spare2_23')
+     print('spar2_23')
      w=3200000
      return w
-    print('spare2_24')
+    print('spar2_24')
     w+=sizediff+10*int(diskA['host'] in diskB['host'])
     return w
 ########### RAID and DiskB online diskA in Raid policy: Any #########
@@ -502,7 +502,7 @@ def spare2(*args):
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    #cmd = ['systemctl', 'restart', 'zfs-zed']
    #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-   print(" ".join(cmdline2))
+   print('cmdline2'," ".join(cmdline2))
    print('thereuslt',forget.stdout.decode())
    print('return code',forget.returncode)
  
@@ -580,7 +580,7 @@ def spare2(*args):
     rankdisk = disk
     break
   raid = getraidrank(raid,rankdisk,rankdisk)
-  print(raid['name'],raid['raidrank'])
+  print('raidname,raidrank',raid['name'],raid['raidrank'])
  replacements = dict() 
  foundranks = [] 
  currentneedtoreplace = get(etcdip, 'needtoreplace','--prefix')
@@ -618,7 +618,7 @@ def spare2(*args):
    dels(etcdip, 'neeedtoreplace',rank[2]['name'])
    diskraids.add(rank[1]['name'])
    diskraids.add(rank[2]['name'])
-   print(rank[0])
+   print('rank',rank[0])
   put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['actualdisk']+'/'+rank[1]['name'])
  return
  
@@ -639,11 +639,12 @@ if __name__=='__main__':
   leaderip = sys.argv[1]
   myhost = sys.argv[2]
   leader=get(leaderip, 'leader')[0]
-  myhostip=get(leaderip,'ready/'+myhost)[1] 
+  myhostip=get(leaderip,'ready/'+myhost)[0] 
   if myhost == leader:
    etcdip = leaderip
   else:
    etcdip = myhostip
-  spare2()
+  getall('init',leader, leaderip, myhost, myhostip, etcdip)
+  spare2(sys.argv[1:])
  #if '1' in perfmon:
  # queuethis('selectspare.py','stop','system')

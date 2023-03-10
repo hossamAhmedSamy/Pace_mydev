@@ -16,7 +16,8 @@ def delall(*args):
 
 def getall(*args):
  global leader, leaderip, myhost, myhostip, etcdip
- if args[0]=='init':
+ if len(args) > 0:
+    if args[0]=='init':
         leader = args[1]
         leaderip = args[2]
         myhost = args[3]
