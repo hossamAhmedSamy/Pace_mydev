@@ -120,7 +120,7 @@ def zpooltoimportproc():
 def volumecheckproc():
  global leader, myhost, leaderip, myhostip, etcdip, dirty
  dirty = int(dirtydic['volume'])
- if dirty > 2  :
+ if dirty > 12  :
   return
  dirty += 1 
  put(etcdip, 'dirty/volume', str(dirty))

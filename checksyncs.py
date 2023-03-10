@@ -12,7 +12,8 @@ from etcdsync import synckeys
 from time import time as timestamp
 from etctocron import etctocron 
 
-syncanitem = ['losthost','diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
+dirtydic = { 'pool': 0, 'volume': 0 } 
+syncanitem = ['dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
@@ -101,6 +102,10 @@ def syncall(leader,leaderip,myhost, myhostip):
 
 def syncrequest(leader,leaderip,myhost, myhostip):
  global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
+ if leader == myhost:
+    etcdip = leaderip
+ else:
+    etcdip = myhostip
  allsyncs = get(leaderip,'sync','request') 
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) or ('request/' and '/'+myhost) in str(x) ] 
@@ -142,6 +147,12 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       elif sync in 'diskref':
         cmdline='/pace/diskref.sh '+leader+' '+ leaderip+' '+ myhost+' '+ myhostip
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      elif sync in 'hostdown':
+        cmdline='/pace/hostdown.sh '+opers[0]
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      elif sync in 'dirty':
+        for dirt in dirtydic:
+            put(etcdip, 'dirty/'+dirt, str(dirtydic[dirt]))
       elif 'syncfn' in opers[0]:
        print('opers',opers)
        globals()[opers[1]](*opers[2:])

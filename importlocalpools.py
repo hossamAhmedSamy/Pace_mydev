@@ -2,9 +2,6 @@
 import sys,subprocess
 from threading import Thread
 from etcdgetpy import etcdget as get
-from etcdput import etcdput as put
-from etcddel import etcddel as dels
-from ast import literal_eval as mtuple
 
 def thread_run(*args):
  with open('/root/importlocal2','a') as f:
@@ -16,24 +13,28 @@ def thread_run(*args):
 
 
 def importpools(*args):
- myhost=args[0]
- thehost=args[1]
+ leaderip=args[0]
+ myhost=args[1]
+ etcdip=args[2]
+ thehost=args[3]
  threads=[]
  pool=""
- mypools=get('poolsnxt',myhost)
+ mypools=get(etcdip,'poolsnxt',myhost)
 # with open('/TopStordata/forlocalpools') as f:
 #  for line in f:
  print('mypools',myhost,thehost,mypools)
  if(len(mypools) < 1):
   return
  for line in mypools:
+  if '_1' in str(line):
+   break
   with open('/root/importlocal','w') as f:
    f.write('poolline: '+str(pool)+'\n')
   pool=line[0].split('/')[1]
   with open('/root/importlocal','a') as f:
    f.write('poolname: '+str(pool)+'\n')
   print('line', line)
-  cmdline='/pace/Zpool2deadhost '+thehost+' '+pool
+  cmdline='/pace/Zpool2deadhost '+leaderip+' '+etcdip+' '+thehost+' '+pool
   x=Thread(target=thread_run,name='importing-'+pool,args=cmdline.split(" "))
   x.start()
   threads.append(x) 
