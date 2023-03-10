@@ -140,10 +140,10 @@ def putzpool(leaderip, myhost, myip):
    rdict={ 'name':b[0], 'changeop':b[1],'status':b[1],'pool':zdict['name'],'host':myhost,'disklist':disklist, 'missingdisks':missingdisks }
    raidlist.append(rdict)
    lraids.append(rdict)
-  elif 'dm-' in str(b) and 'corrupted' in str(b):
-   missingdisks[0] += 1
     
-  elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5):
+  elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or 'dm-' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5):
+    if 'dm-' in str(b) :
+        missingdisks[0] += 1
     diskid='_1'
     host='_1'
     size='_1' 
@@ -189,6 +189,11 @@ def putzpool(leaderip, myhost, myip):
      zpool[len(zpool)-1]['changeop']='Warning'
      changeop='Removed'
      sitechange=1
+    if 'dm-' in b[0]:
+        changeop='ONLINE' 
+        b[1] = 'ONLINE'
+        size = 0
+        
     ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
     disklist.append(ddict)
     ldisks.append(ddict)

@@ -4,6 +4,7 @@ os.environ['ETCDCTL_API']= '3'
   
 def getraidrank(raid, removedisk, adddisk):
  ####raidraink = (name, location(0 is best), size (0) is best)
+ print('removedones',removedisk)
  raidrank = (0,0) 
  raidhosts = set()
  raiddsksize = adddisk['size']
@@ -25,6 +26,7 @@ def getraidrank(raid, removedisk, adddisk):
    sizerank = 1
  print('##################')
  print('hostdic',hostdic)
+ print('removedisk',removedisk)
  print('raidname',raid['name'])
  print('lenghts',len(raid['disklist']+list([adddisk])))
  print('##################')
@@ -32,6 +34,8 @@ def getraidrank(raid, removedisk, adddisk):
  hostrank = 0  
  balance = 0
  for host in hostdic:
+  if '_1' in host:
+    hostdic[host] = 1000000
   balance += hostdic[host]*hostdic[host]
   hostset.add(hostdic[host]*hostdic[host])
  #balance = len(raid['disklist'])%len(hostdic) 
