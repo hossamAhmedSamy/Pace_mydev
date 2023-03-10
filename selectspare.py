@@ -37,6 +37,7 @@ def mustattach(cmdline,disksallowed,raid):
     hostip=get(etcdip, 'ready/'+spare['host'])
     z=['/TopStor/Zpoolclrrun',spare['actualdisk']]
     msg={'req': 'Zpool', 'reply':z}
+    print(hostip[0], str(msg),'recvreply',myhost)
     sendhost(hostip[0], str(msg),'recvreply',myhost)
     print('returning')
     print('raid',raid)
@@ -386,7 +387,7 @@ def solvedegradedraid(raid,disksfree):
    dminuse = subprocess.run(dmcmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
    dmcmd=['zpool','import']
    dminuse = dminuse + subprocess.run(dmcmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
-   dminuse = [ 'dm-'+x.split('dm-')[1].split(' ')[0] for x in dminuse  if 'dm-' in x ]
+   dminuse = [ 'dm-'+x.split('dm-')[1].split(' ')[0] for x in dminuse  if 'dm-' in x ] + [ 'dm-1', 'dm-0' ]
    dmcmd = '/pace/lstdm.sh'
    dmstuplst = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().split()
    dmstup = '0'
@@ -490,6 +491,7 @@ def spare2(*args):
 
 
  needtoreplace=get(etcdip, 'needtoreplace', myhost) 
+ print('needtoreplace',needtoreplace)
  if myhost in str(needtoreplace):
   print('need to replace',needtoreplace)
   for raidinfo in needtoreplace:
@@ -517,8 +519,9 @@ def spare2(*args):
   allhosts.add(host[0].replace('ready/',''))
  newop=getall(myhost)
  striperaids=[]
- if '_1' in str(newop):
+ if len(str(newop)) < 10:
   return
+
  availability = get(etcdip, 'balance','--prefix')
  degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['status']]
  for spool in newop['pools']:
@@ -551,6 +554,7 @@ def spare2(*args):
   disksfree = solvedegradedraid(raid, disksfree)
  print('#####################')
  print('continue to the spare' )
+ print(disksfree)
  print('#####################')
 
 #####################################  set the right replacements for all raids
@@ -592,6 +596,8 @@ def spare2(*args):
   for fdisk in freedisks:
    replacements[fdisk['name']] = []
    for rdisk in raid['disklist']:
+    #if '_1' in rdisk['size']:
+     #   continue
     if fdisk['name'] == rdisk['name'] or levelthis(fdisk['size']) < levelthis(rdisk['size']):
      continue
     thisrank = getraidrank(raid,rdisk,fdisk)

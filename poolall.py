@@ -25,7 +25,6 @@ def getall(*args):
         etcdip = args[5]
         return
 
-
  if len(args) == 0:
   alls=get(leaderip, 'lists','--prefix')
   return alls
@@ -33,7 +32,7 @@ def getall(*args):
   alls=get(leaderip, args[1]+'/lists/'+args[0])
  else:
   alls=get(leaderip, 'lists/'+args[0])
- if len(alls) > 0 and '_1' not in str(alls[0]) :
+ if len(alls) > 0 and '_1' != str(alls[0]) :
   alls=mtuple(alls[0])
   return alls
  else:
