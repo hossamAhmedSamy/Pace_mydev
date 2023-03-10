@@ -16,10 +16,10 @@ else
 fi
 echo /pace/etcdget.py $etcdip ready --prefix \| grep $thehost
 /pace/etcdget.py $etcdip ready --prefix | grep $thehost
-if [ $? -eq 0 ];
+if [ $? -ne 0 ];
 then
  echo slslslslslslsl
- exit
+ #exit
 fi
 echo hihihihi
 #declare -a disks=(`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`);
@@ -58,8 +58,8 @@ stamp=`date +%s`
 /pace/etcddel.py $leaderip sync/ready _${thehost}
  /pace/etcdput.py $leaderip sync/ready/Del_${thehost}_--prefix/request ready_$stamp
  /pace/etcdput.py $leaderip sync/ready/Del_${thehost}_--prefix/request/$myhost ready_$stamp
- /pace/etcdput.py $leaderip sync/hostdown/hostdown.sh_${thehost}_--prefix/request losthost_$stamp
- /pace/etcdput.py $leaderip sync/hostdown/hostdown.sh_${thehost}_--prefix/request/$myhost losthost_$stamp
+ #/pace/etcdput.py $leaderip sync/hostdown/hostdown.sh_${thehost}_--prefix/request hostdown_$stamp
+ #/pace/etcdput.py $leaderip sync/hostdown/hostdown.sh_${thehost}_--prefix/request/$myhost hostdown_$stamp
  /pace/etcddel.py $leaderip sync/volumes _${thehost}
  /pace/etcdput.py $leaderip sync/volumes/Del_${thehost}_--prefix/request/$myhost volumes_$stamp
  /pace/etcdput.py $leaderip sync/volumes/Del_${thehost}_--prefix/request volumes_$stamp
