@@ -102,6 +102,10 @@ def heartbeat(*args):
                             cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+leaderip 
                             result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                             result =(host,'ok') if 'open' in result  else (host,'lost')
+                dels(leaderip, 'sync/hostdown/'+host,'--prefix')
+                stampit = str(stamp())
+                put(leaderip,'sync/hostdown/'+host+'_/request','hostdown_0')
+                put(leaderip,'sync/hostdown/'+host+'_/request/'+myhost,'hostdown_0')
                 cmdline='/pace/hostlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+host
                 result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                 dels(leaderip,'ready/'+host)
@@ -109,7 +113,7 @@ def heartbeat(*args):
                 dels(leaderip, 'host', host)
                 dels(leaderip, 'known/'+host)
                 dels(leaderip, 'pools',host)
-                stampit = str(stamp())
+                dels(leaderip, 'sync/hostdown',host)
                 #dosync('sync/known/Del_known_'+host+'/request','known_'+stampit)
                 dosync('sync/ready/Del_ready_'+host+'/request','ready_'+stampit)
                 dosync('sync/running/____/request','running_'+stampit)
@@ -120,7 +124,7 @@ def heartbeat(*args):
                 #etcds = etcdctlheart(myip,myport,'volumes','--prefix')
                 #replis = etcdctlheart(myip,myport, 'replivol','--prefix')
                 #volumecheck(leadern, myhost, etcds, replis, pcss)
-                #addactive(leadern,myhost)
+                #ddactive(leadern,myhost)
                 #spare2(leadern, myhost)
                 #spare2(leadern, myhost)
                 #spare2(leadern, myhost)
