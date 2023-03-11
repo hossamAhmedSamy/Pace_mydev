@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import subprocess
+import subprocess, sys
 from time import time
 from etcdput import etcdput as put 
 from etcddel import etcddel as dels
@@ -44,4 +44,4 @@ def ioperf(leaderip,myhost):
    f.write(str(time())+' cpuperf/'+myhost+'\t'+str(tcpu)+'\n')
 
 if __name__=='__main__':
- ioperf() 
+ ioperf(*sys.argv[1:]) 
