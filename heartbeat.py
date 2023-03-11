@@ -102,6 +102,7 @@ def heartbeat(*args):
                             cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+leaderip 
                             result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                             result =(host,'ok') if 'open' in result  else (host,'lost')
+                    put(etcd,'refreshdisown','yes')
                 dels(leaderip, 'sync/hostdown/'+host,'--prefix')
                 stampit = str(stamp())
                 put(leaderip,'sync/hostdown/'+host+'_/request','hostdown_0')

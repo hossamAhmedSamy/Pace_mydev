@@ -8,7 +8,9 @@ from etcdgetpy import etcdget as get
 from etcddel import etcddel as dels 
 from os.path import getmtime
 
-def putzpool(leaderip, myhost, myip):
+def putzpool(leader, leaderip, myhost, myip):
+ if leader == myhost:
+   myip = leaderip
  perfmon = '0'
  sitechange=0
  readyhosts=get(myip, 'ready','--prefix')
@@ -265,6 +267,4 @@ if __name__=='__main__':
     myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
     cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
     myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
- if leader == myhost:
-   myip = leaderip
- putzpool(leaderip,  myhost, myip)
+ putzpool(leader, leaderip,  myhost, myip)

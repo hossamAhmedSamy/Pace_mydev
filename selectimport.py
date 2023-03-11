@@ -1,10 +1,7 @@
 #!/usr/bin/python3
-from etcdgetlocalpy import etcdget as getlocal
 from etcdgetpy import etcdget as get
 from logqueue import queuethis
 from etcdput import etcdput as put 
-from etcddel import etcddel as deli 
-from sendhost import sendhost
 from time import time as stamp
 from ast import literal_eval as mtuple
 #from zpooltoimport import zpooltoimport as importables
@@ -25,6 +22,7 @@ def selectimport(*args):
      etcdip = args[5]
      return
     knowns=get(etcdip, 'ready','--prefix')
+    allpools=get(etcdip, 'pools/','--prefix')
     knowns = [x[0].split('/')[1] for x in knowns ]
     for poolpair in allpools:
         if myhost not in poolpair[1]:
@@ -39,7 +37,6 @@ def selectimport(*args):
         print('nohost',nhost,chost)
         print('knowns',knowns)
         #if nhost != '_1':
-        #	deli('poolsnxt',nhost)
         #	put('sync/poolsnxt/Del_poolsnxt_'+nhost+'/request','poolsnxt_'+str(stamp))
         #	put('sync/poolsnxt/Del_poolsnxt_'+nhost+'/request/'+leader,'poolsnxt_'+str(stamp))
         hosts=getp(leaderip, 'hosts','/current')
@@ -64,9 +61,12 @@ def selectimport(*args):
 if __name__=='__main__':
     leaderip = sys.argv[1]
     myhost = sys.argv[2]
-    myhostip = getlocal(leaderip, 'ready/'+myhost)[1]
-    leader = getlocal(leaderip, 'leader')[0]
-    allpools=getlocal('pools/','--prefix')
+    myhostip = get(leaderip, 'ready/'+myhost)[1]
+    leader = get(leaderip, 'leader')[0]
+    if leader == myhost:
+        etcdip = leaderip
+    else:
+        etcdip = myhostip
     selectimport(myhost,allpools,leader, *sys.argv[1:])
     #cmdline='cat /pacedata/perfmon'
     #perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
