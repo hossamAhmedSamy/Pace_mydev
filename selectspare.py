@@ -12,12 +12,20 @@ from etcddel import etcddel as dels
 from poolall import getall as getall
 from time import sleep
 from sendhost import sendhost
+from time import time as stamp
 #from syncpools import syncmypools
 os.environ['ETCDCTL_API']= '3'
 newop=[]
 disksvalue=[]
 usedfree=[]
 myhost = '' 
+
+def dosync(*args):
+ global leader, leaderip, myhost, myhostip, etcdip
+ put(leaderip, *args)
+ put(leaderip, args[0]+'/'+leader,args[1])
+
+
 def mustattach(cmdline,disksallowed,raid):
    global leader, leaderip, myhost, myhostip, etcdip
    print('################################################')
@@ -626,6 +634,7 @@ def spare2(*args):
    diskraids.add(rank[2]['name'])
    print('rank',rank[0])
   put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['actualdisk']+'/'+rank[1]['name'])
+  dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp())
  return
  
   
