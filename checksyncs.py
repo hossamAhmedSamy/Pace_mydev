@@ -130,7 +130,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     if sync == 'Partnr':
       synckeys(leaderip, myhostip, 'Partner', 'Partner')
     else:
-      synckeys(leaderip,myhostip, sync,sync)
+      if ('ready/Del' and myhost) not in syncleft: 
+        synckeys(leaderip,myhostip, sync,sync)
    if sync in etcdonly and myhost != leader:
      if opers[0] == 'Add':
       if 'Split' in opers[1]:
