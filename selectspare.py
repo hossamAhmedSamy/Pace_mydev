@@ -634,7 +634,7 @@ def spare2(*args):
    diskraids.add(rank[2]['name'])
    print('rank',rank[0])
   put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['actualdisk']+'/'+rank[1]['name'])
-  dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp())
+  dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
  return
  
   

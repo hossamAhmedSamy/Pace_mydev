@@ -82,15 +82,19 @@ def zpooltoimport(*args):
      
        
 if __name__=='__main__':
-    if len(sys.argv) > 1:
-        leader = sys.argv[1]
-        leaderip = sys.argv[2]
-        myhost = sys.argv[3]
-        myhostip = sys.argv[4]
-        etcdip = sys.argv[5]
-        
-
-        zpooltoimport(*sys.argv)
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
+    leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
+    leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
+    myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
+    myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    if leader == myhost:
+        etcdip = leaderip 
+    else:
+        etcdip = myhostip
+    zpooltoimport('hi')
  #cmdline='cat /pacedata/perfmon'
  #perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
  #if '1' in perfmon:
