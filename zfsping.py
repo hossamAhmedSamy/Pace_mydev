@@ -146,17 +146,24 @@ def refreshall():
  replis = get(etcdip, 'replivol','--prefix')
  volumecheck(etcds, replis)
  spare2(leader, myhost)
+ putzpool()
  spare2(leader, myhost)
+ putzpool()
  spare2(leader, myhost)
+ putzpool()
  spare2(leader, myhost)
+ putzpool()
  
 def selectspareproc():
  global leader, myhost
  try:
   clsscsi = 'nothing'
   spare2(leader, myhost)
+  putzpool()
   spare2(leader, myhost)
+  putzpool()
   spare2(leader, myhost)
+  putzpool()
   cmdline='lsscsi -is'
   lsscsi=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
   if clsscsi != lsscsi:
