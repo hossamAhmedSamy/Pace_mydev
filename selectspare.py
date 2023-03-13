@@ -501,6 +501,7 @@ def spare2(*args):
  needtoreplace=get(etcdip, 'needtoreplace', myhost) 
  print('needtoreplace',needtoreplace)
  if myhost in str(needtoreplace):
+  print('"""""""""""""""""""""""""""""""""""""')
   print('need to replace',needtoreplace)
   for raidinfo in needtoreplace:
    poolname = raidinfo[0].split('/')[-1]
@@ -515,6 +516,10 @@ def spare2(*args):
    print('cmdline2'," ".join(cmdline2))
    print('thereuslt',forget.stdout.decode())
    print('return code',forget.returncode)
+   if forget.returncode == 0:
+    dels(etcdip,'needtoreplace',raidname)
+    dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
+    return
  
  if myhost not in leader:
   return
@@ -628,12 +633,14 @@ def spare2(*args):
  for rank in foundranks:
   if rank[1]['name'] not in diskraids and rank[2]['name'] not in diskraids:
    print('needtoreplace/'+rank[0]['actualdisk'],'with',rank[0]['name'],'for raid',rank[2]['name'], 'combined rank = ',rank[3])
-   dels(etcdip, 'neeedtoreplace',rank[1]['name'])
-   dels(etcdip, 'neeedtoreplace',rank[2]['name'])
    diskraids.add(rank[1]['name'])
    diskraids.add(rank[2]['name'])
-   print('rank',rank[0])
-  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['actualdisk']+'/'+rank[1]['name'])
+  print('rank1',rank[1]['devname'],rank[1]['actualdisk'])
+  print('rank2',rank[2]['name'],)
+  print('rank0',rank[0]['devname'],rank[0]['actualdisk'])
+  dels(etcdip, 'neeedtoreplace',rank[1]['devname'])
+  dels(etcdip, 'neeedtoreplace',rank[2]['name'])
+  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['name']+'/'+rank[1]['actualdisk'])
   dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
  return
  
