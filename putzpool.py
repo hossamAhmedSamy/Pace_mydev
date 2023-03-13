@@ -246,7 +246,7 @@ def putzpool():
   else:
    dels(leaderip, y[0])
  for y in xnew:
-  putleaderip, (y[0],y[1])
+  put(leaderip, y[0],y[1])
  if '1' in perfmon: 
   queuethis('putzpool.py','stop','system')
  
