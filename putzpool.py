@@ -254,9 +254,9 @@ def initputzpool(*args):
     global leader, leaderip, myhost, myip 
     if len(args) > 0:
         leader = args[0]
-        leaderip = args[2]
+        leaderip = args[1]
         myhost = args[2]
-        myhostip = args[3]
+        myip = args[3]
     if leader == myhost:
         myip = leaderip
     initqueue(leaderip, myhost)
