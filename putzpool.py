@@ -1,16 +1,14 @@
 #!/usr/bin/python3
 import subprocess, json,sys
-from socket import gethostname as hostname
 from os import listdir
-from logqueue import queuethis
+from logqueue import queuethis, initqueue
 from etcdput import etcdput as put
 from etcdgetpy import etcdget as get 
 from etcddel import etcddel as dels 
 from os.path import getmtime
 
-def putzpool(leader, leaderip, myhost, myip):
- if leader == myhost:
-   myip = leaderip
+def putzpool():
+ global leader, leaderip, myhost, myip
  perfmon = '0'
  sitechange=0
  readyhosts=get(myip, 'ready','--prefix')
@@ -251,6 +249,17 @@ def putzpool(leader, leaderip, myhost, myip):
   putleaderip, (y[0],y[1])
  if '1' in perfmon: 
   queuethis('putzpool.py','stop','system')
+ 
+def initputzpool(*args):
+    global leader, leaderip, myhost, myip 
+    if len(args) > 0:
+        leader = args[0]
+        leaderip = args[2]
+        myhost = args[2]
+        myhostip = args[3]
+    if leader == myhost:
+        myip = leaderip
+    initqueue(leaderip, myhost)
    
 if __name__=='__main__':
  if len(sys.argv)> 4:
@@ -267,4 +276,5 @@ if __name__=='__main__':
     myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
     cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
     myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
- putzpool(leader, leaderip,  myhost, myip)
+ initputzpool()
+ putzpool()

@@ -13,7 +13,7 @@ from time import time as stamp
 from time import sleep
 from etcdput import etcdput as put 
 from addknown import addknown
-from putzpool import putzpool
+from putzpool import putzpool, initputzpool
 from activeusers import activeusers
 from addactive import addactive
 from selectimport import selectimport
@@ -67,7 +67,7 @@ def fapiproc():
 def putzpoolproc():
  global leaderip, leader, myhost, myhostip
  try:
-  putzpool(leader, leaderip,myhost, myhostip)
+  putzpool()
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
   print(' in putzpool:',e)
@@ -138,7 +138,7 @@ def volumecheckproc():
 def refreshall():
  global leaderip, leader, myhost, myhostip, etcdip
  print('putzpool',leader, leaderip,myhost,myhostip)
- putzpool(leader, leaderip,myhost,myhostip)
+ putzpool()
  allpools=get(etcdip, 'pools/','--prefix')
  selectimport(myhost,allpools,leader)
  zpooltoimport(leader, myhost)
@@ -218,7 +218,7 @@ def activeusersproc():
 
 
 #loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc ]
-loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc ]
+loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc , putzpoolproc]
 
 def CommonTask(task):
  print("''''''''' task started",task,"'''''''''''''''''''''''''''''''''''''''")
@@ -259,6 +259,7 @@ def zfspinginit():
         etcdip = leaderip
     else:
         etcdip = myhostip
+    initputzpool(leader, leaderip, myhost, myhostip)
     selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
     spare2('init', leader, leaderip, myhost, myhostip, etcdip)
     remknown('init', leader, leaderip, myhost, myhostip, etcdip)

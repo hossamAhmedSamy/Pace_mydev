@@ -424,12 +424,19 @@ def solvedegradedraid(raid,disksfree):
       eindex = faultdisk.index(fa)
       break
     diskuid = faultdisk[eindex-1].split(':')[1]
+   if 'dm-' in str(raid):
+    return
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], diskuid,'/dev/'+dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   cmdline2=['/sbin/zpool', 'offline',raid['pool'],'/dev/'+dmstup]
+   forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   cmdline2=['/pace/putzpool.py']
+   forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    with open('/root/dmproblem','w') as f:
     f.write('cmdline '+ " ".join(cmdline2)+'\n')
     f.write('result: '+forget.stdout.decode()+'\n')
     f.write('result: '+forget.stderr.decode()+'\n')
+   
    #sleep(3)
    #cmdline2=['/sbin/zpool', 'offline',raid['pool'], '/dev/'+dmstup]
    #subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -609,8 +616,8 @@ def spare2(*args):
   for fdisk in freedisks:
    replacements[fdisk['name']] = []
    for rdisk in raid['disklist']:
-    #if '_1' in rdisk['size']:
-     #   continue
+    if '_1' in str(rdisk['size']):
+        continue
     if fdisk['name'] == rdisk['name'] or levelthis(fdisk['size']) < levelthis(rdisk['size']):
      continue
     thisrank = getraidrank(raid,rdisk,fdisk)
