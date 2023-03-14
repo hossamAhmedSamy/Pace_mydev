@@ -515,20 +515,27 @@ def spare2(*args):
   for raidinfo in needtoreplace:
    poolname = raidinfo[0].split('/')[-1]
    raidname = raidinfo[0].split('/')[-2]
-   rmdisk = raidinfo[1].split('/')[0]
-   adisk = raidinfo[1].split('/')[1]
-   print('will do:', poolname, raidname, rmdisk, adisk)
-   cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
-   forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   rmdisks = raidinfo[1].split('/')[:-1]
+   print('rmdisks',rmdisks)
+   adisk = raidinfo[1].split('/')[-1]
+   cmdline2=['/sbin/zpool', 'status',poolname]
+   cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
+   print('cpoolinfo', cpoolinfo)
+   for rmdisk in rmdisks:
+    print(rmdisk)
+    if rmdisk in cpoolinfo:
+        print('will do:', poolname, raidname, rmdisk, adisk)
+        cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
+        forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print('forget',forget.returncode)
+        print('cmdline2'," ".join(cmdline2))
+        print('thereuslt',forget.stdout.decode())
+        print('return code',forget.returncode)
    #cmd = ['systemctl', 'restart', 'zfs-zed']
    #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-   print('cmdline2'," ".join(cmdline2))
-   print('thereuslt',forget.stdout.decode())
-   print('return code',forget.returncode)
-   if forget.returncode == 0:
-    dels(etcdip,'needtoreplace',raidname)
-    dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
-    return
+   dels(etcdip,'needtoreplace',raidname)
+   dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
+   return
  
  if myhost not in leader:
   return
@@ -592,11 +599,14 @@ def spare2(*args):
  raidsset = set()
  for hostinfo in newop:
   pools = mtuple(hostinfo[1])['pools']
+  print('ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp') 
+  print(pools)
+  print('ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp') 
   for spool in pools:
    if spool['name'] not in str(getcurrent) or 'ree' in spool['name']:
     continue
    for sraid in spool['raidlist']:
-    print('hihihihihihihihihi',spool['name'], sraid['name'],availability, getcurrent)
+    print('hihihihihihihihihi',spool['name'], sraid['name'],sraid['host'])
     if len(availability) > 0:
      if spool['name'] in str(availability):
       raidsset.add(sraid['name'])
@@ -610,7 +620,7 @@ def spare2(*args):
  if len(allraids) == 0:
   print(' no raids in the system')
   return
- 
+  
  for raid in allraids:
     rankdisks=[]
     raid['raidrank']=[10000000,10000000]
@@ -649,9 +659,10 @@ def spare2(*args):
     if fdisk['name'] == rdisk['name'] or levelthis(fdisk['size']) < levelthis(rdisk['size']):
      continue
     thisrank = getraidrank(raid,rdisk,fdisk)
+
     thiscombinedrank = abs(thisrank['raidrank'][0])*1000 + thisrank['raidrank'][1]
     if thiscombinedrank < combinedrank:
-     bestrank = (rdisk,fdisk,raid,thiscombinedrank)
+     bestrank = (rdisk,fdisk,thisrank,thiscombinedrank)
      foundranks.append(bestrank)
  if len(foundranks) == 0:
   dels(etcdip, 'needtoreplace','--prefix')
@@ -670,12 +681,14 @@ def spare2(*args):
    print('needtoreplace/'+rank[0]['actualdisk'],'with',rank[0]['name'],'for raid',rank[2]['name'], 'combined rank = ',rank[3])
    diskraids.add(rank[1]['name'])
    diskraids.add(rank[2]['name'])
+  print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
   print('rank1',rank[1]['devname'],rank[1]['actualdisk'])
-  print('rank2',rank[2]['name'],)
+  print('rank2',rank[2]['name'],rank[2]['host'])
   print('rank0',rank[0]['devname'],rank[0]['actualdisk'])
+  print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
   dels(etcdip, 'neeedtoreplace',rank[1]['devname'])
   dels(etcdip, 'neeedtoreplace',rank[2]['name'])
-  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['name']+'/'+rank[1]['actualdisk'])
+  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['name']+'/'+rank[0]['devname']+'/'+rank[0]['actualdisk']+'/'+rank[1]['actualdisk'])
   dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
  return
  
