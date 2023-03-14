@@ -66,8 +66,8 @@ def mustattach(cmdline,disksallowed,raid):
     return
    dmcmd = 'zpool status '+raid['pool']
    dmstup = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
-   if 'dm-' not in dmstup:
-    print('somthing wrong, no stup found for this degraded group')
+   if 'dm-' in dmstup:
+    print('somthing wrong, there is already a stup found for this degraded group')
     return
    dmstup = 'dm-'+dmstup.split('dm-')[1].split(' ')[0]
    cmd = cmd+[dmstup, '/dev/disk/by-id/'+spare['name']] 
@@ -603,7 +603,9 @@ def spare2(*args):
  
  for raid in allraids:
     rankdisks=[]
+    raid['raidrank']=[10000000,10000000]
     print('raiddisklist',raid['disklist'])
+    raiddms = [x for x in raid['disklist'] if 'dm-' in x['name']]
     for disk in raid['disklist']:
         if disk['changeop'] == 'ONLINE':
             rankdisk = disk
@@ -613,6 +615,11 @@ def spare2(*args):
             cmdline2=['/sbin/zpool', 'detach', raid['pool'], disk['actualdisk']]
             forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print('unavailable',' '.join(cmdline2))
+        if len(raiddms) > 1 and 'dm-' in disk['name']:
+            cmdline2=['/sbin/zpool', 'detach', raid['pool'], disk['name']]
+            raiddms -= 1
+            forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print('many dms',' '.join(cmdline2))
     for disk in rankdisks:
         raid = getraidrank(raid,rankdisk,rankdisk)
         print('raidname,raidrank',raid['name'],raid['raidrank'])
