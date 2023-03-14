@@ -384,7 +384,7 @@ def solvedegradedraid(raid,disksfree):
    raidhosts.add(disk['host'])
   else:
    if 'stripe' in raid['name']:
-    cmdline2=['/sbin/zpool', 'detach','-f',raid['pool'], disk['actualdisk']]
+    cmdline2=['/sbin/zpool', 'detach',raid['pool'], disk['actualdisk']]
     forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print('detaching the faulty disk',forget.stderr.decode())
     #cmdline2=['systemctl', 'restart','zfs-zed']
@@ -429,6 +429,8 @@ def solvedegradedraid(raid,disksfree):
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], diskuid,'/dev/'+dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    cmdline2=['/sbin/zpool', 'offline',raid['pool'],'/dev/'+dmstup]
+   forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   cmdline2=['/sbin/zpool', 'detach',raid['pool'],diskuid]
    forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    cmdline2=['/pace/putzpool.py']
    forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -599,10 +601,17 @@ def spare2(*args):
   print(' no raids in the system')
   return
  for raid in allraids:
+  print('raiddisklist',raid['disklist'])
   for disk in raid['disklist']:
    if disk['changeop'] == 'ONLINE':
     rankdisk = disk
     break
+   print('hihihihihihihi',disk['changeop'], disk['status'])
+   if 'Removed' in disk['changeop'] and 'OFFLINE' not in disk['status']:
+    cmdline2=['/sbin/zpool', 'detach', raid['pool'], disk['actualdisk']]
+    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print('unavailable',' '.join(cmdline2))
+    continue
   raid = getraidrank(raid,rankdisk,rankdisk)
   print('raidname,raidrank',raid['name'],raid['raidrank'])
  replacements = dict() 
