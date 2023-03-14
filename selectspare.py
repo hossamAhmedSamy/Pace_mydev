@@ -543,20 +543,26 @@ def spare2(*args):
  striperaids=[]
  if len(str(newop)) < 10:
   return
-
+ raidsset = set()
  availability = get(etcdip, 'balance','--prefix')
  degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['status']]
  for spool in newop['pools']:
   for sraid in spool['raidlist']:
    if len(availability) > 0:
     if 'ree' not in sraid['name'] and spool['name'] in str(availability):
-     allraids.append(sraid)
-   else:
+     raidsset.add(sraid['name'])
     if 'ree' not in sraid['name']:
-     allraids.append(sraid)
+     raidsset.add(sraid['name'])
+  for sraid in spool['raidlist']:
+    if sraid['name'] in raidsset:
+        allraids.append(sraid)
+ 
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
+ print('ddddddddddddddddddddddddddddddddddddddddddddddddd')
+ print(allraids)
+ print(len(degradedraids))
  for raid in degradedraids:
   for disk in raid['disklist']:
    if 'ONLINE' not in disk['changeop']:
@@ -582,19 +588,23 @@ def spare2(*args):
 #####################################  set the right replacements for all raids
  newop=getall()
  getcurrent = get(etcdip, 'hosts','current')
- allraids = []
+ allraids = [] 
+ raidsset = set()
  for hostinfo in newop:
   pools = mtuple(hostinfo[1])['pools']
   for spool in pools:
    if spool['name'] not in str(getcurrent) or 'ree' in spool['name']:
     continue
    for sraid in spool['raidlist']:
+    print('hihihihihihihihihi',spool['name'], sraid['name'],availability, getcurrent)
     if len(availability) > 0:
      if spool['name'] in str(availability):
-      allraids.append(sraid)
-    else:
-     if sraid['name'] in str(getcurrent):
-      allraids.append(sraid)
+      raidsset.add(sraid['name'])
+    if sraid['name'] in str(getcurrent):
+      raidsset.add(sraid['name'])
+   for sraid in spool['raidlist']:
+    if sraid['name'] in raidsset:
+        allraids.append(sraid)
  diskreplace = {}
  allraidsranked = []
  if len(allraids) == 0:
