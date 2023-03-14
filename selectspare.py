@@ -600,20 +600,22 @@ def spare2(*args):
  if len(allraids) == 0:
   print(' no raids in the system')
   return
+ 
  for raid in allraids:
-  print('raiddisklist',raid['disklist'])
-  for disk in raid['disklist']:
-   if disk['changeop'] == 'ONLINE':
-    rankdisk = disk
-    break
-   print('hihihihihihihi',disk['changeop'], disk['status'])
-   if 'Removed' in disk['changeop'] and 'OFFLINE' not in disk['status']:
-    cmdline2=['/sbin/zpool', 'detach', raid['pool'], disk['actualdisk']]
-    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print('unavailable',' '.join(cmdline2))
-    continue
-  raid = getraidrank(raid,rankdisk,rankdisk)
-  print('raidname,raidrank',raid['name'],raid['raidrank'])
+    rankdisks=[]
+    print('raiddisklist',raid['disklist'])
+    for disk in raid['disklist']:
+        if disk['changeop'] == 'ONLINE':
+            rankdisk = disk
+            rankdisks.append(disk)
+        print('hihihihihihihi',disk['changeop'], disk['status'])
+        if 'Removed' in disk['changeop'] and 'OFFLINE' not in disk['status'] and 'OFFLINE' in str(raid):
+            cmdline2=['/sbin/zpool', 'detach', raid['pool'], disk['actualdisk']]
+            forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print('unavailable',' '.join(cmdline2))
+    for disk in rankdisks:
+        raid = getraidrank(raid,rankdisk,rankdisk)
+        print('raidname,raidrank',raid['name'],raid['raidrank'])
  replacements = dict() 
  foundranks = [] 
  currentneedtoreplace = get(etcdip, 'needtoreplace','--prefix')
