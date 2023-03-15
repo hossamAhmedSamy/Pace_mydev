@@ -13,7 +13,7 @@ from ast import literal_eval as mtuple
 #leader=get('leader','--prefix')[0][0].split('/')[1]
 stamp = str(stamp())
 
-def selecthost(minhost,hostname,hostpools):
+def selecthosting(minhost,hostname,hostpools):
  if len(hostpools) < minhost[1]:
   minhost = (hostname, len(hostpools))
  return minhost
@@ -29,6 +29,7 @@ def dosync(leader,sync, *args):
 def selecthost(pool,readies,cpools):
     selectedhost = [ 10000,'' ]
     for hostinfo in readies:
+        print('hostinfo',readies)
         host = hostinfo[0].split('/')[1]
         counts = list(str(cpools)).count(host)
         if selectedhost[0] > counts:
@@ -52,20 +53,7 @@ def zpooltoimport(*args):
  cpools = get(etcdip, 'pools/','--prefix')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
-  if myhost == leader:
-    readies=get(etcdip,'ready','--prefix')
-    for poolinfo in cpools:
-        pool=poolinfo[0].split('/')[1]
-        if pool not in str(needtoimport):
-            nxthosts=selecthost(pool,readies,cpools)
-            print('hihihih',nxthosts,pool)
-            for nxthost in nxthosts:
-                if nxthost not in str(poolinfo):
-                    dels(leaderip,'poolsnxt/'+pool)
-                    put(leaderip,'poolsnxt/'+pool,nxthost)
-                    dosync(leader,'poolsnxt', 'sync/poolsnxt/Add_'+pool+'_'+nxthost+'/request','poolsnxt_'+stamp)
-                    break
-                
+                  
  else:
   for poolline in needtoimport:
    pool = poolline[0].replace('poolsnxt/','')
@@ -88,21 +76,23 @@ def zpooltoimport(*args):
  if myhost != leader:
   return
 
- knowns=get(etcdip, 'ready','--prefix')
  hosts=get(leaderip,'host','/current')
- pools = getpoolstoimport()
- print('pools',pools)
- needtoimport=get(etcdip, 'poolsnxt', '--prefix') 
- for pool in pools:
-  print('found', pool)
-  if pool not in str(needtoimport):
-   minhost=(myhost,float('inf'))
-   for host in hosts: 
-    hostname = host[0].split('/')[1]
-    hostpools=mtuple(host[1])
-    minhost = selecthost(minhost,hostname,hostpools)
-    put(leaderip, 'poolsnxt/'+pool,minhost[0])
-    dosync(leader,'poolnxt_', 'sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request','poolnxt_'+stamp)
+ print('cpools',cpools)
+ cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in cpools ]
+ cpools = cpools + getpoolstoimport()
+ print('with imported pools',cpools)
+ readies=get(etcdip,'ready','--prefix')
+ for poolinfo in cpools:
+    pool = poolinfo.split('_')[0]
+    if pool not in str(needtoimport):
+        nxthosts=selecthost(pool,readies,cpools)
+        print('hihihih',nxthosts,pool)
+        for nxthost in nxthosts:
+            if nxthost not in str(poolinfo):
+                dels(leaderip,'poolsnxt/'+pool)
+                put(leaderip,'poolsnxt/'+pool,nxthost)
+                dosync(leader,'poolsnxt', 'sync/poolsnxt/Add_'+pool+'_'+nxthost+'/request','poolsnxt_'+stamp)
+                break
  return
      
        

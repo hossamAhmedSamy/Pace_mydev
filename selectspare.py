@@ -507,6 +507,7 @@ def spare2(*args):
         return
 
 
+ print('hihiihihihih',etcdip)
  needtoreplace=get(etcdip, 'needtoreplace', myhost) 
  print('needtoreplace',needtoreplace)
  if myhost in str(needtoreplace):
