@@ -626,6 +626,7 @@ def spare2(*args):
     raid['raidrank']=[10000000,10000000]
     print('raiddisklist',raid['disklist'])
     raiddms = [x for x in raid['disklist'] if 'dm-' in x['name']]
+    raiddmsc = len(raiddms)
     for disk in raid['disklist']:
         if disk['changeop'] == 'ONLINE':
             rankdisk = disk
@@ -635,9 +636,11 @@ def spare2(*args):
             cmdline2=['/sbin/zpool', 'detach', raid['pool'], disk['actualdisk']]
             forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print('unavailable',' '.join(cmdline2))
-        if len(raiddms) > 1 and 'dm-' in disk['name']:
+        if raiddmsc > 1 and 'dm-' in disk['name']:
+            if 'dm-' in disk['name'] and 'dm-' not in str(raid).replace(disk['name'],''):
+                continue
             cmdline2=['/sbin/zpool', 'detach', raid['pool'], disk['name']]
-            raiddms -= 1
+            raiddmsc -= 1
             forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print('many dms',' '.join(cmdline2))
     for disk in rankdisks:
