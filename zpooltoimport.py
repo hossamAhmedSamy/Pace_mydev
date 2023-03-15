@@ -26,6 +26,17 @@ def dosync(leader,sync, *args):
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
 
+def selecthost(pool,readies,cpools):
+    selectedhost = [ 10000,'' ]
+    for hostinfo in readies:
+        host = hostinfo[0].split('/')[1]
+        counts = list(str(cpools)).count(host)
+        if selectedhost[0] > counts:
+            selectedhost =  [ counts, [ host ] ]
+        elif selectedhost[0] == counts:
+            selectedhost[1] = selectedhost[1] + [ host ]
+    return selectedhost[1]
+        
 def zpooltoimport(*args):
  global leader, leaderip, myhost, myhostip, etcdip
  if args[0]=='init':
@@ -41,6 +52,20 @@ def zpooltoimport(*args):
  cpools = get(etcdip, 'pools/','--prefix')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
+  if myhost == leader:
+    readies=get(etcdip,'ready','--prefix')
+    for poolinfo in cpools:
+        pool=poolinfo[0].split('/')[1]
+        if pool not in str(needtoimport):
+            nxthosts=selecthost(pool,readies,cpools)
+            print('hihihih',nxthosts,pool)
+            for nxthost in nxthosts:
+                if nxthost not in str(poolinfo):
+                    dels(leaderip,'poolsnxt/'+pool)
+                    put(leaderip,'poolsnxt/'+pool,nxthost)
+                    dosync(leader,'poolsnxt', 'sync/poolsnxt/Add_'+pool+'_'+nxthost+'/request','poolsnxt_'+stamp)
+                    break
+                
  else:
   for poolline in needtoimport:
    pool = poolline[0].replace('poolsnxt/','')
