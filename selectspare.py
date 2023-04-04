@@ -509,7 +509,7 @@ def spare2(*args):
 
  print('hihiihihihih',etcdip)
  needtoreplace=get(etcdip, 'needtoreplace', myhost) 
- print('needtoreplace',needtoreplace)
+ print('it is needtoreplace',needtoreplace)
  if myhost in str(needtoreplace):
   print('"""""""""""""""""""""""""""""""""""""')
   print('need to replace',needtoreplace)
@@ -698,17 +698,22 @@ def spare2(*args):
   print('rank1',rank[1]['devname'],rank[1]['actualdisk'])
   print('rank2',rank[2]['name'],rank[2]['host'])
   print('rank0',rank[0]['devname'],rank[0]['actualdisk'])
+  print('if dm ?',rank[0]['name'])
   print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
   dels(etcdip, 'neeedtoreplace',rank[1]['devname'])
   dels(etcdip, 'neeedtoreplace',rank[2]['name'])
-  raiddisk = rank[0].copy
+  raiddisk = rank[0].copy()
   if 'mirror-temp' in rank[2]['name']:
     for rdisk in raid['disklist']:
         if rdisk['changeop'] == 'ONLINE':
             raiddisk = rdisk.copy()
             break
-  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rdisk['name']+'/'+rdisk['devname']+'/'+rdisk['actualdisk']+'/'+rank[1]['devname'])
+  if 'dm-' in raiddisk['name'] :
+   raiddisk['actualdisk'] = raiddisk['name']
+   raiddisk['devname'] = raiddisk['name']
+  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],raiddisk['name']+'/'+raiddisk['devname']+'/'+raiddisk['actualdisk']+'/'+rank[1]['devname'])
   dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
+ exit()
  return
  
   
