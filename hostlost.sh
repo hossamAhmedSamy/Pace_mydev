@@ -25,6 +25,10 @@ echo hihihihi
 #declare -a disks=(`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`);
 /pace/etcddel.py $etcdip pool $thehost
 /pace/etcddel.py $etcdip vol $thehost
+/pace/etcddel.py $etcdip need $thehost
+/pace/etcddel.py $etcdip hosts $thehost
+/pace/etcddel.py $etcdip lists $thehost
+/pace/etcddel.py $etcdip next $thehost
 /pace/etcdput.py $etcdip tosync yes 
 declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
 echo "${disks[@]}"

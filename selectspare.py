@@ -526,7 +526,10 @@ def spare2(*args):
     print(rmdisk)
     if rmdisk in cpoolinfo:
         print('will do:', poolname, raidname, rmdisk, adisk)
-        cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
+        if 'mirror-temp' in raidname:
+            cmdline2=['/sbin/zpool', 'attach',poolname, rmdisk,adisk]
+        else:
+            cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
         forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print('forget',forget.returncode)
         print('cmdline2'," ".join(cmdline2))
@@ -545,6 +548,7 @@ def spare2(*args):
  freeraids=[]
  hosts=get(etcdip, 'ready','--prefix')
  allhosts=set()
+ print('slddddddddddddddddddddddddddddd')
  for host in hosts:
   allhosts.add(host[0].replace('ready/',''))
  newop=getall(myhost)
@@ -609,6 +613,7 @@ def spare2(*args):
    for sraid in spool['raidlist']:
     print('hihihihihihihihihi',spool['name'], sraid['name'],sraid['host'])
     if len(availability) > 0:
+     print('sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss')
      if spool['name'] in str(availability):
       raidsset.add(sraid['name'])
     if sraid['name'] in str(getcurrent):
@@ -646,8 +651,10 @@ def spare2(*args):
             print('many dms',' '.join(cmdline2))
     for disk in rankdisks:
         raid = getraidrank(raid,rankdisk,rankdisk)
-        print('raidname,raidrank',raid['name'],raid['raidrank'])
+        print('----originalrank----------raidname,raidrank',raid['name'],raid['raidrank'])
+        break
  replacements = dict() 
+ currentraid = raid.copy()
  foundranks = [] 
  currentneedtoreplace = get(etcdip, 'needtoreplace','--prefix')
  for raid in allraids:
@@ -666,8 +673,10 @@ def spare2(*args):
 
     thiscombinedrank = abs(thisrank['raidrank'][0])*1000 + thisrank['raidrank'][1]
     if thiscombinedrank < combinedrank:
+     print('----foundnewrank----------raidname,raidrank',raid['name'],raid['raidrank'])
      bestrank = (rdisk,fdisk,thisrank,thiscombinedrank)
      foundranks.append(bestrank)
+
  if len(foundranks) == 0:
   dels(etcdip, 'needtoreplace','--prefix')
   print('no need to re- optmize raid groups')
@@ -692,7 +701,13 @@ def spare2(*args):
   print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
   dels(etcdip, 'neeedtoreplace',rank[1]['devname'])
   dels(etcdip, 'neeedtoreplace',rank[2]['name'])
-  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rank[0]['name']+'/'+rank[0]['devname']+'/'+rank[0]['actualdisk']+'/'+rank[1]['actualdisk'])
+  raiddisk = rank[0].copy
+  if 'mirror-temp' in rank[2]['name']:
+    for rdisk in raid['disklist']:
+        if rdisk['changeop'] == 'ONLINE':
+            raiddisk = rdisk.copy()
+            break
+  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],rdisk['name']+'/'+rdisk['devname']+'/'+rdisk['actualdisk']+'/'+rank[1]['devname'])
   dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
  return
  

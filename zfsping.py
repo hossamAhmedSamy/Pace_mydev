@@ -140,7 +140,7 @@ def refreshall():
  print('putzpool',leader, leaderip,myhost,myhostip)
  putzpool()
  allpools=get(etcdip, 'pools/','--prefix')
- selectimport(myhost,allpools,leader)
+ #selectimport(myhost,allpools,leader)
  zpooltoimport(leader, myhost)
  etcds = get(etcdip,'volumes','--prefix')
  replis = get(etcdip, 'replivol','--prefix')
@@ -267,9 +267,9 @@ def zfspinginit():
     else:
         etcdip = myhostip
     initputzpool(leader, leaderip, myhost, myhostip)
-    selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
+    #selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
     spare2('init', leader, leaderip, myhost, myhostip, etcdip)
-    remknown('init', leader, leaderip, myhost, myhostip, etcdip)
+    #remknown('init', leader, leaderip, myhost, myhostip, etcdip)
     zpooltoimport('init', leader, leaderip, myhost, myhostip, etcdip)
     volumecheck('init', leader, leaderip, myhost, myhostip, etcdip)
    

@@ -20,6 +20,8 @@ def putzpool():
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
  drives=[x.split('/dev/')[1].split(' ')[0] for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'zd' not in x and '/sd' in x ]
  lsscsi=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x and 'zd' not in x ]
+ internalls=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' not in x and 'zd' not in x ]
+ 
  freepool=[x for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'LIO' in x and 'zd' not in x ]
  periods=get(myip, 'Snapperiod','--prefix')
  raidtypes=['mirror','raidz','stripe']
@@ -30,6 +32,7 @@ def putzpool():
  spaces=-2
  raidlist=[]
  disklist=[]
+ missingdisks=[0]
  lpools=[]
  ldisks=[]
  ldefdisks=[]
@@ -154,22 +157,28 @@ def putzpool():
      b[1] = 'NA'
      if 'Availability' in zdict['availtype'] : 
       b[1] = 'DEGRADED' 
-     rdict={ 'name':'stripe-'+str(stripecount), 'pool':zdict['name'],'changeop':b[1],'status':b[1],'host':myhost,'disklist':disklist, 'missingdisks':[0] }
+      rname='mirror-temp'+str(stripecount)
+     else:
+        rname='stripe-'+str(stripecount)
+     stripecount+=1
+         
+     rdict={ 'name':rname, 'pool':zdict['name'],'changeop':b[1],'status':b[1],'host':myhost,'disklist':disklist, 'missingdisks':[0] }
      raidlist.append(rdict)
      lraids.append(rdict)
-     stripecount+=1
      disknotfound=1
     for lss in lsscsi:
      z=lss.split()
-     if z[6] in b[0] and len(z[6]) > 3 and 'OFF' not in b[1] :
+     print(z)
+     if (z[6] in b[0] and len(z[6]) > 3 and 'OFF' not in b[1]) or (z[3].split('-')[0] in str(internalls)):
       diskid=lsscsi.index(lss)
       host=z[3].split('-')[1]
       lhosts.add(host)
       phosts.add(host)
       size=z[7]
       devname=z[5].replace('/dev/','')
-      freepool.remove(lss)
       disknotfound=0
+      if z[3].split('-')[0] not in str(internalls):
+        freepool.remove(lss)
       break
     if disknotfound == 1:
       diskid=0
