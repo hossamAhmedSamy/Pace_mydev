@@ -655,10 +655,11 @@ def spare2(*args):
             raiddmsc -= 1
             forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print('many dms',' '.join(cmdline2))
-    for disk in rankdisks:
-        raid = getraidrank(raid,rankdisk,rankdisk)
-        print('----originalrank----------raidname,raidrank',raid['name'],raid['raidrank'])
-        break
+    raid = getraidrank(raid,rankdisk,rankdisk)
+    print('----originalrank----------raidname,raidrank',raid['name'],raid['raidrank'])
+    print(raid)
+    print(rankdisk)
+    print(rankdisk)
  replacements = dict() 
  currentraid = raid.copy()
  foundranks = [] 
@@ -667,6 +668,7 @@ def spare2(*args):
   combinedrank = abs(raid['raidrank'][0])*1000 + raid['raidrank'][1]
   if combinedrank == 0:
    continue
+  origcombinedrank = combinedrank
   bestrank = (0,0,0,combinedrank)
   for fdisk in freedisks:
    replacements[fdisk['name']] = []
@@ -682,7 +684,7 @@ def spare2(*args):
      print('----foundnewrank----------raidname,raidrank',raid['name'],raid['raidrank'],fdisk['devname'],rdisk['devname'])
      combinedrank = thiscombinedrank
      bestrank = (rdisk,fdisk,thisrank,thiscombinedrank)
-  if bestrank[3] != combinedrank:
+  if bestrank[3] != origcombinedrank:
     foundranks.append(bestrank)
  if len(foundranks) == 0:
   dels(etcdip, 'needtoreplace','--prefix')

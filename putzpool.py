@@ -200,6 +200,7 @@ def putzpool():
      zpool[len(zpool)-1]['changeop']='Warning'
      changeop='Removed'
      sitechange=1
+    devname = b[-1]
     if 'dm-' in b[0]:
         size = 0
     if 'UNAVAIL' in b[1]:
@@ -208,6 +209,10 @@ def putzpool():
         devname = b[0] 
         size = '0'
     print('unavail devname',devname) 
+    devinfo = [x.split() for x in lsscsi if devname in x][0]
+    host = devinfo[3].split('-')[1]
+    size = devinfo[-1]
+    print('devinfo',devinfo)
     ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
     disklist.append(ddict)
     ldisks.append(ddict)
