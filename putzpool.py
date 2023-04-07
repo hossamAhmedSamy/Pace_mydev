@@ -171,7 +171,6 @@ def putzpool():
      disknotfound=1
     for lss in lsscsi:
      z=lss.split()
-     print(z)
      if (z[6] in b[0] and len(z[6]) > 3 and 'OFF' not in b[1]) or (z[3].split('-')[0] in str(internalls)):
       diskid=lsscsi.index(lss)
       host=z[3].split('-')[1]
@@ -208,9 +207,8 @@ def putzpool():
         diskid = b[0]
         devname = b[0] 
         size = '0'
+    print('unavail devname',devname) 
     ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
-    print('b000000',b[0])
-    print(ddict)
     disklist.append(ddict)
     ldisks.append(ddict)
  if len(freepool) > 0:
@@ -225,6 +223,7 @@ def putzpool():
   for lss in freepool:
    z=lss.split()
    devname=z[5].replace('/dev/','')
+   print('devname',devname)
    if devname not in drives:
     continue
    diskid=lsscsi.index(lss)
