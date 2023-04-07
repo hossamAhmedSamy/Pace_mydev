@@ -79,6 +79,8 @@ def mustattach(cmdline,disksallowed,raid):
     f.write('result: '+res.stdout.decode()+'\n')
     f.write('result: '+res.stderr.decode()+'\n')
    print('result', res.stderr.decode())    
+   if int(res.stderr.decode()) == 0:
+    dels('needtoreplace', spare['name'])
    return 
  
  
@@ -515,6 +517,10 @@ def spare2(*args):
   print('need to replace',needtoreplace)
   for raidinfo in needtoreplace:
    poolname = raidinfo[0].split('/')[-1]
+   dmcmd = 'zpool status '+poolname
+   chkstatus = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
+   if 'resilvering' in chkstatus:
+    continue
    raidname = raidinfo[0].split('/')[-2]
    rmdisks = raidinfo[1].split('/')[:-1]
    print('rmdisks',rmdisks)
@@ -673,10 +679,12 @@ def spare2(*args):
 
     thiscombinedrank = abs(thisrank['raidrank'][0])*1000 + thisrank['raidrank'][1]
     if thiscombinedrank < combinedrank:
-     print('----foundnewrank----------raidname,raidrank',raid['name'],raid['raidrank'])
+     print('----foundnewrank----------raidname,raidrank',raid['name'],raid['raidrank'],fdisk['devname'],rdisk['devname'])
+     combinedrank = thiscombinedrank
      bestrank = (rdisk,fdisk,thisrank,thiscombinedrank)
-     foundranks.append(bestrank)
-
+  foundranks.append(bestrank)
+ print(foundranks)
+ return
  if len(foundranks) == 0:
   dels(etcdip, 'needtoreplace','--prefix')
   print('no need to re- optmize raid groups')
@@ -691,7 +699,8 @@ def spare2(*args):
  print('foundrank sort',len(foundranks))
  for rank in foundranks:
   if rank[1]['name'] not in diskraids and rank[2]['name'] not in diskraids:
-   print('needtoreplace/'+rank[0]['actualdisk'],'with',rank[0]['name'],'for raid',rank[2]['name'], 'combined rank = ',rank[3])
+   print('needtoreplace/'+rank[0]['actualdisk'],'with',rank[1]['name'],'for raid',rank[2]['name'], 'combined rank = ',rank[3])
+   return
    diskraids.add(rank[1]['name'])
    diskraids.add(rank[2]['name'])
   print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
