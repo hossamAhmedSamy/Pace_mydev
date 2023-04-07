@@ -83,7 +83,10 @@ def putzpool():
    #print('zfslist',b[0],zfslist)
    cmdline=['/sbin/zfs','get','avail:type',b[0], '-H']
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-   availtype=str(result.stdout)[2:][:-3].split('\\t')[2]
+   try:
+    availtype=str(result.stdout)[2:][:-3].split('\\t')[2]
+   except:
+    availtype='suspended'
    cmdline=['/sbin/zpool','list',b[0],'-H']
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    zlist=str(result.stdout)[2:][:-3].split('\\t')
