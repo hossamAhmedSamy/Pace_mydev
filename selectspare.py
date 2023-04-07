@@ -682,9 +682,8 @@ def spare2(*args):
      print('----foundnewrank----------raidname,raidrank',raid['name'],raid['raidrank'],fdisk['devname'],rdisk['devname'])
      combinedrank = thiscombinedrank
      bestrank = (rdisk,fdisk,thisrank,thiscombinedrank)
-  foundranks.append(bestrank)
- print(foundranks)
- return
+  if bestrank[3] != combinedrank:
+    foundranks.append(bestrank)
  if len(foundranks) == 0:
   dels(etcdip, 'needtoreplace','--prefix')
   print('no need to re- optmize raid groups')
@@ -696,11 +695,10 @@ def spare2(*args):
  diskraids = set() 
  ranks = set()
    
- print('foundrank sort',len(foundranks))
+ print('foundrank sort',foundranks)
  for rank in foundranks:
   if rank[1]['name'] not in diskraids and rank[2]['name'] not in diskraids:
    print('needtoreplace/'+rank[0]['actualdisk'],'with',rank[1]['name'],'for raid',rank[2]['name'], 'combined rank = ',rank[3])
-   return
    diskraids.add(rank[1]['name'])
    diskraids.add(rank[2]['name'])
   print('rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
@@ -722,16 +720,8 @@ def spare2(*args):
    raiddisk['devname'] = raiddisk['name']
   put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],raiddisk['name']+'/'+raiddisk['devname']+'/'+raiddisk['actualdisk']+'/'+rank[1]['devname'])
   dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
- exit()
  return
  
-  
-# if len(disksfree) > 0 and len(striperaids) > 0 : 
-#  solvestriperaids(striperaids, disksfree,allraids,myhost)
-# disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
-# if len(disksfree) > 0 and len(onlineraids) > 0 : 
-#  solveonlineraids(onlineraids, disksfree,allraids,allhosts,myhost)
- return
  
  
 if __name__=='__main__':
