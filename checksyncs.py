@@ -16,7 +16,7 @@ dirtydic = { 'pool': 0, 'volume': 0 }
 syncanitem = ['dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
+wholeetcd = [ 'pool','pools', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
 etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
 restartetcd = wholeetcd + etcdonly
 syncs = etcdonly + syncanitem + special1 + wholeetcd
@@ -101,6 +101,7 @@ def syncall(leader,leaderip,myhost, myhostip):
  return
 
 
+A
 def syncrequest(leader,leaderip,myhost, myhostip):
  global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
  if leader == myhost:
