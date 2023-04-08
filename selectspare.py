@@ -464,7 +464,8 @@ def solvedegradedraid(raid,disksfree):
 ################## put a wrapping condition after the next "for" line for every new feature (disk type, node load, AI analysis,..etc ##########
  disksamplesize= min(disksample)
  for disk in disksfree:
-  if levelthis(disk['size']) < disksamplesize:
+  print('disk',disk['devname'],disk['size'])
+  if disk['size'] =='-' or levelthis(disk['size']) < disksamplesize:
    continue 
   ######  for best host split
   if disk['host'] not in raidhosts:
@@ -655,6 +656,8 @@ def spare2(*args):
             forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print('many dms',' '.join(cmdline2))
     raid = getraidrank(raid,rankdisk,rankdisk)
+    if 'dm-' in str(raid):
+     raid['raidrank'] = (1000000,1000000)
     print('----originalrank----------raidname,raidrank',raid['name'],raid['raidrank'])
     print(raid)
     print(rankdisk)
@@ -672,9 +675,12 @@ def spare2(*args):
   for fdisk in freedisks:
    replacements[fdisk['name']] = []
    for rdisk in raid['disklist']:
+    if 'dm-' in str(raid):
+     if 'dm-' not in str(rdisk):
+      continue
     if '_1' in str(rdisk['size']):
         continue
-    if fdisk['name'] == rdisk['name'] or levelthis(fdisk['size']) < levelthis(rdisk['size']):
+    if fdisk['size'] == '-' or rdisk['size'] == '-' or fdisk['name'] == rdisk['name'] or levelthis(fdisk['size']) < levelthis(rdisk['size']):
      continue
     thisrank = getraidrank(raid,rdisk,fdisk)
 
