@@ -101,7 +101,6 @@ def syncall(leader,leaderip,myhost, myhostip):
  return
 
 
-A
 def syncrequest(leader,leaderip,myhost, myhostip):
  global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
  if leader == myhost:
