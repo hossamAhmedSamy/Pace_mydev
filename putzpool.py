@@ -150,6 +150,7 @@ def putzpool():
   elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or 'dm-' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5) or 'UNAVA' in str(b):
     if 'dm-' in str(b) :
         missingdisks[0] += 1
+        b[1] = 'FAULT'
     diskid='_1'
     host='_1'
     size='_1' 
@@ -204,6 +205,7 @@ def putzpool():
     devname = b[-1]
     if 'dm-' in b[0]:
         size = 0
+        changeop = 'FAULT'
     if 'UNAVAIL' in b[1] or 'FAULT' in b[1]:
         b[-1] = b[0]
         diskid = b[0]
