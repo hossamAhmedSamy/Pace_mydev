@@ -212,6 +212,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
  return     
 
 def restetcd(leader,leaderip, myhost,myhostip):
+    if myhost == leader:
+        return
     for sync in wholeetcd :
         if sync == 'Partnr':
             synckeys(leaderip, myhostip, 'Partner', 'Partner')
