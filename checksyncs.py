@@ -13,7 +13,7 @@ from time import time as timestamp
 from etctocron import etctocron 
 
 dirtydic = { 'pool': 0, 'volume': 0 } 
-syncanitem = ['dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
+syncanitem = ['priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'pool','pools', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
@@ -51,6 +51,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
  sync = syncleft.split('/')[1]
+ flag = 1
  if sync in syncanitem and sync not in noinit:
     if 'Snapperiod'in sync:
      print('found etctocron')
@@ -67,6 +68,14 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
      cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
      print('cmd',cmdline)
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+    if sync == 'priv':
+        user=syncleft.split('/')[2]
+        synckeys(leaderip, myhostip, 'usersinfo/'+user, 'usersinfo/'+user)
+        newinfo = get(myhostip,'usersinfo/'+user)[0]
+        oldinfo = get(leaderip, 'usersinfo/'+user)[0]
+        if oldinfo != newinfo:
+            flag = 0
+
  if sync in syncs:
   if sync == 'Partnr':
    synckeys(leaderip, myhostip, 'Partner','Partner')
@@ -77,7 +86,8 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  if sync not in syncs:
   print('there is a sync that is not defined:',sync)
   return 
- put(leaderip,syncleft+'/'+myhost, stamp)
+ if flag:
+    put(leaderip,syncleft+'/'+myhost, stamp)
  synckeys(leaderip,myhostip, syncleft, syncleft)
 
  return
@@ -103,6 +113,7 @@ def syncall(leader,leaderip,myhost, myhostip):
 
 def syncrequest(leader,leaderip,myhost, myhostip):
  global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
+ flag=1
  if leader == myhost:
     etcdip = leaderip
  else:
@@ -112,10 +123,14 @@ def syncrequest(leader,leaderip,myhost, myhostip):
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) or ('request/' and '/'+myhost) in str(x) ] 
  myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
  if len(myrequests) > 1:
-    print(myrequests)
+    print('multiple requests',myrequests)
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
+ print('allsyncs', allsyncs,leaderip)
  for syncinfo in myrequests:
+  flag = 1
+  if  len(syncinfo[0]) == 1:
+    continue
   if '/initial/' in str(syncinfo):
    if myhost != leader:
     print(leader,leaderip,myhost,myhostip, syncinfo)
@@ -123,6 +138,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]
+   print('syncleft',syncleft)
    sync = syncleft.split('/')[1]
    opers= syncleft.split('/')[2].split('_')
    print('#########################################################################')
@@ -157,12 +173,20 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       elif 'syncfn' in opers[0]:
        print('opers',opers)
        globals()[opers[1]](*opers[2:])
+      elif sync == 'priv':
+        user=syncleft.split('/')[2]
+        synckeys(leaderip, myhostip, 'usersinfo/'+user, 'usersinfo/'+user)
+        newinfo = get(myhostip,'usersinfo/'+user)[0]
+        oldinfo = get(leaderip, 'usersinfo/'+user)[0]
+        if oldinfo != newinfo:
+            flag = 0
+ 
       else:
        print('opers',opers)
        if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
        else:
-        cmdline='/TopStor/'+opers[0]+" "+" ".join(opers)
+        cmdline='/TopStor/'+opers[0]+" "+" ".join(opers[1:])
        print('cmd',cmdline)
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in special1 and myhost != leader :
@@ -173,7 +197,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
-   put(leaderip,syncleft+'/'+myhost, stamp)
+   if flag:
+    put(leaderip,syncleft+'/'+myhost, stamp)
    if myhost != leader:
     put(myhostip, syncleft+'/'+myhost, stamp)
     put(myhostip, syncleft, stamp)
@@ -225,7 +250,6 @@ synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall , '
 if __name__=='__main__':
     leaderip=sys.argv[2]
     myhost=sys.argv[3]
-    print('hihih')
     leader = get(leaderip,'leader')[0]
     myhostip = get(leaderip,'ActivePartners/'+myhost)[0]
     if myhost == leader:
