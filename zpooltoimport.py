@@ -11,7 +11,7 @@ from ast import literal_eval as mtuple
 
 
 #leader=get('leader','--prefix')[0][0].split('/')[1]
-stamp = str(stamp())
+stampi = str(stamp())
 
 def selecthosting(minhost,hostname,hostpools):
  if len(hostpools) < minhost[1]:
@@ -19,9 +19,9 @@ def selecthosting(minhost,hostname,hostpools):
  return minhost
 
 
-def dosync(leader,sync, *args):
-  global leaderip, myhost
-  dels(leaderip, sync)  
+def dosync(sync, *args):
+  global leader, leaderip, myhost, myhostip, etcdip
+  #dels(leaderip, sync)  
   put(leaderip, *args)
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
@@ -60,15 +60,19 @@ def zpooltoimport(*args):
    if pool in str(cpools):
     continue
    ioperf(leaderip, myhost)
-   print('pool', pool)
+   print('pool to be imported now', pool)
    cmdline= '/usr/sbin/zpool import  '+pool
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    cmdline= '/usr/sbin/zpool status  '
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+   print('result',result)
    if pool in result:
     put(leaderip, 'pools/'+pool,myhost)
     put(etcdip, 'dirty/volume','0')
-    dosync(leader,'pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+stamp)
+    print('before sync')
+    dosync('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
+    print('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
+    print('After sync')
     #cmdline= 'systemctl restart zfs-zed  '
     #result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    dels(leaderip, 'poolsnxt',pool)
@@ -91,7 +95,7 @@ def zpooltoimport(*args):
             if nxthost not in str(poolinfo):
                 dels(leaderip,'poolsnxt/'+pool)
                 put(leaderip,'poolsnxt/'+pool,nxthost)
-                dosync(leader,'poolsnxt', 'sync/poolsnxt/Add_'+pool+'_'+nxthost+'/request','poolsnxt_'+stamp)
+                dosync('poolsnxt', 'sync/poolsnxt/Add_'+pool+'_'+nxthost+'/request','poolsnxt_'+str(stamp()))
                 break
  return
      

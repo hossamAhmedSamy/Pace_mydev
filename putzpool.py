@@ -83,7 +83,10 @@ def putzpool():
    #print('zfslist',b[0],zfslist)
    cmdline=['/sbin/zfs','get','avail:type',b[0], '-H']
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-   availtype=str(result.stdout)[2:][:-3].split('\\t')[2]
+   try:
+    availtype=str(result.stdout)[2:][:-3].split('\\t')[2]
+   except:
+    availtype='suspended'
    cmdline=['/sbin/zpool','list',b[0],'-H']
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    zlist=str(result.stdout)[2:][:-3].split('\\t')
@@ -144,9 +147,10 @@ def putzpool():
    raidlist.append(rdict)
    lraids.append(rdict)
     
-  elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or 'dm-' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5):
+  elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or 'dm-' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5) or 'UNAVA' in str(b):
     if 'dm-' in str(b) :
         missingdisks[0] += 1
+        b[1] = 'FAULT'
     diskid='_1'
     host='_1'
     size='_1' 
@@ -168,7 +172,6 @@ def putzpool():
      disknotfound=1
     for lss in lsscsi:
      z=lss.split()
-     print(z)
      if (z[6] in b[0] and len(z[6]) > 3 and 'OFF' not in b[1]) or (z[3].split('-')[0] in str(internalls)):
       diskid=lsscsi.index(lss)
       host=z[3].split('-')[1]
@@ -190,7 +193,8 @@ def putzpool():
      # cmdline='/pace/hostlost.sh '+z[6]
      # subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
      
-    if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop']:
+    if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop'] and 'UNAVAIL' not in b[1] and 'FAULT' not in b[1]:
+     print('b',b)
      b[1] = 'ONLINE' 
     changeop=b[1]
     if host=='_1':
@@ -198,9 +202,23 @@ def putzpool():
      zpool[len(zpool)-1]['changeop']='Warning'
      changeop='Removed'
      sitechange=1
+    devname = b[-1]
     if 'dm-' in b[0]:
         size = 0
-        
+        changeop = 'FAULT'
+    if 'UNAVAIL' in b[1] or 'FAULT' in b[1]:
+        b[-1] = b[0]
+        diskid = b[0]
+        devname = b[0] 
+        size = '0'
+    if 'UNAVAI' not in b[1] and 'FAULT' not in b[1] and 'dm-' not in b[0]:
+     print('bbbbbbbbbbbbbbbbbb',b)
+     devinfo = [x.split() for x in lsscsi if devname in x][0]
+     print('devinfo',devinfo)
+     host = devinfo[3].split('-')[1]
+     size = devinfo[-1]
+     print('devinfo',devinfo)
+    print('unavail devname',devname) 
     ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
     disklist.append(ddict)
     ldisks.append(ddict)
@@ -216,6 +234,7 @@ def putzpool():
   for lss in freepool:
    z=lss.split()
    devname=z[5].replace('/dev/','')
+   print('devname',devname)
    if devname not in drives:
     continue
    diskid=lsscsi.index(lss)

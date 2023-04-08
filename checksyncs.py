@@ -16,7 +16,7 @@ dirtydic = { 'pool': 0, 'volume': 0 }
 syncanitem = ['dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
+wholeetcd = [ 'pool','pools', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
 etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
 restartetcd = wholeetcd + etcdonly
 syncs = etcdonly + syncanitem + special1 + wholeetcd
@@ -205,13 +205,15 @@ def syncrequest(leader,leaderip,myhost, myhostip):
   for prune in toprunedic:
    #if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
    print(actives,'prune',prune, 'ready/Del' in str(toprunedic[prune][1:]))
-   if toprunedic[prune][0] >= actives or ((('ready/Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0]+1 >= actives):
+   if toprunedic[prune][0] > actives or ((('ready/Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0]+1 >= actives):
     dels(leaderip,'sync',prune) 
     #print(prune,toprunedic[prune])
   
  return     
 
 def restetcd(leader,leaderip, myhost,myhostip):
+    if myhost == leader:
+        return
     for sync in wholeetcd :
         if sync == 'Partnr':
             synckeys(leaderip, myhostip, 'Partner', 'Partner')
