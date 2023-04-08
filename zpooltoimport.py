@@ -21,10 +21,8 @@ def selecthosting(minhost,hostname,hostpools):
 
 def dosync(sync, *args):
   global leader, leaderip, myhost, myhostip, etcdip
-  dels(leaderip, sync)  
+  #dels(leaderip, sync)  
   put(leaderip, *args)
-  print(leaderip, *args)
-  print(get(leaderip,sync))
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
 

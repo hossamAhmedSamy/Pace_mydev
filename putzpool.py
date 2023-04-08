@@ -192,7 +192,8 @@ def putzpool():
      # cmdline='/pace/hostlost.sh '+z[6]
      # subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
      
-    if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop'] and 'UNAVAIL' not in b[1]:
+    if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop'] and 'UNAVAIL' not in b[1] and 'FAULT' not in b[1]:
+     print('b',b)
      b[1] = 'ONLINE' 
     changeop=b[1]
     if host=='_1':
@@ -203,16 +204,19 @@ def putzpool():
     devname = b[-1]
     if 'dm-' in b[0]:
         size = 0
-    if 'UNAVAIL' in b[1]:
+    if 'UNAVAIL' in b[1] or 'FAULT' in b[1]:
         b[-1] = b[0]
         diskid = b[0]
         devname = b[0] 
         size = '0'
+    if 'UNAVAI' not in b[1] and 'FAULT' not in b[1] and 'dm-' not in b[0]:
+     print('bbbbbbbbbbbbbbbbbb',b)
+     devinfo = [x.split() for x in lsscsi if devname in x][0]
+     print('devinfo',devinfo)
+     host = devinfo[3].split('-')[1]
+     size = devinfo[-1]
+     print('devinfo',devinfo)
     print('unavail devname',devname) 
-    devinfo = [x.split() for x in lsscsi if devname in x][0]
-    host = devinfo[3].split('-')[1]
-    size = devinfo[-1]
-    print('devinfo',devinfo)
     ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
     disklist.append(ddict)
     ldisks.append(ddict)

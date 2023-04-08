@@ -562,14 +562,13 @@ def spare2(*args):
  if len(str(newop)) < 10:
   return
  raidsset = set()
+ print('hhhhhhhhhhhhhhhhhhhhhhhhhhh')
  availability = get(etcdip, 'balance','--prefix')
  degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['status']]
  for spool in newop['pools']:
   for sraid in spool['raidlist']:
-   if len(availability) > 0:
-    if 'ree' not in sraid['name'] and spool['name'] in str(availability):
-     raidsset.add(sraid['name'])
-    if 'ree' not in sraid['name']:
+    #if 'ree' not in sraid['name'] and spool['name'] in str(availability):
+    if 'ree' not in sraid['name']: 
      raidsset.add(sraid['name'])
   for sraid in spool['raidlist']:
     if sraid['name'] in raidsset:
@@ -579,7 +578,7 @@ def spare2(*args):
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
  print('ddddddddddddddddddddddddddddddddddddddddddddddddd')
- print(allraids)
+ print(degradedpools)
  print(len(degradedraids))
  for raid in degradedraids:
   for disk in raid['disklist']:
@@ -689,7 +688,6 @@ def spare2(*args):
  if len(foundranks) == 0:
   dels(etcdip, 'needtoreplace','--prefix')
   print('no need to re- optmize raid groups')
-  return  
  for cnt in currentneedtoreplace:
    if cnt[1].split('/')[1] not in str(foundranks):
     dels(etcdip, 'needtorepalce', cnt[1])
