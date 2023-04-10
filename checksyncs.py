@@ -13,7 +13,7 @@ from time import time as timestamp
 from etctocron import etctocron 
 
 dirtydic = { 'pool': 0, 'volume': 0 } 
-syncanitem = ['dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
+syncanitem = ['priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'pool','pools', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
@@ -67,6 +67,9 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
      cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
      print('cmd',cmdline)
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+    if sync == 'priv':
+        user=syncleft.split('/')[2]
+        synckeys(leaderip, myhostip, 'usersinfo/'+user, 'usersinfo/'+user)
  if sync in syncs:
   if sync == 'Partnr':
    synckeys(leaderip, myhostip, 'Partner','Partner')
@@ -157,6 +160,10 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       elif 'syncfn' in opers[0]:
        print('opers',opers)
        globals()[opers[1]](*opers[2:])
+      elif sync == 'priv':
+        user=syncleft.split('/')[2]
+        synckeys(leaderip, myhostip, 'usersinfo/'+user, 'usersinfo/'+user)
+ 
       else:
        print('opers',opers)
        if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
