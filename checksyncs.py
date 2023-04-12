@@ -119,6 +119,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
  for syncinfo in myrequests:
+  if  len(syncinfo[0]) == 1:
+    continue
   if '/initial/' in str(syncinfo):
    if myhost != leader:
     print(leader,leaderip,myhost,myhostip, syncinfo)
@@ -126,6 +128,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]
+   print('syncleft',syncleft)
    sync = syncleft.split('/')[1]
    opers= syncleft.split('/')[2].split('_')
    print('#########################################################################')
