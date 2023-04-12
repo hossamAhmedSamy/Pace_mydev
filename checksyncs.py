@@ -51,6 +51,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
  sync = syncleft.split('/')[1]
+ flag = 1
  if sync in syncanitem and sync not in noinit:
     if 'Snapperiod'in sync:
      print('found etctocron')
@@ -70,6 +71,11 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
     if sync == 'priv':
         user=syncleft.split('/')[2]
         synckeys(leaderip, myhostip, 'usersinfo/'+user, 'usersinfo/'+user)
+        newinfo = get(myhostip,'usersinfo/'+user)[0]
+        oldinfo = get(leaderip, 'usersinfo/'+user)[0]
+        if oldinfo != newinfo:
+            flag = 0
+
  if sync in syncs:
   if sync == 'Partnr':
    synckeys(leaderip, myhostip, 'Partner','Partner')
@@ -80,7 +86,8 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  if sync not in syncs:
   print('there is a sync that is not defined:',sync)
   return 
- put(leaderip,syncleft+'/'+myhost, stamp)
+ if flag:
+    put(leaderip,syncleft+'/'+myhost, stamp)
  synckeys(leaderip,myhostip, syncleft, syncleft)
 
  return
@@ -168,8 +175,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       elif sync == 'priv':
         user=syncleft.split('/')[2]
         synckeys(leaderip, myhostip, 'usersinfo/'+user, 'usersinfo/'+user)
-        newinfo = get(myhostip,'usersinfo/'+user)
-        oldinfo = get(leaderip, 'usersinfo/'+user)
+        newinfo = get(myhostip,'usersinfo/'+user)[0]
+        oldinfo = get(leaderip, 'usersinfo/'+user)[0]
         if oldinfo != newinfo:
             flag = 0
  
