@@ -106,6 +106,7 @@ def syncall(leader,leaderip,myhost, myhostip):
 
 def syncrequest(leader,leaderip,myhost, myhostip):
  global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
+ flag=1
  if leader == myhost:
     etcdip = leaderip
  else:
@@ -119,6 +120,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
  for syncinfo in myrequests:
+  flag = 1
   if  len(syncinfo[0]) == 1:
     continue
   if '/initial/' in str(syncinfo):
@@ -166,6 +168,10 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       elif sync == 'priv':
         user=syncleft.split('/')[2]
         synckeys(leaderip, myhostip, 'usersinfo/'+user, 'usersinfo/'+user)
+        newinfo = get(myhostip,'usersinfo/'+user)
+        oldinfo = get(leaderip, 'usersinfo/'+user)
+        if oldinfo != newinfo:
+            flag = 0
  
       else:
        print('opers',opers)
@@ -183,7 +189,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
-   put(leaderip,syncleft+'/'+myhost, stamp)
+   if flag:
+    put(leaderip,syncleft+'/'+myhost, stamp)
    if myhost != leader:
     put(myhostip, syncleft+'/'+myhost, stamp)
     put(myhostip, syncleft, stamp)
