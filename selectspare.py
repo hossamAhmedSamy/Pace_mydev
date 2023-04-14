@@ -568,13 +568,14 @@ def spare2(*args):
  degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['status']]
  for spool in newop['pools']:
   for sraid in spool['raidlist']:
+    if myhost not in str(sraid):
+     continue
     #if 'ree' not in sraid['name'] and spool['name'] in str(availability):
     if 'ree' not in sraid['name']: 
      raidsset.add(sraid['name'])
   for sraid in spool['raidlist']:
     if sraid['name'] in raidsset:
         allraids.append(sraid)
- 
  striperaids=[x for x in allraids if 'stripe' in x['name']]
  onlineraids=[x for x in allraids if 'ONLINE' in x['changeop']]
  degradedraids=[x for x in allraids if 'DEGRADE' in x['status']]
@@ -588,14 +589,13 @@ def spare2(*args):
      #delstolocal('disk',disk['actualdisk'])
  onlinedisks=get(etcdip, 'disks','ONLINE')    
  errordisks=get(etcdip, 'errdiskpool','--prefix')
- freedisks=[ x for x in newop['disks']  if 'free' in x['raid'] or (x['name'] in str(onlinedisks) and 'OFFLINED' not in x['status'] and 'ONLINE' not in x['changeop']) ]  
-   
+ needtoreplace=get(etcdip, 'needtoplace')
+ freedisks=[ x for x in newop['disks']  if ('free' in x['raid'] or (x['name'] in str(onlinedisks) and 'OFFLINED' not in x['status'] and 'ONLINE' not in x['changeop'])) and x['name'] not in str(needtoreplace) ]  
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  print('#####################')
  print('solving degraded raids' )
  print('degraded raids:',degradedraids)
  print('#####################')
- 
  for raid in degradedraids:
   disksfree = solvedegradedraid(raid, disksfree)
  print('#####################')
@@ -604,16 +604,12 @@ def spare2(*args):
  print('#####################')
 
 #####################################  set the right replacements for all raids
- newop=getall()
- getcurrent = get(etcdip, 'hosts','current')
+ #newop=getall()
+ getcurrent = get(etcdip, 'hosts/'+myhost,'current')
  allraids = [] 
  raidsset = set()
- for hostinfo in newop:
-  pools = mtuple(hostinfo[1])['pools']
-  print('ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp') 
-  print(pools)
-  print('ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp') 
-  for spool in pools:
+ 
+ for spool in newop['pools']:
    if spool['name'] not in str(getcurrent) or 'ree' in spool['name']:
     continue
    for sraid in spool['raidlist']:
