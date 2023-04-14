@@ -546,7 +546,8 @@ def spare2(*args):
   #cmd = ['systemctl', 'restart', 'zfs-zed']
   #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   dels(leaderip,'needtoreplace',raidname)
-  dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
+  dels(leaderip,'ask/needtoreplace',raidname)
+  #dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
   return
  freedisks=[]
  allraids=[]
@@ -588,7 +589,7 @@ def spare2(*args):
      #delstolocal('disk',disk['actualdisk'])
  onlinedisks=get(etcdip, 'disks','ONLINE')    
  errordisks=get(etcdip, 'errdiskpool','--prefix')
- currentneedtoreplace = [x for x in needtoreplace if myhost not in str(x) ]
+ currentneedtoreplace = [x for x in needtoreplace if myhost not in str(x) ] + get(leaderip,'ask','--prefix')
  freedisks=[ x for x in newop['disks']  if ('free' in x['raid'] or (x['name'] in str(onlinedisks) and 'OFFLINED' not in x['status'] and 'ONLINE' not in x['changeop'])) and x['name'] not in str(currentneedtoreplace) ]  
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  print('#####################')
