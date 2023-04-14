@@ -530,9 +530,9 @@ def spare2(*args):
  myneedtoreplace = [x for x in needtoreplace if myhost in str(x) ] 
  print('it is needtoreplace',needtoreplace)
  for raidinfo in myneedtoreplace:
-  print('"""""""""""""""""""""""""""""""""""""')
+  print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
   print('need to replace',raidinfo)
-  poolname = raidinfo[0].split('/')[-2]
+  poolname = raidinfo[0].split('/')[-3]
   dmcmd = 'zpool status '+poolname
   chkstatus = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
   if 'resilvering' in chkstatus:
@@ -545,7 +545,6 @@ def spare2(*args):
   adiskname = raidinfo[1].split('/')[-2]
   cmdline2=['/sbin/zpool', 'status',poolname]
   cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
-  print('cpoolinfo', cpoolinfo)
   for rmdisk in rmdisks:
    print(rmdisk)
    if rmdisk in cpoolinfo:
@@ -561,8 +560,8 @@ def spare2(*args):
        print('return code',forget.returncode)
   #cmd = ['systemctl', 'restart', 'zfs-zed']
   #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  dels(leaderip,'ask/needtoreplace',raidname)
-  dels(leaderip,'needtoreplace',raidname)
+  #dels(leaderip,'ask/needtoreplace',raidname)
+  #dels(leaderip,'needtoreplace',raidname)
   #dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
   return
  freedisks=[]
