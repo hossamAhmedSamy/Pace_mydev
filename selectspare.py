@@ -511,48 +511,47 @@ def spare2(*args):
 
 
  print('hihiihihihih',etcdip)
- needtoreplace=get(etcdip, 'needtoreplace', myhost) 
+ needtoreplace = get(leaderip, 'needtoreplace', '--prefix') 
+ myneedtoreplace = [x for x in needtoreplace if myhost in str(x) ] 
  print('it is needtoreplace',needtoreplace)
- if myhost in str(needtoreplace):
+ for raidinfo in myneedtoreplace:
   print('"""""""""""""""""""""""""""""""""""""')
-  print('need to replace',needtoreplace)
-  for raidinfo in needtoreplace:
-   poolname = raidinfo[0].split('/')[-1]
-   dmcmd = 'zpool status '+poolname
-   chkstatus = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
-   if 'resilvering' in chkstatus:
-    continue
-   raidname = raidinfo[0].split('/')[-2]
-   rmdisks = raidinfo[1].split('/')[:-1]
-   print('rmdisks',rmdisks)
-   adisk = raidinfo[1].split('/')[-1]
-   cmdline2=['/sbin/zpool', 'status',poolname]
-   cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
-   print('cpoolinfo', cpoolinfo)
-   for rmdisk in rmdisks:
-    print(rmdisk)
-    if rmdisk in cpoolinfo:
-        print('will do:', poolname, raidname, rmdisk, adisk)
-        if 'mirror-temp' in raidname:
-            cmdline2=['/sbin/zpool', 'attach',poolname, rmdisk,adisk]
-        else:
-            cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
-        forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print('forget',forget.returncode)
-        print('cmdline2'," ".join(cmdline2))
-        print('thereuslt',forget.stdout.decode())
-        print('return code',forget.returncode)
-   #cmd = ['systemctl', 'restart', 'zfs-zed']
-   #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-   dels(etcdip,'needtoreplace',raidname)
-   dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
-   return
- 
- if myhost not in leader:
+  print('need to replace',raidinfo)
+  poolname = raidinfo[0].split('/')[-2]
+  dmcmd = 'zpool status '+poolname
+  chkstatus = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
+  if 'resilvering' in chkstatus:
+   continue
+  print(raidinfo[0])
+  raidname = raidinfo[0].split('/')[-1]
+  rmdisks = raidinfo[1].split('/')[:-2]
+  print('rmdisks',rmdisks)
+  adisk = raidinfo[1].split('/')[-1]
+  cmdline2=['/sbin/zpool', 'status',poolname]
+  cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
+  print('cpoolinfo', cpoolinfo)
+  for rmdisk in rmdisks:
+   print(rmdisk)
+   if rmdisk in cpoolinfo:
+       print('will do:', poolname, raidname, rmdisk, adisk)
+       if 'mirror-temp' in raidname:
+           cmdline2=['/sbin/zpool', 'attach',poolname, rmdisk,adisk]
+       else:
+           cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adisk]
+       forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+       print('forget',forget.returncode)
+       print('cmdline2'," ".join(cmdline2))
+       print('thereuslt',forget.stdout.decode())
+       print('return code',forget.returncode)
+  #cmd = ['systemctl', 'restart', 'zfs-zed']
+  #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  dels(leaderip,'needtoreplace',raidname)
+  dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
   return
  freedisks=[]
  allraids=[]
  freeraids=[]
+ print('ihihihihhihih',etcdip) 
  hosts=get(etcdip, 'ready','--prefix')
  allhosts=set()
  print('slddddddddddddddddddddddddddddd')
@@ -589,8 +588,8 @@ def spare2(*args):
      #delstolocal('disk',disk['actualdisk'])
  onlinedisks=get(etcdip, 'disks','ONLINE')    
  errordisks=get(etcdip, 'errdiskpool','--prefix')
- needtoreplace=get(etcdip, 'needtoplace')
- freedisks=[ x for x in newop['disks']  if ('free' in x['raid'] or (x['name'] in str(onlinedisks) and 'OFFLINED' not in x['status'] and 'ONLINE' not in x['changeop'])) and x['name'] not in str(needtoreplace) ]  
+ currentneedtoreplace = [x for x in needtoreplace if myhost not in str(x) ]
+ freedisks=[ x for x in newop['disks']  if ('free' in x['raid'] or (x['name'] in str(onlinedisks) and 'OFFLINED' not in x['status'] and 'ONLINE' not in x['changeop'])) and x['name'] not in str(currentneedtoreplace) ]  
  disksfree=[x for x in freedisks if x['actualdisk'] not in str(usedfree)]
  print('#####################')
  print('solving degraded raids' )
@@ -605,7 +604,7 @@ def spare2(*args):
 
 #####################################  set the right replacements for all raids
  #newop=getall()
- getcurrent = get(etcdip, 'hosts/'+myhost,'current')
+ getcurrent = get(leaderip, 'hosts/'+myhost,'current')
  allraids = [] 
  raidsset = set()
  
@@ -661,7 +660,6 @@ def spare2(*args):
  replacements = dict() 
  currentraid = raid.copy()
  foundranks = [] 
- currentneedtoreplace = get(etcdip, 'needtoreplace','--prefix')
  for raid in allraids:
   combinedrank = abs(raid['raidrank'][0])*1000 + raid['raidrank'][1]
   if combinedrank == 0:
@@ -688,11 +686,8 @@ def spare2(*args):
   if bestrank[3] != origcombinedrank:
     foundranks.append(bestrank)
  if len(foundranks) == 0:
-  dels(etcdip, 'needtoreplace','--prefix')
+  dels(etcdip, 'needtoreplace/'+myhost,'--prefix')
   print('no need to re- optmize raid groups')
- for cnt in currentneedtoreplace:
-   if cnt[1].split('/')[1] not in str(foundranks):
-    dels(etcdip, 'needtorepalce', cnt[1])
  foundranks = sorted(foundranks, key = lambda x: x[3], reverse = True)
  diskraids = set() 
  ranks = set()
@@ -720,8 +715,8 @@ def spare2(*args):
   if 'dm-' in raiddisk['name'] :
    raiddisk['actualdisk'] = raiddisk['name']
    raiddisk['devname'] = raiddisk['name']
-  put(etcdip, 'needtoreplace/'+rank[2]['host']+'/'+rank[2]['name']+'/'+rank[2]['pool'],raiddisk['name']+'/'+raiddisk['devname']+'/'+raiddisk['actualdisk']+'/'+rank[1]['devname'])
-  dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
+  put(leaderip, 'ask/needtoreplace/'+myhost+'/'+rank[2]['pool']+'/'+rank[2]['name']+'/'+rank[0]['devname'],raiddisk['name']+'/'+raiddisk['devname']+'/'+raiddisk['actualdisk']+'/'+rank[1]['name']+'/'+rank[1]['devname'])
+  #dosync('sync/needtoreplace/____/request','needtoreplace_'+str(stamp()))
  return
  
  
