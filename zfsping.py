@@ -24,6 +24,7 @@ from VolumeCheck import volumecheck
 from multiprocessing import Process
 from concurrent.futures import ProcessPoolExecutor
 from heartbeat import heartbeat
+from etcdspace import space
 
 os.environ['ETCDCTL_API']= '3'
 ctask = 1
@@ -221,11 +222,15 @@ def activeusersproc():
    f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
+def spaceopti():
+    global etcdip
+    space(etcdip)
 
 
 
 #loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc ]
-loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc , putzpoolproc]
+loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc , putzpoolproc, spaceopti]
+#loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc , putzpoolproc]
 
 def CommonTask(task):
  print("''''''''' task started",task,"'''''''''''''''''''''''''''''''''''''''")
@@ -253,7 +258,6 @@ def lazylooper():
         x = x + 1
         if x == len(loopers):
          x = 0
-
 def zfspinginit():
     global etcdip, leader, leaderip, myhost, myhostip
     myhostip = get(leaderip, 'ready/'+myhost)[0]
@@ -267,6 +271,7 @@ def zfspinginit():
     else:
         etcdip = myhostip
     initputzpool(leader, leaderip, myhost, myhostip)
+    #space(etcdip)
     #selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
     spare2('init', leader, leaderip, myhost, myhostip, etcdip)
     #remknown('init', leader, leaderip, myhost, myhostip, etcdip)
@@ -316,7 +321,7 @@ if __name__=='__main__':
     zload = getload()
     print('still load high',zload,'counter',counter)
   print('load ok', zload)
-  with ProcessPoolExecutor(4) as e:
+  with ProcessPoolExecutor(6) as e:
     for i in range(len(loopers)*2):
      args = loopers[i % len(loopers)]
      res = e.submit(CommonTask,args)
