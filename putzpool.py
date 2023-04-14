@@ -60,6 +60,7 @@ def putzpool():
  #lists=[lpools,ldisks,ldefdisks,lavaildisks,lfreedisks,lsparedisks,lraids,lvolumes,lsnapshots]
  zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
  lists={'pools':lpools,'disks':ldisks,'defdisks':ldefdisks,'inusedisks':linusedisks,'freedisks':lfreedisks,'sparedisks':lsparedisks,'raids':lraids,'volumes':lvolumes,'snapshots':lsnapshots, 'hosts':list(lhosts), 'phosts':list(phosts)}
+ silvering = 'no'
  for a in sty:
   #print('aaaaaa',a)
   b=a.split()
@@ -192,9 +193,7 @@ def putzpool():
      #else:
      # cmdline='/pace/hostlost.sh '+z[6]
      # subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
-     
     if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop'] and 'UNAVAIL' not in b[1] and 'FAULT' not in b[1]:
-     print('b',b)
      b[1] = 'ONLINE' 
     changeop=b[1]
     if host=='_1':
@@ -219,7 +218,10 @@ def putzpool():
      size = devinfo[-1]
      print('devinfo',devinfo)
     print('unavail devname',devname) 
-    ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname}
+    if 'resilvering' in str(b):
+        silvering = 'yes' 
+    ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering}
+    silvering = 'no'
     disklist.append(ddict)
     ldisks.append(ddict)
  if len(freepool) > 0:
@@ -244,7 +246,7 @@ def putzpool():
  ##### commented for not adding free disks of freepool
    lhosts.add(host)
    size=z[7]
-   ddict={'name':'scsi-'+z[6],'actualdisk':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname}
+   ddict={'name':'scsi-'+z[6],'actualdisk':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering':'no'}
    if z[6] in str(zpool):
     continue
    disklist.append(ddict)
