@@ -500,9 +500,9 @@ def solvetheasks(needtoreplace):
     theasks = get(leaderip, 'ask/needtoreplace', '--prefix')
     for askleft,askright in theasks:
         freedisk = askright.split('/')[-2] 
-        if freedisk in str(needtoreplace) and askleft in str(needtoreplace):    ### ignore
+        if freedisk in str(needtoreplace) and askleft.replace('ask/','') in str(needtoreplace):    ### ignore
             continue
-        elif freedisk in str(needtoreplace) and askleft not in str(needtoreplace): ### reject
+        elif freedisk in str(needtoreplace) and askleft.replace('ask/','') not in str(needtoreplace): ### reject
             dels(leaderip, askleft)
         elif freedisk not in str(needtoreplace):    ##### accept
             put(leaderip, askleft.replace('ask/',''), askright)
