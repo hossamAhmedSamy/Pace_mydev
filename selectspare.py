@@ -547,6 +547,7 @@ def spare2(*args):
   cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
   for rmdisk in rmdisks:
    print(rmdisk)
+   print('hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
    if rmdisk in cpoolinfo:
        print('will do:', poolname, raidname, rmdisk, adisk)
        if 'mirror-temp' in raidname:
@@ -558,6 +559,11 @@ def spare2(*args):
        print('cmdline2'," ".join(cmdline2))
        print('thereuslt',forget.stdout.decode())
        print('return code',forget.returncode)
+       if forget.returncode == 0: 
+        break
+  dels(leaderip,'ask/needtoreplace',raidname)
+  dels(leaderip,'needtoreplace',raidname)
+  sleep(10) 
   #cmd = ['systemctl', 'restart', 'zfs-zed']
   #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   #dels(leaderip,'ask/needtoreplace',raidname)
