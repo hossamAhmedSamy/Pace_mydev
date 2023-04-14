@@ -123,9 +123,10 @@ def syncrequest(leader,leaderip,myhost, myhostip):
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) or ('request/' and '/'+myhost) in str(x) ] 
  myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
  if len(myrequests) > 1:
-    print(myrequests)
+    print('multiple requests',myrequests)
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
+ print('allsyncs', allsyncs,leaderip)
  for syncinfo in myrequests:
   flag = 1
   if  len(syncinfo[0]) == 1:
@@ -249,7 +250,6 @@ synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall , '
 if __name__=='__main__':
     leaderip=sys.argv[2]
     myhost=sys.argv[3]
-    print('hihih')
     leader = get(leaderip,'leader')[0]
     myhostip = get(leaderip,'ActivePartners/'+myhost)[0]
     if myhost == leader:
