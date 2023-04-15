@@ -23,7 +23,7 @@ def sendlog(*args):
  z=['/TopStor/logmsg2.sh', dt, tm, myhost ]
  for arg in args:
   z.append(arg)
- knowninfo=getlocal('known','--prefix')
+ knowninfo=get(leaderip, 'known','--prefix')
  for k in knowninfo:
   knowns.append(k[1])
  msg={'req': 'msg2', 'reply':z}
