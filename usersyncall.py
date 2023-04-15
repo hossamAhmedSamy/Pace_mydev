@@ -27,7 +27,7 @@ def thread_add(user):
    userid=userinfo[0]
    usergd=userinfo[1]
    userhome=userinfo[2]
-   cmdline=['/TopStor/UnixAddUser_sync',username,userhash,userid,usergd,userhome]
+   cmdline=['/TopStor/UnixAddUser_sync',leader, leaderip, myhost, myhostip, username,userhash,userid,usergd,userhome]
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  else:
   userinfo=user[1].split(':')
