@@ -28,6 +28,7 @@ def dosync(sync, *args):
 
 def selecthost(pool,readies,cpools):
     selectedhost = [ 10000,'' ]
+    print('cpools',cpools)
     for hostinfo in readies:
         print('hostinfo',readies)
         host = hostinfo[0].split('/')[1]
@@ -49,15 +50,16 @@ def zpooltoimport(*args):
      initqueue(leaderip, myhost) 
      return
 
- needtoimport=get(etcdip, 'poolsnxt', myhost) 
- cpools = get(etcdip, 'pools/','--prefix')
+ nextpools=get(etcdip, 'poolsnxt', '--prefix') 
+ needtoimport=[ x for x in nextpools if myhost in str(x)] 
+ pools = get(etcdip, 'pools/','--prefix')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
                   
  else:
   for poolline in needtoimport:
    pool = poolline[0].replace('poolsnxt/','')
-   if pool in str(cpools):
+   if pool in str(pools):
     continue
    ioperf(leaderip, myhost)
    print('pool to be imported now', pool)
@@ -81,9 +83,9 @@ def zpooltoimport(*args):
   return
 
  hosts=get(leaderip,'host','/current')
- print('cpools',cpools)
- cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in cpools ]
- cpools = cpools + getpoolstoimport()
+ 
+ cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
+ #cpools = cpools + getpoolstoimport()
  print('with imported pools',cpools)
  readies=get(etcdip,'ready','--prefix')
  for poolinfo in cpools:
@@ -93,10 +95,14 @@ def zpooltoimport(*args):
         print('hihihih',nxthosts,pool)
         for nxthost in nxthosts:
             if nxthost not in str(poolinfo):
-                dels(leaderip,'poolsnxt/'+pool)
-                put(leaderip,'poolsnxt/'+pool,nxthost)
-                dosync('poolsnxt', 'sync/poolsnxt/Add_'+pool+'_'+nxthost+'/request','poolsnxt_'+str(stamp()))
-                break
+                hostnxtpools = [ x for x in nextpools if nxthost in str(x) ]
+                print('hostnxtpools',hostnxtpools,pool)
+                if pool not in str(hostnxtpools):
+                    print('adding')
+                    dels(leaderip,'poolsnxt/'+pool)
+                    put(leaderip,'poolsnxt/'+pool,nxthost)
+                    dosync('poolsnxt', 'sync/poolsnxt/Add_'+pool+'_'+nxthost+'/request','poolsnxt_'+str(stamp()))
+                    break
  return
      
        
