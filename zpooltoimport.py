@@ -85,7 +85,7 @@ def zpooltoimport(*args):
  hosts=get(leaderip,'host','/current')
  
  cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
- #cpools = cpools + getpoolstoimport()
+ cpools = cpools + getpoolstoimport()
  print('with imported pools',cpools)
  readies=get(etcdip,'ready','--prefix')
  for poolinfo in cpools:
