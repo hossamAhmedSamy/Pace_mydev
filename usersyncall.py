@@ -22,23 +22,18 @@ def thread_add(user):
  if username in str(myusers):
   userhashlocal=get(myhostip,'usershash/'+username)[0]
   userhash=get(leaderip,'usershash/'+username)[0]
-  if userhashlocal not in userhash:
-   userinfo=user[1].split(':')
-   userid=userinfo[0]
-   usergd=userinfo[1]
-   userhome=userinfo[2]
-   cmdline=['/TopStor/UnixAddUser_sync',username,userhash,userid,usergd,userhome]
-   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  #if userhashlocal not in userhash:
+  # userinfo=user[1].split(':')
+  # userid=userinfo[0]
+  # usergd=userinfo[1]
  else:
-  userinfo=user[1].split(':')
-  userid=userinfo[0]
-  usergd=userinfo[1]
   userhash=get(leaderip,'usershash/'+username)[0]
-  userhome=userinfo[2]
-  cmdline=['/TopStor/UnixAddUser_sync',username,userhash,userid,usergd,userhome]
-  with open('/root/tmpusersync','w') as f:
-   f.write('user: '+str(userhash))
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ userinfo=user[1].split(':')
+ userid=userinfo[0]
+ usergd=userinfo[1]
+ userhome=userinfo[2]
+ cmdline=['/TopStor/UnixAddUser_sync',leader, leaderip, myhost, myhostip, username,userhash,userid,usergd,userhome]
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
 def thread_del(*user):
  global allusers, leader ,leaderip, myhost, myhostip
@@ -105,7 +100,6 @@ def oneusersync(oper,usertosync):
  
   
 if __name__=='__main__':
-# usersyncall(*sys.argv[1:])
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
  leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
@@ -114,4 +108,8 @@ if __name__=='__main__':
  myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
  myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
- oneusersync(*sys.argv[1:])
+ if len(sys.argv[1:]) < 2:
+    print(' syncing all users')
+    usersyncall(*sys.argv[1:])
+ else:
+    oneusersync(*sys.argv[1:])
