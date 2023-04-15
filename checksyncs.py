@@ -16,8 +16,8 @@ dirtydic = { 'pool': 0, 'volume': 0 }
 syncanitem = ['priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'pool','pools', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready','known' ]
-etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolsnxt','pools', 'localrun','logged','ActivePartners','configured','pool','nextlead']
+wholeetcd = [ 'pool','pools', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready' ]
+etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolsnxt','pools', 'logged','ActivePartners','configured','pool','nextlead']
 restartetcd = wholeetcd + etcdonly
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
@@ -47,7 +47,7 @@ def syncinit(leader,leaderip, myhost,myhostip):
 
 def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  global syncs, syncanitem, forReceivers, etcdonly, allsyncs
- noinit = [ 'replipart' , 'evacuatehost' ]
+ noinit = [ 'replipart' , 'evacuatehost','hostdown' ]
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
  sync = syncleft.split('/')[1]
@@ -65,7 +65,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
      print('syncing all groups')
      grpfninit(leader,leaderip, myhost,myhostip)
      groupsyncall()
-    if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
+    if sync in ['tz','ntp','gw','dns']: 
      cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
      print('cmd',cmdline)
      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
