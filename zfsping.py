@@ -12,7 +12,7 @@ from etcdgetlocalpy import etcdget as getlocal
 from time import time as stamp
 from time import sleep
 from etcdput import etcdput as put 
-from addknown import addknown
+#from addknown import addknown
 from putzpool import putzpool, initputzpool
 from activeusers import activeusers
 from addactive import addactive
@@ -199,17 +199,17 @@ def remknownproc():
    f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
-def addknownproc():
- global leader, myhost
- try:
-  if myhost == leader:
-   addknown(leader,myhost)
- except Exception as e:
-  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
-  print(' in addknown:',e)
-  with open('/root/pingerr','a') as f:
-   f.write(e)
-  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+#def addknownproc():
+# global leader, myhost
+# try:
+#  if myhost == leader:
+#   addknown(leader,myhost)
+# except Exception as e:
+#  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+#  print(' in addknown:',e)
+#  with open('/root/pingerr','a') as f:
+#   f.write(e)
+#  print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def activeusersproc():
  global leader, myhost
