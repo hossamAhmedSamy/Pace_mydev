@@ -60,6 +60,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
      print('syncing all users')
      usrfninit(leader,leaderip, myhost,myhostip)
      usersyncall() 
+     synckeys(leaderip, myhostip, 'user', 'user')
     if sync in 'group':
      print('syncing all groups')
      grpfninit(leader,leaderip, myhost,myhostip)
@@ -126,7 +127,6 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     print('multiple requests',myrequests)
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
- print('allsyncs', allsyncs,leaderip)
  for syncinfo in myrequests:
   flag = 1
   if  len(syncinfo[0]) == 1:
