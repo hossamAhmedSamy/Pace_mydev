@@ -25,6 +25,7 @@ then
 fi
 echo /TopStor/docker_primary.sh $leader $leaderip $clusterip
 /TopStor/docker_primary.sh $leader $myhostip $leaderip $clusterip
+echo docker exec etcdclient /TopStor/logmsg.py Partst05 info system $myhost 
 docker exec etcdclient /TopStor/logmsg.py Partst05 info system $myhost 
 echo $perfmon | grep 1
 if [ $? -eq 0 ]; then

@@ -90,8 +90,7 @@ def heartbeat(*args):
                     leader = nextleader 
                     put(myhostip,'leader',leader)
                     if myhost == nextleader:
-                        clusterip=get(myhostip,'namespace/mgmtip')[0]
-                        cmdline='/pace/leaderlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+nextleader+' '+nextleaderip+' '+clusterip+' '+host
+                        cmdline='/pace/leaderlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+nextleader+' '+nextleaderip+' '+leaderip+' '+host
                         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                         etcd = leaderip
                     else:
