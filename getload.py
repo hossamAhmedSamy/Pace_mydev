@@ -16,7 +16,7 @@ def getload(leaderip,myhost):
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  cpus = result.stdout.decode().split('\n')
  cpus = [ x for x in cpus if 'CPU(s)' in x and '-' not in x][0].split(' ')[-1]
- print(float(loadfig),loadfig, float(cpus),cpus)
+ #print(float(loadfig),loadfig, float(cpus),cpus)
  zload = 100 * float(loadfig)/float(cpus)
  put(leaderip,'cpuperf/'+myhost,str(zload))
  print(zload)
