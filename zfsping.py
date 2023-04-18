@@ -310,7 +310,7 @@ if __name__=='__main__':
  #infloop = lazyloop()
  while True:
   zfspinginit()
-  zload = getload()
+  zload = getload(leaderip,myhost)
   counter = 0
   while zload > 65:
    sleep(2)
@@ -318,7 +318,7 @@ if __name__=='__main__':
    if counter > 10:
     zload = 0
    else:
-    zload = getload()
+    zload = getload(leaderip,myhost)
     print('still load high',zload,'counter',counter)
   print('load ok', zload)
   with ProcessPoolExecutor(6) as e:

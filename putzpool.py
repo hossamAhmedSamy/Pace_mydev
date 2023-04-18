@@ -211,13 +211,13 @@ def putzpool():
         devname = b[0] 
         size = '0'
     if 'UNAVAI' not in b[1] and 'FAULT' not in b[1] and 'dm-' not in b[0]:
-     print('bbbbbbbbbbbbbbbbbb',b)
+     #print('bbbbbbbbbbbbbbbbbb',b)
      devinfo = [x.split() for x in lsscsi if devname in x][0]
-     print('devinfo',devinfo)
+     #print('devinfo',devinfo)
      host = devinfo[3].split('-')[1]
      size = devinfo[-1]
-     print('devinfo',devinfo)
-    print('unavail devname',devname) 
+     #print('devinfo',devinfo)
+    #print('unavail devname',devname) 
     if 'resilvering' in str(b):
         silvering = 'yes' 
     ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering}
@@ -236,7 +236,7 @@ def putzpool():
   for lss in freepool:
    z=lss.split()
    devname=z[5].replace('/dev/','')
-   print('devname',devname)
+   #print('devname',devname)
    if devname not in drives:
     continue
    diskid=lsscsi.index(lss)
