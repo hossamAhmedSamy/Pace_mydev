@@ -67,8 +67,8 @@ then
 		if [ $? -eq 0 ];
 		then	
 			stampi=`date +%s`
-			/TopStor/etcdput.py $leader sync/diskref/______/request diskref_$stamp
-			/TopStor/etcdput.py $leaderip sync/diskref/______/request/$myhost diskref_$stamp
+			/TopStor/etcdput.py $leaderip sync/diskref/______/request diskref_$stampi
+			/TopStor/etcdput.py $leaderip sync/diskref/______/request/$myhost diskref_$stampi
 		fi
 	#/pace/diskref.sh $leader $leaderip $myhost $myhostip
 	#else
