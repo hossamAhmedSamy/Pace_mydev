@@ -64,7 +64,7 @@ then
 		fi
 		/pace/diskref.sh $leader $leaderip $myhost $myhostip
 		echo $@ | grep add
-		if [ $? -eq 0 ];then
+		if [ $? -eq 0 ];
 		then	
 			stampi=`date +%s`
 			/TopStor/etcdput.py $leader sync/diskref/______/request diskref_$stamp
