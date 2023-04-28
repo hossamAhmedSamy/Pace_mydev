@@ -63,6 +63,13 @@ then
 			echo 1 > /sys/block/$dev/device/delete
 		fi
 		/pace/diskref.sh $leader $leaderip $myhost $myhostip
+		echo $@ | grep add
+		if [ $? -eq 0 ];then
+		then	
+			stampi=`date +%s`
+			/TopStor/etcdput.py $leader sync/diskref/______/request diskref_$stamp
+			/TopStor/etcdput.py $leaderip sync/diskref/______/request/$myhost diskref_$stamp
+		fi
 	#/pace/diskref.sh $leader $leaderip $myhost $myhostip
 	#else
 		#echo disk change $@ $stamp >> /root/diskchange 

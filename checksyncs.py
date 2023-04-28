@@ -162,7 +162,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       if sync in 'Snapperiod' :
        etctocron(leaderip)
       elif sync in 'diskref':
-        cmdline='/pace/diskref.sh '+leader+' '+ leaderip+' '+ myhost+' '+ myhostip
+        cmdline='/pace/diskchange.sh '+' '+ 'checksync'+' '+myhost+' '+myhostip+' add'
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       elif sync in 'hostdown':
         cmdline='/pace/hostdown.sh '+opers[0]
