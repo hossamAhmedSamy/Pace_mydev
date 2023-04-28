@@ -3,24 +3,32 @@ mypid='/TopStordata/diskchange'
 touch $mypid
 mypidc=`cat $mypid`
 stamp=`date `
+echo $@ | grep remove
+if [ $? -eq 0 ];
+then
+	echo $2 | grep dhcp 
+	if [ $? -ne 0 ];
+	then
+		echo dev=$2
+		dev=`echo $2 | sed 's/[0-9]*//g'`
+		targetcli backstores/block delete $dev-$myhost
+		if [ $? -eq 0 ];
+		then
+			actualdev=`lsscsi | grep $dev-$myhost | awk '{print $NF}' | sed 's/\/dev\///g'`
+		else
+			actualdev=$dev
+		fi
+	else
+		dev=$2
+		actualdev=`lsscsi | grep $dev | awk '{print $NF}' | sed 's/\/dev\///g'`
+	fi	
+	echo 1 > /sys/block/$actualdev/device/delete
+fi
 echo $mypidc | grep start
 if [ $? -eq 0 ];
 then
 	echo hihihihi
 	echo $1 $2 $3 $RANDOM > $mypid
-	myhost=`hostname`
-	echo $@ | grep remove
-	if [ $? -eq 0 ];
-	then
-
-			dev=`echo $2 | sed 's/[0-9]*//g'`
-			targetcli backstores/block delete $dev-$myhost
-			if [ $? -eq 0 ];
-			then
-				dev=`lsscsi | grep $dev-$myhost | awk '{print $NF}' | sed 's/\/dev\///g'`
-			fi
-			echo 1 > /sys/block/$dev/device/delete
-	fi
 	echo disk not running $@ $stamp >> /root/diskchange 
 	exit
 fi
@@ -51,24 +59,34 @@ then
 		myhost=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternode`
 		myhostip=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip`
 			
-		echo $@ | grep remove
-		if [ $? -eq 0 ];
-		then
-			dev=`echo $2 | sed 's/[0-9]*//g'`
-			targetcli backstores/block delete $dev-$myhost
-			if [ $? -eq 0 ];
-			then
-				dev=`lsscsi | grep $dev-$myhost | awk '{print $NF}' | sed 's/\/dev\///g'`
-			fi
-			echo 1 > /sys/block/$dev/device/delete
-		fi
+		#echo $@ | grep remove
+		#if [ $? -eq 0 ];
+		#then
+	#		echo $2 | grep dhcp 
+#			if [ $? -ne 0 ];
+#			then
+#				echo dev=$2
+#				dev=`echo $2 | sed 's/[0-9]*//g'`
+#				targetcli backstores/block delete $dev-$myhost
+#				if [ $? -eq 0 ];
+#				then
+#					actualdev=`lsscsi | grep $dev-$myhost | awk '{print $NF}' | sed 's/\/dev\///g'`
+#				else
+#					actualdev=$dev
+#				fi
+#			else
+#				dev=$2
+#				actualdev=`lsscsi | grep $dev | awk '{print $NF}' | sed 's/\/dev\///g'`
+#			fi	
+#			echo 1 > /sys/block/$actualdev/device/delete
+#		fi
 		/pace/diskref.sh $leader $leaderip $myhost $myhostip
-		echo $@ | grep add
+		echo $@ |  grep -v checksync
 		if [ $? -eq 0 ];
 		then	
 			stampi=`date +%s`
-			/TopStor/etcdput.py $leaderip sync/diskref/______/request diskref_$stampi
-			/TopStor/etcdput.py $leaderip sync/diskref/______/request/$myhost diskref_$stampi
+			/TopStor/etcdput.py $leaderip sync/diskref/${2}-${myhost}_${3}______/request diskref_$stampi
+			/TopStor/etcdput.py $leaderip sync/diskref/${2}-${myhost}_${3}______/request/$myhost diskref_$stampi
 		fi
 	#/pace/diskref.sh $leader $leaderip $myhost $myhostip
 	#else
