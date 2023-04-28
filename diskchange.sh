@@ -2,14 +2,14 @@
 mypid='/TopStordata/diskchange'
 touch $mypid
 mypidc=`cat $mypid`
+echo $@ >> /root/diskchangeparam
 stamp=`date `
 echo $@ | grep remove
 if [ $? -eq 0 ];
 then
-	echo $2 | grep dhcp 
+	echo $2 | grep dhcp  
 	if [ $? -ne 0 ];
 	then
-		echo dev=$2
 		dev=`echo $2 | sed 's/[0-9]*//g'`
 		targetcli backstores/block delete $dev-$myhost
 		if [ $? -eq 0 ];
@@ -34,7 +34,8 @@ then
 fi
 echo sssssssssssssssssssssssssssssssss
 oldpid=`echo $mypidc | awk '{print $4}'`
-echo $@ | grep -w $oldpid
+
+echo i$@ | grep -w i$oldpid
 if [ $? -eq 0 ];
 then 
 	echo hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh $oldpid ,,,,,,,,,,,,$@
