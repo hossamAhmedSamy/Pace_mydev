@@ -3,6 +3,11 @@ mypid='/TopStordata/diskchange'
 touch $mypid
 mypidc=`cat $mypid`
 echo $@ >> /root/diskchangeparam
+echo $@ | grep 'dm-'
+if [ $? -eq 0 ];
+then
+	exit
+fi
 stamp=`date `
 echo $@ | grep remove
 if [ $? -eq 0 ];
