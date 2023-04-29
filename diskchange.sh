@@ -4,6 +4,7 @@ touch $mypid
 mypidc=`cat $mypid`
 echo $@ >> /root/diskchangeparam
 stamp=`date `
+myhost=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternode`
 echo $@ | grep remove
 if [ $? -eq 0 ];
 then
@@ -17,17 +18,19 @@ then
 			echo will not delete remove dev=$2  $stamp >> /root/diskremove
 			exit
 		fi
+		echo targetcli backstores/block delete $dev-$myhost
 		targetcli backstores/block delete $dev-$myhost
-		if [ $? -eq 0 ];
+		if [ $? -ne 0 ];
 		then
-			actualdev=`lsscsi | grep $dev-$myhost | awk '{print $NF}' | sed 's/\/dev\///g'`
-		else
 			actualdev=$dev
+			echo 1 > /sys/block/$actualdev/device/delete
 		fi
+		actualdev=`lsscsi | grep $dev-$myhost | awk '{print $NF}' | sed 's/\/dev\///g'`
 	else
 		dev=$2
 		actualdev=`lsscsi | grep $dev | awk '{print $NF}' | sed 's/\/dev\///g'`
 	fi	
+	echo 1  /sys/block/$actualdev/device/delete
 	echo 1 > /sys/block/$actualdev/device/delete
 	echo dev=$dev $actualdev $stamp >> /root/diskremove
 fi
@@ -64,7 +67,6 @@ then
 		echo disk start diskref $@ $stamp > /root/diskchange 
 		leader=`docker exec etcdclient /TopStor/etcdgetlocal.py leader`
 		leaderip=`docker exec etcdclient /TopStor/etcdgetlocal.py leaderip`
-		myhost=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternode`
 		myhostip=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip`
 			
 		#echo $@ | grep remove
