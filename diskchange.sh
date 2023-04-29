@@ -31,6 +31,13 @@ then
 			echo 1 > /sys/block/$actualdev/device/delete
 		fi
 		actualdev=`lsscsi | grep $dev-$myhost | awk '{print $NF}' | sed 's/\/dev\///g'`
+		echo $@ |  grep -v checksync
+                if [ $? -eq 0 ];
+                then
+                        stampi=`date +%s`
+                        /TopStor/etcdput.py $leaderip sync/diskref/${2}-${myhost}_${3}______/request diskref_$stampi
+                        /TopStor/etcdput.py $leaderip sync/diskref/${2}-${myhost}_${3}______/request/$myhost diskref_$stampi
+                fi
 	else
 		dev=$2
 		actualdev=`lsscsi | grep $dev | awk '{print $NF}' | sed 's/\/dev\///g'`
@@ -73,28 +80,6 @@ then
 		leader=`docker exec etcdclient /TopStor/etcdgetlocal.py leader`
 		leaderip=`docker exec etcdclient /TopStor/etcdgetlocal.py leaderip`
 		myhostip=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip`
-			
-		#echo $@ | grep remove
-		#if [ $? -eq 0 ];
-		#then
-	#		echo $2 | grep dhcp 
-#			if [ $? -ne 0 ];
-#			then
-#				echo dev=$2
-#				dev=`echo $2 | sed 's/[0-9]*//g'`
-#				targetcli backstores/block delete $dev-$myhost
-#				if [ $? -eq 0 ];
-#				then
-#					actualdev=`lsscsi | grep $dev-$myhost | awk '{print $NF}' | sed 's/\/dev\///g'`
-#				else
-#					actualdev=$dev
-#				fi
-#			else
-#				dev=$2
-#				actualdev=`lsscsi | grep $dev | awk '{print $NF}' | sed 's/\/dev\///g'`
-#			fi	
-#			echo 1 > /sys/block/$actualdev/device/delete
-#		fi
 		/pace/diskref.sh $leader $leaderip $myhost $myhostip
 		echo $@ |  grep -v checksync
 		if [ $? -eq 0 ];
@@ -103,9 +88,6 @@ then
 			/TopStor/etcdput.py $leaderip sync/diskref/${2}-${myhost}_${3}______/request diskref_$stampi
 			/TopStor/etcdput.py $leaderip sync/diskref/${2}-${myhost}_${3}______/request/$myhost diskref_$stampi
 		fi
-	#/pace/diskref.sh $leader $leaderip $myhost $myhostip
-	#else
-		#echo disk change $@ $stamp >> /root/diskchange 
 	fi
 fi
 mypidc=`cat $mypid`
