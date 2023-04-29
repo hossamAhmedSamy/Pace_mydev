@@ -11,6 +11,12 @@ then
 	if [ $? -ne 0 ];
 	then
 		dev=`echo $2 | sed 's/[0-9]*//g'`
+		echo $dev | grep $2
+		if [ $? -ne 0 ];
+		then
+			echo will not delete remove dev=$2  $stamp >> /root/diskremove
+			exit
+		fi
 		targetcli backstores/block delete $dev-$myhost
 		if [ $? -eq 0 ];
 		then
