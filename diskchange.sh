@@ -9,10 +9,10 @@ then
 	exit
 fi
 stamp=`date `
-myhost=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternode`
 echo $@ | grep remove
 if [ $? -eq 0 ];
 then
+	myhost=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternode`
 	echo $2 | grep dhcp  
 	if [ $? -ne 0 ];
 	then
@@ -35,6 +35,7 @@ then
                 if [ $? -eq 0 ];
                 then
                         stampi=`date +%s`
+			leaderip=`docker exec etcdclient /TopStor/etcdgetlocal.py leaderip`
                         /TopStor/etcdput.py $leaderip sync/diskref/${2}-${myhost}_${3}______/request diskref_$stampi
                         /TopStor/etcdput.py $leaderip sync/diskref/${2}-${myhost}_${3}______/request/$myhost diskref_$stampi
                 fi
