@@ -23,6 +23,7 @@ then
 		actualdev=`lsscsi | grep $dev | awk '{print $NF}' | sed 's/\/dev\///g'`
 	fi	
 	echo 1 > /sys/block/$actualdev/device/delete
+	echo dev=$dev $actualdev $stamp >> /root/diskremove
 fi
 echo $mypidc | grep start
 if [ $? -eq 0 ];
