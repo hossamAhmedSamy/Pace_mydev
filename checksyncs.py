@@ -27,12 +27,11 @@ syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### initial sync for known nodes : sync/Operation/initial Operation_stamp #######################
 ##### synced template for initial sync for known nodes : sync/Operation/initial/node Operation_stamp #######################
 ##### delete request of same sync if ActivePartners qty reached #######################
-def insync(leaderip):
+def insync(leaderip, leader):
 
     isinsync = 1 
     allsyncs=get(leaderip,'sync','--prefix')
     allsyncs=[x for x in allsyncs if 'initial' not in x[0] ]
-    print('before',allsyncs)
     for sync in allsyncs:
         syncgroup = [ x for x in allsyncs if sync[1] in x[1] ]
         print('syncgroup',syncgroup)
@@ -44,6 +43,14 @@ def insync(leaderip):
             break
         if len(syncgroup) > 0:
             isinsync = 0 
+            break
+    cmdline = '/TopStor/getcversion.sh '+leaderip+' '+leader+' '+leader
+    subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT)
+    mycversion=get(leaderip,'cversion/'+leader)[0]
+    allcversion=get(leaderip,'cversion')
+    for cver in allcversion:
+        if cver[1] != mycversion:
+            isinsync = 0
             break
     if isinsync:
         print('the cluster is in sync')
@@ -257,7 +264,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    print(actives,'prune',prune, 'ready/Del' in str(toprunedic[prune][1:]))
    if toprunedic[prune][0] > actives or ((('ready/Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0]+1 >= actives):
     dels(leaderip,'sync',prune) 
-  insync(leaderip) 
+  insync(leaderip, leader) 
     #print(prune,toprunedic[prune])
   
  return     
