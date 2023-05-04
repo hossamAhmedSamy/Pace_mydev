@@ -61,6 +61,7 @@ def putzpool():
  zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
  lists={'pools':lpools,'disks':ldisks,'defdisks':ldefdisks,'inusedisks':linusedisks,'freedisks':lfreedisks,'sparedisks':lsparedisks,'raids':lraids,'volumes':lvolumes,'snapshots':lsnapshots, 'hosts':list(lhosts), 'phosts':list(phosts)}
  silvering = 'no'
+ silveringflag = 'no'
  for a in sty:
   #print('aaaaaa',a)
   b=a.split()
@@ -220,6 +221,8 @@ def putzpool():
     #print('unavail devname',devname) 
     if 'resilvering' in str(b):
         silvering = 'yes' 
+        silveringflag = 'yes'
+        
     ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering}
     silvering = 'no'
     disklist.append(ddict)
@@ -277,6 +280,10 @@ def putzpool():
   put(leaderip, y[0],y[1])
  if '1' in perfmon: 
   queuethis('putzpool.py','stop','system')
+ if silveringflag == 'yes':
+  put(leaderip,'nodedirty/'+myhost, 'yes')
+ else:
+  dels(leaderip,'nodedirty/'+myhost)
  
 def initputzpool(*args):
     global leader, leaderip, myhost, myip 

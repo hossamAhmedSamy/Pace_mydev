@@ -32,7 +32,7 @@ def insync(leaderip, leader):
     isinsync = 1 
     result = get(leaderip,'nodedirty')
     if 'dhcp' in str(result):
-        isinsync = 1
+        isinsync = 0 
     if isinsync == 1:
         allsyncs=get(leaderip,'sync','--prefix')
         allsyncs=[x for x in allsyncs if 'initial' not in x[0] ]
@@ -52,17 +52,11 @@ def insync(leaderip, leader):
     subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT)
     if isinsync == 1:
         mycversion=get(leaderip,'cversion/'+leader)[0]
-        allcversion=get(leaderip,'cversion')
+        allcversion=get(leaderip,'cversion','--prefix')
         for cver in allcversion:
             if cver[1] != mycversion:
                 isinsync = 0
                 break
-            
-    if isinsync == 1:
-        cmdline = 'zpool status '
-        result = subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode()
-        if 'resilvering' in result:
-                isinsync = 0
     if isinsync:
         print('the cluster is in sync')
         put(leaderip,'isinsync', 'yes')
