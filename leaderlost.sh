@@ -23,7 +23,7 @@ then
   echo leader is dead but another process was in the way to fix.
   exit
 fi
-echo /TopStor/docker_primary.sh $leader $leaderip $clusterip
+echo /TopStor/docker_primary.sh $leader $myhostip $leaderip $clusterip
 /TopStor/docker_primary.sh $leader $myhostip $leaderip $clusterip
 echo docker exec etcdclient /TopStor/logmsg.py Partst05 info system $myhost 
 docker exec etcdclient /TopStor/logmsg.py Partst05 info system $myhost 

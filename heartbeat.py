@@ -44,24 +44,28 @@ def getnextlead():
 
 def hostlost(host, hostip):
                 global etcd, leader ,leaderip, myhost, myhostip, nextleader, nextleaderip
+                port = myport = '2379'
+                clusterip = get(leaderip,'namespace/mgmtip')[0]
                 if host == leader:
                     print('leader lost. nextleader is ',nextleader, 'while my host',myhost)
                     leader = nextleader 
                     put(myhostip,'leader',leader)
-                    leaderip = nextleaderip
                     if myhost == nextleader:
-                        cmdline='/pace/leaderlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+nextleader+' '+nextleaderip+' '+leaderip+' '+host
+                        cmdline='/pace/leaderlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+nextleader+' '+nextleaderip+' '+clusterip+' '+host
                         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+                        put(etcd,'refreshdisown','yes')
                         etcd = leaderip
-                    else:
-                        sleep(2)
-                        result='failed'
-                        while 'ok' not in str(result):
-                            print('chceking new leader')
-                            cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+leaderip 
-                            result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-                            result =(host,'ok') if 'open' in result  else (host,'lost')
-                    put(etcd,'refreshdisown','yes')
+                    sleep(2)
+                    result='failed'
+                    while 'ok' not in str(result):
+                        print('chceking new leader')
+                        cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+leaderip 
+                        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+                        if ('Host is up' or 'open' ) in result:
+                            result = (host,'ok')
+                        else:
+                            result = (host,'lost')
+
                 dels(leaderip, 'sync/hostdown/'+host,'--prefix')
                 dels(leaderip, 'cpuperf/'+host)
                 stampit = str(stamp())
@@ -123,7 +127,10 @@ def heartbeat(*args):
             while tries < 4:
                 tries +=1
                 result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-                result =(host,'ok') if 'open' in result  else (host,'lost')
+                if ('Host is up' or 'open' ) in result:
+                    result = (host,'ok')
+                else:
+                    result = (host,'lost')
                 if 'ok' in str(result):
                     break
                 sleep(1)

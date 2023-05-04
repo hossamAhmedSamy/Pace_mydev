@@ -30,7 +30,7 @@ syncs = etcdonly + syncanitem + special1 + wholeetcd
 def insync(leaderip, leader):
     print('checking in sync -------------------')
     isinsync = 1 
-    result = get(leaderip,'nodedirty')
+    result = get(leaderip,'nodedirty','--prefix')
     if 'dhcp' in str(result):
         isinsync = 0 
     if isinsync == 1:
