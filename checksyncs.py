@@ -30,10 +30,9 @@ syncs = etcdonly + syncanitem + special1 + wholeetcd
 def insync(leaderip, leader):
     print('checking in sync -------------------')
     isinsync = 1 
-        result = get(leaderip,'nodedirty')
-        if 'dhcp' in str(result):
-          isinsync = 1
-          break
+    result = get(leaderip,'nodedirty')
+    if 'dhcp' in str(result):
+        isinsync = 1
     if isinsync == 1:
         allsyncs=get(leaderip,'sync','--prefix')
         allsyncs=[x for x in allsyncs if 'initial' not in x[0] ]
