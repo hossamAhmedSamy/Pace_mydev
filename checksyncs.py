@@ -200,7 +200,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       if sync in 'cversion':
         cmdline='/TopStor/systempull.sh samebranch'
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-      if sync in 'Snapperiod' :
+      elif sync in 'Snapperiod' :
        etctocron(leaderip)
       elif sync in 'diskref':
         cmdline='/pace/diskchange.sh '+' checksync'+' '+opers[0]+' '+opers[1]
