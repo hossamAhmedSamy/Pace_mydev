@@ -28,30 +28,42 @@ syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### synced template for initial sync for known nodes : sync/Operation/initial/node Operation_stamp #######################
 ##### delete request of same sync if ActivePartners qty reached #######################
 def insync(leaderip, leader):
-
+    print('checking in sync -------------------')
     isinsync = 1 
-    allsyncs=get(leaderip,'sync','--prefix')
-    allsyncs=[x for x in allsyncs if 'initial' not in x[0] ]
-    for sync in allsyncs:
-        syncgroup = [ x for x in allsyncs if sync[1] in x[1] ]
-        print('syncgroup',syncgroup)
-        initrequest = [ x for x in syncgroup if 'request/dhcp' not in x[0] ]
-        if len(syncgroup) > 0 and len(initrequest) == 0:
-            print('to delete', sync)
-            dels(leaderip,'sync',sync[1])
-            isinsync = 0
-            break
-        if len(syncgroup) > 0:
-            isinsync = 0 
-            break
+        result = get(leaderip,'nodedirty')
+        if 'dhcp' in str(result):
+          isinsync = 1
+          break
+    if isinsync == 1:
+        allsyncs=get(leaderip,'sync','--prefix')
+        allsyncs=[x for x in allsyncs if 'initial' not in x[0] ]
+        for sync in allsyncs:
+            syncgroup = [ x for x in allsyncs if sync[1] in x[1] ]
+            print('syncgroup',syncgroup)
+            initrequest = [ x for x in syncgroup if 'request/dhcp' not in x[0] ]
+            if len(syncgroup) > 0 and len(initrequest) == 0:
+                print('to delete', sync)
+                dels(leaderip,'sync',sync[1])
+                isinsync = 0
+                break
+            if len(syncgroup) > 0:
+                isinsync = 0 
+                break
     cmdline = '/TopStor/getcversion.sh '+leaderip+' '+leader+' '+leader
     subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT)
-    mycversion=get(leaderip,'cversion/'+leader)[0]
-    allcversion=get(leaderip,'cversion')
-    for cver in allcversion:
-        if cver[1] != mycversion:
-            isinsync = 0
-            break
+    if isinsync == 1:
+        mycversion=get(leaderip,'cversion/'+leader)[0]
+        allcversion=get(leaderip,'cversion')
+        for cver in allcversion:
+            if cver[1] != mycversion:
+                isinsync = 0
+                break
+            
+    if isinsync == 1:
+        cmdline = 'zpool status '
+        result = subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode()
+        if 'resilvering' in result:
+                isinsync = 0
     if isinsync:
         print('the cluster is in sync')
         put(leaderip,'isinsync', 'yes')

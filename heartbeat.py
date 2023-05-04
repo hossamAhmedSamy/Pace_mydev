@@ -13,14 +13,14 @@ from addactive import addactive
 from remknown import remknown
 from VolumeCheck import volumecheck
 
-leader, leaderip, myhost, myhostip = '','','',''
+leader, leaderip, myhost, myhostip, nextleader, nextleaderip = '','','','','',''
 etcd = ''
 dev = 'enp0s8'
 os.environ['ETCDCTL_API']= '3'
 
 
 def dosync(*args):
-  global etcd, leader ,leaderip, myhost, myhostip
+  global etcd, leader ,leaderip, myhost, myhostip, nextleader, nextleaderip
   put(leaderip, *args)
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
@@ -29,7 +29,7 @@ def dosync(*args):
 
 
 def getnextlead():
- global etcd, leader ,leaderip, myhost, myhostip
+ global etcd, leader ,leaderip, myhost, myhostip, nextleader, nextleaderip
  nextleader =  get(etcd,'nextlead/er')[0]
  if '_1' in str(nextleader):
   put(leaderip, 'nextlead/er',myhost)
@@ -42,53 +42,13 @@ def getnextlead():
   nextleadip = get(etcd,'ready/'+nextleader)[0]
  return nextleader , nextleadip
 
-
-def heartbeat(*args):
-    global etcd, leader ,leaderip, myhost, myhostip
-    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
-    leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
-    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
-    leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
-    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
-    myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
-    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
-    myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
-    nochange = 1
-    port = myport = '2379'
-    if myhost == leader:
-        etcd = leaderip
-    else:
-        etcd = myhostip
-    nextleader, nextleaderip = getnextlead()
-    while True:
-        print('looping')
-        sleep(1)
-        knowns = get(etcd, 'ready','--prefix')
-        for known in knowns:
-            host = known[0].split('/')[1]
-            if host == myhost:
-                continue
-            if host == leader:
-                hostip = leaderip
-            else:
-                hostip = known[1]
-            print('nmapping')
-            result = 'failed'
-            tries = 0
-            cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+hostip 
-            while tries < 4:
-                tries +=1
-                result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-                result =(host,'ok') if 'open' in result  else (host,'lost')
-                if 'ok' in str(result):
-                    break
-                sleep(1)
-            print(result)
-            if 'ok' not in str(result):
+def hostlost(host, hostip):
+                global etcd, leader ,leaderip, myhost, myhostip, nextleader, nextleaderip
                 if host == leader:
                     print('leader lost. nextleader is ',nextleader, 'while my host',myhost)
                     leader = nextleader 
                     put(myhostip,'leader',leader)
+                    leaderip = nextleaderip
                     if myhost == nextleader:
                         cmdline='/pace/leaderlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+nextleader+' '+nextleaderip+' '+leaderip+' '+host
                         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
@@ -115,25 +75,65 @@ def heartbeat(*args):
                 dels(leaderip, 'known/'+host)
                 dels(leaderip, 'pools',host)
                 dels(leaderip, 'sync/hostdown',host)
-                #dosync('sync/known/Del_known_'+host+'/request','known_'+stampit)
                 dosync('sync/ready/Del_ready_'+host+'/request','ready_'+stampit)
                 dosync('sync/running/____/request','running_'+stampit)
                 dosync('sync/pools/Del_pools_'+host+'/request','pools_'+stampit)
-                #cmdline='/pace/iscsiwatchdog.sh'
-                #result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-                #zpooltoimport(leadern, myhost)
-                #etcds = etcdctlheart(myip,myport,'volumes','--prefix')
-                #replis = etcdctlheart(myip,myport, 'replivol','--prefix')
-                #volumecheck(leadern, myhost, etcds, replis, pcss)
-                #ddactive(leadern,myhost)
-                #spare2(leadern, myhost)
-                #spare2(leadern, myhost)
-                #spare2(leadern, myhost)
-                #if myhost == leadern:
-                #remknown(leadern,myhost) 
+
+
+def heartbeat(*args):
+    global etcd, leader ,leaderip, myhost, myhostip
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
+    leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
+    leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
+    myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
+    myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    nochange = 1
+    port = myport = '2379'
+    if myhost == leader:
+        etcd = leaderip
+    else:
+        etcd = myhostip
+    nextleader, nextleaderip = getnextlead()
+    while True:
+        print('looping')
+        sleep(1)
+        tries = 0
+        while tries < 4:
+            tries +=1
+            knowns = get(etcd, 'ready','--prefix')
+            if 'dhcp' in str(knowns):
+                tries = 10
+            else:
+                hostlost(leader, leaderip)
+        for known in knowns:
+            host = known[0].split('/')[1]
+            if host == myhost:
+                continue
+            if host == leader:
+                hostip = leaderip
+            else:
+                hostip = known[1]
+            print('nmapping')
+            result = 'failed'
+            tries = 0
+            cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+hostip 
+            while tries < 4:
+                tries +=1
+                result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+                result =(host,'ok') if 'open' in result  else (host,'lost')
+                if 'ok' in str(result):
+                    break
+                sleep(1)
+            print(result)
+            if 'ok' not in str(result):
+                hostlost(host, hostip)
                 break
     print(leader ,leaderip, myhost, myhostip)
     return leader ,leaderip, myhost, myhostip
+
  
 
 

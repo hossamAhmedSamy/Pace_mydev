@@ -10,7 +10,7 @@ os.environ['ETCDCTL_API']= '3'
 def etcdctl(etcd, key,prefix):
  cmdline=['etcdctl','--user=root:YN-Password_123','--endpoints=http://'+etcd+':2379','get',key,prefix]
  cmdline=['etcdctl','--endpoints=http://'+etcd+':2379','get',key,prefix]
- result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE, timeout=2)
  return result 
  
 def etcdget(etcd, key, prefix=''):
