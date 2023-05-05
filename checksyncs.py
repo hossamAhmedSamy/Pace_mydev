@@ -242,7 +242,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if myhost != leader:
     put(myhostip, syncleft+'/'+myhost, stamp)
     put(myhostip, syncleft, stamp)
- cmdline = '/TopStor/getcversion.sh '+leaderip+' '+leader+' '+leader
+ cmdline = '/TopStor/getcversion.sh '+leaderip+' '+leader+' '+myhost
  subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT)
  if myhost != leader:
   dones = get(leaderip,'sync','/request/dhcp')
