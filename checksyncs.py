@@ -48,8 +48,6 @@ def insync(leaderip, leader):
             if len(syncgroup) > 0:
                 isinsync = 0 
                 break
-    cmdline = '/TopStor/getcversion.sh '+leaderip+' '+leader+' '+leader
-    subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT)
     if isinsync == 1:
         mycversion=get(leaderip,'cversion/'+leader)[0]
         allcversion=get(leaderip,'cversion','--prefix')
@@ -244,6 +242,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if myhost != leader:
     put(myhostip, syncleft+'/'+myhost, stamp)
     put(myhostip, syncleft, stamp)
+ cmdline = '/TopStor/getcversion.sh '+leaderip+' '+leader+' '+leader
+ subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT)
  if myhost != leader:
   dones = get(leaderip,'sync','/request/dhcp')
   otherdones = [ x for x in dones if '/request/dhcp' in str(x) ] 
