@@ -101,13 +101,13 @@ def heartbeat(*args):
         print('looping')
         sleep(1)
         tries = 0
-        while tries < 4:
+        while tries < 2:
             tries +=1
             knowns = get(etcd, 'ready','--prefix')
             if 'dhcp' in str(knowns):
                 tries = 10
-            else:
-                hostlost(leader, leaderip)
+        if tries < 10: 
+           hostlost(leader, leaderip)
         for known in knowns:
             host = known[0].split('/')[1]
             if host == myhost:
