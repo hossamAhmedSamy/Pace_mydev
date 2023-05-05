@@ -58,7 +58,7 @@ def putzpool():
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
  #lists=[lpools,ldisks,ldefdisks,lavaildisks,lfreedisks,lsparedisks,lraids,lvolumes,lsnapshots]
- zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
+ #zfslistall=str(result.stdout)[2:][:-3].replace('\\t',' ').split('\\n')
  lists={'pools':lpools,'disks':ldisks,'defdisks':ldefdisks,'inusedisks':linusedisks,'freedisks':lfreedisks,'sparedisks':lsparedisks,'raids':lraids,'volumes':lvolumes,'snapshots':lsnapshots, 'hosts':list(lhosts), 'phosts':list(phosts)}
  silvering = 'no'
  silveringflag = 'no'
