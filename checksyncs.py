@@ -13,10 +13,10 @@ from time import time as timestamp
 from etctocron import etctocron 
 
 dirtydic = { 'pool': 0, 'volume': 0 } 
-syncanitem = ['priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
+syncanitem = [ 'cversion','priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'nmspce','gateway','deens','enteepe', 'teezee','ceecee','cversion', 'pool','pools', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready' ]
+wholeetcd = [ 'nmspce','gateway','deens','enteepe', 'teezee','ceecee', 'pool','pools','cversion', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready' ]
 etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolsnxt','pools', 'logged','ActivePartners','configured','pool','nextlead']
 restartetcd = wholeetcd + etcdonly
 syncs = etcdonly + syncanitem + special1 + wholeetcd
@@ -55,6 +55,8 @@ def insync(leaderip, leader):
         allcversion=get(leaderip,'cversion','--prefix')
         for cver in allcversion:
             if cver[1] != mycversion:
+                stampi = str(timestamp())
+                put(leaderip,'sync/cversion/____/request/','cversion_'+stampi)
                 isinsync = 0
                 break
     if isinsync:
@@ -195,6 +197,9 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       print(sync,opers)
       dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
+      if sync in 'cversion':
+        cmdline='/TopStor/systempull.sh samebranch'
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       if sync in 'Snapperiod' :
        etctocron(leaderip)
       elif sync in 'diskref':
