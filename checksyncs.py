@@ -54,7 +54,7 @@ def insync(leaderip, leader):
         for cver in allcversion:
             if cver[1] != mycversion:
                 stampi = str(timestamp())
-                put(leaderip,'sync/cversion/____/request/','cversion_'+stampi)
+                put(leaderip,'sync/cversion/__checksy__/request/','cversion_'+stampi)
                 isinsync = 0
                 break
     if isinsync:
