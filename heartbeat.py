@@ -132,7 +132,12 @@ def heartbeat(*args):
                 if ('Host is up' or 'open' ) in result:
                     result = (host,'ok')
                 else:
-                    result = (host,'lost')
+                    result = (host,'doubt')
+                if 'doubt' in str(result):
+                    cmdline='ping -w 2 '+hostip 
+                    result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    if result.returncode != 0 :
+                        result=(host,'lost')
                 if 'ok' in str(result):
                     break
                 sleep(1)
