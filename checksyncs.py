@@ -16,8 +16,8 @@ dirtydic = { 'pool': 0, 'volume': 0 }
 syncanitem = [ 'cversion','priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'nmspce','gateway','deens','enteepe', 'teezee','ceecee', 'pool','pools','cversion', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready' ]
-etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolsnxt','pools', 'logged','ActivePartners','configured','pool','nextlead']
+wholeetcd = [ 'nmspce','gateway','deens','enteepe', 'teezee','ceecee', 'pool','pools','cversion', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes' ]
+etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolsnxt','pools', 'logged','ActivePartners','configured','ready', 'pool','nextlead']
 restartetcd = wholeetcd + etcdonly
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
