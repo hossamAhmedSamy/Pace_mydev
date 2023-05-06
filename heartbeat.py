@@ -39,8 +39,8 @@ def getnextlead():
   nextleader = leader 
   nextleaderip = leaderip
  else:
-  nextleadip = get(etcd,'ready/'+nextleader)[0]
- return nextleader , nextleadip
+  nextleaderip = get(etcd,'ready/'+nextleader)[0]
+ return nextleader , nextleaderip
 
 def hostlost(host, hostip):
                 global etcd, leader ,leaderip, myhost, myhostip, nextleader, nextleaderip
