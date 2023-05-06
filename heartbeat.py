@@ -124,7 +124,7 @@ def heartbeat(*args):
             print('nmapping')
             result = 'failed'
             tries = 0
-            cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+hostip 
+            cmdline='nmap --max-rtt-timeout 500ms -n -p '+port+' '+hostip 
             while tries < 4:
                 tries +=1
                 try:
@@ -137,7 +137,7 @@ def heartbeat(*args):
                     result = (host,'doubt')
                 if 'doubt' in str(result):
                     print('ddddddddddddddddddddddddd')
-                    cmdline='ping -w 2 '+hostip 
+                    cmdline='ping -w 1 '+hostip 
                     print(cmdline)
                     try:
                         subprocess.check_output(cmdline.split())
