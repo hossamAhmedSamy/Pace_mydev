@@ -127,17 +127,21 @@ def heartbeat(*args):
             cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+hostip 
             while tries < 4:
                 tries +=1
-                result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-                print('nmapped\n', result)
+                try:
+                    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+                except:
+                    result=(host,'doubt')
                 if ('Host is up' or 'open' ) in result:
                     result = (host,'ok')
                 else:
                     result = (host,'doubt')
                 if 'doubt' in str(result):
+                    print('ddddddddddddddddddddddddd')
                     cmdline='ping -w 2 '+hostip 
+                    print(cmdline)
                     try:
-                        result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    except:
+                        subprocess.check_output(cmdline.split())
+                    except subprocess.CalledProcessError as e:
                         result=(host,'lost')
                 if 'ok' in str(result):
                     break
