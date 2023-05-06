@@ -30,9 +30,21 @@ syncs = etcdonly + syncanitem + special1 + wholeetcd
 def insync(leaderip, leader):
     print('checking in sync -------------------')
     isinsync = 1 
-    result = get(leaderip,'nodedirty','--prefix')
-    if 'dhcp' in str(result):
-        isinsync = 0 
+    if isinsync == 1:
+        mycversion=get(leaderip,'cversion/'+leader)[0]
+        allcversion=get(leaderip,'cversion','--prefix')
+        readis = get(leaderip,'ready','--prefix')
+        for cver in allcversion:
+            if cver[1] != mycversion and cver[0].replace('cversion/','') in str(readis):
+                stampi = str(timestamp())
+                put(leaderip,'sync/cversion/__checksy__/request','cversion_'+stampi)
+                isinsync = 0
+                break
+     
+    if isinsync == 1:
+        result = get(leaderip,'nodedirty','--prefix')
+        if 'dhcp' in str(result):
+            isinsync = 0 
     if isinsync == 1:
         allsyncs=get(leaderip,'sync','--prefix')
         allsyncs=[x for x in allsyncs if 'initial' not in x[0] ]
@@ -47,15 +59,6 @@ def insync(leaderip, leader):
                 break
             if len(syncgroup) > 0:
                 isinsync = 0 
-                break
-    if isinsync == 1:
-        mycversion=get(leaderip,'cversion/'+leader)[0]
-        allcversion=get(leaderip,'cversion','--prefix')
-        for cver in allcversion:
-            if cver[1] != mycversion:
-                stampi = str(timestamp())
-                put(leaderip,'sync/cversion/__checksy__/request','cversion_'+stampi)
-                isinsync = 0
                 break
     if isinsync:
         print('the cluster is in sync')
