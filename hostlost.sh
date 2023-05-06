@@ -1,6 +1,6 @@
 #!/bin/sh
 cd /pace
-echo $@ > /root/hostlost
+echo $@ `date` > /root/hostlost
 #export PATH=/bin:/usr/bin:/sbin:/usr/sbin:/root
 leader=`echo $@ | awk '{print $1}'`
 leaderip=`echo $@ | awk '{print $2}'`
