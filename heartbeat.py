@@ -117,6 +117,8 @@ def heartbeat(*args):
             host = known[0].split('/')[1]
             if host == myhost:
                 continue
+            if host != leader and myhost != leader:
+                continue
             if host == leader:
                 hostip = leaderip
             else:
@@ -130,6 +132,8 @@ def heartbeat(*args):
                 try:
                     result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                 except:
+                    with open('/root/heartproblem','a') as f:
+                        f.write('nmap:\n'+result)
                     result=(host,'doubt')
                 if ('Host is up' or 'open' ) in result:
                     result = (host,'ok')
