@@ -128,6 +128,7 @@ def heartbeat(*args):
             while tries < 4:
                 tries +=1
                 result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+                print('nmapped\n', result)
                 if ('Host is up' or 'open' ) in result:
                     result = (host,'ok')
                 else:
