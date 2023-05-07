@@ -196,7 +196,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
        put(myhostip,sync+'/'+opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
      else:
       print(sync,opers)
-      dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
+      if 'ready' not in sync:
+        dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
       if sync in 'cversion':
         cmdline='/TopStor/systempull.sh samebranch'
