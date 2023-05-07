@@ -43,19 +43,21 @@ def selectimport(*args):
         hosts=get(leaderip, 'hosts','/current')
         if len(hosts) < 2:
             continue   # just to clean the poolsnxt or otherwise it would be 'return'
-        minhost = ('',float('inf'))
-        for host in hosts: 
-            hostname = host[0].split('/')[1]
-            print('hostname',hostname)
-            if hostname == chost:
-                continue
-            hostpools=mtuple(host[1])
-            minhost = selecthost(minhost,hostname,hostpools)
-            print('minhost',minhost)
-        dels(leaderip, 'sync/poolsnxt/', pool)
-        put(leaderip, 'poolsnxt/'+pool,minhost[0])
-        put(leaderip, 'sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request','poolsnxt_'+stampit)
-        put(leaderip, 'sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request/'+leader,'poolsnxt_'+stampit)
+        poolnxt = get(etcdip,'poolsnxt/'+pool)[0]
+        if 'dhcp' not in poolnxt:
+            minhost = ('',float('inf'))
+            for host in hosts: 
+                hostname = host[0].split('/')[1]
+                print('hostname',hostname)
+                if hostname == chost:
+                    continue
+                hostpools=mtuple(host[1])
+                minhost = selecthost(minhost,hostname,hostpools)
+                print('minhost',minhost)
+            dels(leaderip, 'sync/poolsnxt/', pool)
+            put(leaderip, 'poolsnxt/'+pool,minhost[0])
+            put(leaderip, 'sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request','poolsnxt_'+stampit)
+            put(leaderip, 'sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request/'+leader,'poolsnxt_'+stampit)
     return
 
  
