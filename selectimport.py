@@ -2,6 +2,7 @@
 from etcdgetpy import etcdget as get
 from logqueue import queuethis
 from etcdput import etcdput as put 
+from etcddel import etcddel as dels 
 from time import time as stamp
 from ast import literal_eval as mtuple
 #from zpooltoimport import zpooltoimport as importables
@@ -51,6 +52,7 @@ def selectimport(*args):
             hostpools=mtuple(host[1])
             minhost = selecthost(minhost,hostname,hostpools)
             print('minhost',minhost)
+        dels(leaderip, 'sync/poolsnxt/', pool)
         put(leaderip, 'poolsnxt/'+pool,minhost[0])
         put(leaderip, 'sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request','poolsnxt_'+stampit)
         put(leaderip, 'sync/poolsnxt/Add_'+pool+'_'+minhost[0]+'/request/'+leader,'poolsnxt_'+stampit)
