@@ -272,10 +272,11 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    else:
     toprunedic[prune[1]][0] += 1
     toprunedic[prune[1]].append(prune[0])
+  print('toproune check',topruneic)
   for prune in toprunedic:
    #if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
    print(actives,'prune',prune, 'ready/Del' in str(toprunedic[prune][1:]))
-   if toprunedic[prune][0] > actives or ((('ready/Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0]+1 >= actives):
+   if toprunedic[prune][0] > actives or ((('ready' in str(toprunedic[prune][1:])) or ('Del' in str(toprunedic[prune][1:]) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0] >= actives):
     dels(leaderip,'sync',prune) 
   insync(leaderip, leader) 
     #print(prune,toprunedic[prune])
