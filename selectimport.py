@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import sys
 from etcdgetpy import etcdget as get
 from logqueue import queuethis
 from etcdput import etcdput as put 
@@ -43,8 +44,8 @@ def selectimport(*args):
         hosts=get(leaderip, 'hosts','/current')
         if len(hosts) < 2:
             continue   # just to clean the poolsnxt or otherwise it would be 'return'
-        poolnxt = get(etcdip,'poolsnxt/'+pool)[0]
-        if 'dhcp' not in poolnxt:
+        poolnxt = get(etcdip,'poolsnxt/'+pool)
+        if 'dhcp' not in str(poolnxt):
             minhost = ('',float('inf'))
             for host in hosts: 
                 hostname = host[0].split('/')[1]
@@ -65,13 +66,13 @@ def selectimport(*args):
 if __name__=='__main__':
     leaderip = sys.argv[1]
     myhost = sys.argv[2]
-    myhostip = get(leaderip, 'ready/'+myhost)[1]
+    myhostip = get(leaderip, 'ready/'+myhost)[0]
     leader = get(leaderip, 'leader')[0]
     if leader == myhost:
         etcdip = leaderip
     else:
         etcdip = myhostip
-    selectimport(myhost,allpools,leader, *sys.argv[1:])
+    selectimport(leader, leaderip, myhost, myhostip)
     #cmdline='cat /pacedata/perfmon'
     #perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
 

@@ -37,6 +37,7 @@ def selecthost(pool,readies,cpools):
             selectedhost =  [ counts, [ host ] ]
         elif selectedhost[0] == counts:
             selectedhost[1] = selectedhost[1] + [ host ]
+    print('select host', selectedhost)
     return selectedhost[1]
         
 def zpooltoimport(*args):
@@ -92,6 +93,9 @@ def zpooltoimport(*args):
     pool = poolinfo.split('_')[0]
     if pool not in str(needtoimport):
         nxthosts=selecthost(pool,readies,cpools)
+        poolsnxt=get(leaderip,'poolsnxt/'+pool)[0]
+        if poolsnxt in str(nxthosts):
+            continue 
         print('hihihih',nxthosts,pool)
         for nxthost in nxthosts:
             if nxthost not in str(poolinfo):
