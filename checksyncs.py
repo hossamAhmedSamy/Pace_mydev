@@ -264,7 +264,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
   print('hihihihi')
   actives = len(get(myhostip,'ActivePartners','--prefix')) 
   readis = len(get(leaderip,'ready','--prefix')) 
-  readisonly = ('dirty', 'running','/ready/', 'diskref', '/add')
+  readisonly = ('hostdown','pool','volume', 'dirty', 'running','/ready/', 'diskref', '/add')
   print('pruuuuuuuuuuuuuuuuuuuuuning')
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
   toprunedic = dict()
