@@ -4,13 +4,8 @@ import sys, os, subprocess
 from etcdget import etcdget as get
 from etcdput import etcdput as put 
 from etcddel import etcddel as dels 
-from socket import gethostname as hostname
 from time import sleep
 from time import time as stamp
-from zpooltoimport import zpooltoimport
-from selectspare import spare2  
-from addactive import addactive
-from VolumeCheck import volumecheck
 
 leader, leaderip, myhost, myhostip, nextleader, nextleaderip = '','','','','',''
 etcd = ''
@@ -152,7 +147,7 @@ def heartbeat(*args):
             print(result)
             if 'ok' not in str(result):
                 with open('/root/heartproblem','a') as f:
-                        f.write('nmap:\n'+res)
+                        f.write('OK:\n'+host+' '+res)
                 hostlost(host, hostip)
                 break
     print(leader ,leaderip, myhost, myhostip)
