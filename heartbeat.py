@@ -10,7 +10,6 @@ from time import time as stamp
 from zpooltoimport import zpooltoimport
 from selectspare import spare2  
 from addactive import addactive
-from remknown import remknown
 from VolumeCheck import volumecheck
 
 leader, leaderip, myhost, myhostip, nextleader, nextleaderip = '','','','','',''
