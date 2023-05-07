@@ -43,6 +43,8 @@ def getnextlead():
 
 def hostlost(host, hostip):
                 global etcd, leader ,leaderip, myhost, myhostip, nextleader, nextleaderip
+                with open('/root/heartproblem','a') as f:
+                        f.write('nmap:\n'+result)
                 port = myport = '2379'
                 clusterip = get(leaderip,'namespace/mgmtip')[0]
                 if host == leader:
