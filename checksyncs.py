@@ -272,6 +272,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
   notrights = [ x for x in dhcps if x not in requests ]
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   print(notrights)
+  for notr  in notrights:
+    dels(leaderip, 'sync', notr)
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   toprunedic = dict()
   for prune in toprune:
