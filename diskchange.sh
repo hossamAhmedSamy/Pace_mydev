@@ -83,7 +83,7 @@ then
 		myhost=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternode`
 		myhostip=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip`
 		/pace/diskref.sh $leader $leaderip $myhost $myhostip
-		echo $@ |  grep -v checksync
+		echo $@ |  grep -v checksync | grep -v dirty
 		if [ $? -eq 0 ];
 		then	
 			stampi=`date +%s`
