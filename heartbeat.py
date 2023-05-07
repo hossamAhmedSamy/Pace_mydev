@@ -131,12 +131,10 @@ def heartbeat(*args):
             while tries < 4:
                 tries +=1
                 try:
-                    result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+                    res=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                 except:
-                    with open('/root/heartproblem','a') as f:
-                        f.write('nmap:\n'+result)
                     result=(host,'doubt')
-                if ('Host is up' or 'open' ) in result:
+                if ('Host is up' or 'open' ) in res:
                     result = (host,'ok')
                 else:
                     result = (host,'doubt')
@@ -153,6 +151,8 @@ def heartbeat(*args):
                 sleep(1)
             print(result)
             if 'ok' not in str(result):
+                with open('/root/heartproblem','a') as f:
+                        f.write('nmap:\n'+res)
                 hostlost(host, hostip)
                 break
     print(leader ,leaderip, myhost, myhostip)
