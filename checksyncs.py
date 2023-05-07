@@ -263,7 +263,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
  else:
   print('hihihihi')
   actives = len(get(myhostip,'ActivePartners','--prefix')) 
-  readis = len(get(leaderip,'readis','--prefix')) 
+  readis = len(get(leaderip,'ready','--prefix')) 
+  readisonly = ('dirty', 'running','/ready/', 'Del', '/add')
   print('pruuuuuuuuuuuuuuuuuuuuuning')
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
   toprunedic = dict()
@@ -275,9 +276,11 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     toprunedic[prune[1]].append(prune[0])
   print('toproune check',toprunedic)
   for prune in toprunedic:
+   isinreadis = [ x for x in readisonly if x in str(toprunedic[prune][1:]) ]
    #if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
    #print('actives:',actives,'prune',prunex, 'ready/Del' in str(toprunedic[prune][1:]))
-   if toprunedic[prune][0] > actives or ((('ready' in str(toprunedic[prune][1:])) or ('Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0] > readis):
+   #if toprunedic[prune][0] > actives or ((('ready' in str(toprunedic[prune][1:])) or ('Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0] > readis):
+   if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
     dels(leaderip,'sync',prune) 
   insync(leaderip, leader) 
     #print(prune,toprunedic[prune])
