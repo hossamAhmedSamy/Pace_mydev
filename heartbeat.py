@@ -52,11 +52,11 @@ def hostlost(host, hostip):
                         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                         etcd = leaderip
                     put(etcd,'refreshdisown/'+myhost,'yes')
-                    sleep(2)
+                    #sleep(2)
                     result='failed'
                     while 'ok' not in str(result):
                         print('chceking new leader')
-                        cmdline='nmap --max-rtt-timeout 100ms -n -p '+port+' '+leaderip 
+                        cmdline='nmap --max-rtt-timeout 500ms -n -p '+port+' '+leaderip 
                         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                         if ('Host is up' or 'open' ) in result:
                             result = (host,'ok')
