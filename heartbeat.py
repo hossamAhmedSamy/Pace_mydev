@@ -44,6 +44,7 @@ def hostlost(host, hostip):
                 clusterip = get(leaderip,'namespace/mgmtip')[0]
                 if host == leader:
                     print('leader lost. nextleader is ',nextleader, 'while my host',myhost)
+                    nextleader =  get(etcd,'nextlead/er')[0]
                     leader = nextleader 
                     put(myhostip,'leader',leader)
                     if myhost == nextleader:
