@@ -50,8 +50,8 @@ def hostlost(host, hostip):
                     if myhost == nextleader:
                         cmdline='/pace/leaderlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+nextleader+' '+nextleaderip+' '+clusterip+' '+host
                         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-                        put(etcd,'refreshdisown/'+myhost,'yes')
                         etcd = leaderip
+                    put(etcd,'refreshdisown/'+myhost,'yes')
                     sleep(2)
                     result='failed'
                     while 'ok' not in str(result):
