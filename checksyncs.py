@@ -40,6 +40,9 @@ def insync(leaderip, leader):
                 put(leaderip,'sync/cversion/__checksy__/request','cversion_'+stampi)
                 isinsync = 0
                 break
+        if isinsync == 1:
+            dels(leaderip,'sync/cversion','--prefix')
+    
      
     if isinsync == 1:
         result = get(leaderip,'nodedirty','--prefix')
