@@ -51,9 +51,9 @@ def zpooltoimport(*args):
      initqueue(leaderip, myhost) 
      return
 
- nextpools=get(etcdip, 'poolsnxt', '--prefix') 
+ nextpools=get(leaderip, 'poolsnxt', '--prefix') 
  needtoimport=[ x for x in nextpools if myhost in str(x)] 
- pools = get(etcdip, 'pools/','--prefix')
+ pools = get(leaderip, 'pools/','--prefix')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
                   
