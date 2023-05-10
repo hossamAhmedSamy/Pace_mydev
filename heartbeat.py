@@ -43,6 +43,7 @@ def hostlost(host, hostip):
                 port = myport = '2379'
                 clusterip = get(leaderip,'namespace/mgmtip')[0]
                 if host == leader:
+                    dels(myhostip, 'pools',host)
                     print('leader lost. nextleader is ',nextleader, 'while my host',myhost)
                     nextleader =  get(etcd,'nextlead/er')[0]
                     leader = nextleader 
@@ -62,7 +63,9 @@ def hostlost(host, hostip):
                             result = (host,'ok')
                         else:
                             result = (host,'lost')
-
+                
+                else:
+                    dels(leaderip, 'pools',host)
                 dels(leaderip, 'sync/hostdown/'+host,'--prefix')
                 dels(leaderip, 'cpuperf/'+host)
                 stampit = str(stamp())
@@ -74,7 +77,6 @@ def hostlost(host, hostip):
                 dels(leaderip, 'running/', host)
                 dels(leaderip, 'host', host)
                 dels(leaderip, 'known/'+host)
-                dels(leaderip, 'pools',host)
                 dels(leaderip, 'sync/hostdown',host)
                 dosync('sync/ready/Del_ready_'+host+'/request','ready_'+stampit)
                 dosync('sync/running/____/request','running_'+stampit)

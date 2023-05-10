@@ -52,8 +52,14 @@ def zpooltoimport(*args):
      return
 
  nextpools=get(leaderip, 'poolsnxt', '--prefix') 
+ if 'not reachable' in str(nextpools):
+        return
  needtoimport=[ x for x in nextpools if myhost in str(x)] 
+ if 'not reachable' in str(needtoimport):
+        return
  pools = get(leaderip, 'pools/','--prefix')
+ if 'not reachable' in str(pools):
+        return
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
                   
