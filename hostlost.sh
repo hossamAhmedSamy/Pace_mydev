@@ -23,13 +23,13 @@ then
 fi
 echo hihihihi
 #declare -a disks=(`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`);
-/pace/etcddel.py $etcdip pool $thehost
-/pace/etcddel.py $etcdip vol $thehost
-/pace/etcddel.py $etcdip need $thehost
-/pace/etcddel.py $etcdip hosts $thehost
-/pace/etcddel.py $etcdip lists $thehost
-/pace/etcddel.py $etcdip next $thehost
-/pace/etcdput.py $etcdip tosync yes 
+#/pace/etcddel.py $etcdip pool $thehost
+#/pace/etcddel.py $etcdip vol $thehost
+#/pace/etcddel.py $etcdip need $thehost
+#/pace/etcddel.py $etcdip hosts $thehost
+#/pace/etcddel.py $etcdip lists $thehost
+#/pace/etcddel.py $etcdip next $thehost
+#/pace/etcdput.py $etcdip tosync yes 
 declare -a disks=`lsscsi -i | grep $thehost | awk '{print $6" "$7}'`;
 echo "${disks[@]}"
 echo $@ > /root/losthostparam
@@ -50,32 +50,32 @@ do
 done
 echo udpating database >> /root/hostlosttmp
 #ETCDCTL_API=3 /pace/etcdget.py pools --prefix | grep "\/$thehost" | grep "\/${myhost}" > /TopStordata/forlocalpools
-ETCDCTL_API=3 /pace/etcddel.py $etcdip ipaddr $thehost 
-ETCDCTL_API=3 /pace/importlocalpools.py $leaderip $myhost $etcdip $thehost 
-ETCDCTL_API=3 /pace/etcddel.py $leaderip hosts/$thehost  --prefix
-ETCDCTL_API=3 /pace/etcddel.py $leaderip prop/$thehost
+#ETCDCTL_API=3 /pace/etcddel.py $etcdip ipaddr $thehost 
+#ETCDCTL_API=3 /pace/importlocalpools.py $leaderip $myhost $etcdip $thehost 
+#ETCDCTL_API=3 /pace/etcddel.py $leaderip hosts/$thehost  --prefix
+#ETCDCTL_API=3 /pace/etcddel.py $leaderip prop/$thehost
 #ETCDCTL_API=3 /pace/etcdput.py $leaderip losthost/$thehost `date +%s` 
-ETCDCTL_API=3 /pace/etcddel.py $leaderip cannot  --prefix
-ETCDCTL_API=3 /pace/etcddel.py $leaderip oldhosts/$thehost  --prefix
+#ETCDCTL_API=3 /pace/etcddel.py $leaderip cannot  --prefix
+#ETCDCTL_API=3 /pace/etcddel.py $leaderip oldhosts/$thehost  --prefix
 #ETCDCTL_API=3 /pace/putzpool.py 
-stamp=`date +%s`
-/pace/etcddel.py $leaderip sync/ready _${thehost}
- /pace/etcdput.py $leaderip sync/ready/Del_${thehost}_--prefix/request ready_$stamp
- /pace/etcdput.py $leaderip sync/ready/Del_${thehost}_--prefix/request/$myhost ready_$stamp
+#stamp=`date +%s`
+#/pace/etcddel.py $leaderip sync/ready _${thehost}
+# /pace/etcdput.py $leaderip sync/ready/Del_${thehost}_--prefix/request ready_$stamp
+# /pace/etcdput.py $leaderip sync/ready/Del_${thehost}_--prefix/request/$myhost ready_$stamp
  #/pace/etcdput.py $leaderip sync/hostdown/hostdown.sh_${thehost}_--prefix/request hostdown_$stamp
  #/pace/etcdput.py $leaderip sync/hostdown/hostdown.sh_${thehost}_--prefix/request/$myhost hostdown_$stamp
- /pace/etcddel.py $leaderip sync/volumes _${thehost}
- /pace/etcdput.py $leaderip sync/volumes/Del_${thehost}_--prefix/request/$myhost volumes_$stamp
- /pace/etcdput.py $leaderip sync/volumes/Del_${thehost}_--prefix/request volumes_$stamp
- /pace/etcddel.py $leaderip sync/pools _${thehost}
- /pace/etcdput.py $leaderip sync/pools/Del_${thehost}_--prefix/request/$myhost pools_$stamp
- /pace/etcdput.py $leaderip sync/pools/Del_${thehost}_--prefix/request pools_$stamp
- /pace/etcddel.py $leaderip sync/poolsnxt _${thehost}
- /pace/etcdput.py $leaderip sync/poolsnxt/Del_${thehost}_--prefix/request/$myhost poolsnxt_$stamp
- /pace/etcdput.py $leaderip sync/poolsnxt/Del_${thehost}_--prefix/request poolsnxt_$stamp
+# /pace/etcddel.py $leaderip sync/volumes _${thehost}
+# /pace/etcdput.py $leaderip sync/volumes/Del_${thehost}_--prefix/request/$myhost volumes_$stamp
+# /pace/etcdput.py $leaderip sync/volumes/Del_${thehost}_--prefix/request volumes_$stamp
+# /pace/etcddel.py $leaderip sync/pools _${thehost}
+# /pace/etcdput.py $leaderip sync/pools/Del_${thehost}_--prefix/request/$myhost pools_$stamp
+# /pace/etcdput.py $leaderip sync/pools/Del_${thehost}_--prefix/request pools_$stamp
+# /pace/etcddel.py $leaderip sync/poolsnxt _${thehost}
+# /pace/etcdput.py $leaderip sync/poolsnxt/Del_${thehost}_--prefix/request/$myhost poolsnxt_$stamp
+# /pace/etcdput.py $leaderip sync/poolsnxt/Del_${thehost}_--prefix/request poolsnxt_$stamp
 
-echo  it is done >> /root/ostlosttmp
-ETCDCTL_API=3 /pace/etcddel.py $leaderip sync/ready $thehost 
-ETCDCTL_API=3 /pace/etcddel.py $etcdip ready $thehost 
-/pace/etcddel.py $leaderip sync/dirty --prefix
-/pace/etcdput.py $leaderip sync/dirty/____/request  dirty_$stamp
+#echo  it is done >> /root/ostlosttmp
+#ETCDCTL_API=3 /pace/etcddel.py $leaderip sync/ready $thehost 
+#ETCDCTL_API=3 /pace/etcddel.py $etcdip ready $thehost 
+#/pace/etcddel.py $leaderip sync/dirty --prefix
+#/pace/etcdput.py $leaderip sync/dirty/____/request  dirty_$stamp

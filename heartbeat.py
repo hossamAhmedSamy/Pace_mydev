@@ -40,6 +40,8 @@ def hostlost(host, hostip):
                 global etcd, leader ,leaderip, myhost, myhostip, nextleader, nextleaderip
                 with open('/root/heartproblem','a') as f:
                         f.write('nmap:\n'+host+' '+hostip)
+
+                stampit = str(stamp())
                 port = myport = '2379'
                 clusterip = get(leaderip,'namespace/mgmtip')[0]
                 if host == leader:
@@ -52,8 +54,10 @@ def hostlost(host, hostip):
                         cmdline='/pace/leaderlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+nextleader+' '+nextleaderip+' '+clusterip+' '+host
                         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
                         etcd = leaderip
+                        dels(leaderip, 'sync/hostdown/'+host,'--prefix')
+                        put(leaderip,'sync/hostdown/'+host+'_/request','hostdown_'+stampit)
+                        put(leaderip,'sync/hostdown/'+host+'_/request/'+myhost,'hostdown_'+stampit)
                     put(etcd,'refreshdisown/'+myhost,'yes')
-                    #sleep(2)
                     result='failed'
                     while 'ok' not in str(result):
                         print('chceking new leader')
@@ -66,21 +70,14 @@ def hostlost(host, hostip):
                 
                 else:
                     dels(leaderip, 'pools',host)
-                dels(leaderip, 'sync/hostdown/'+host,'--prefix')
-                dels(leaderip, 'cpuperf/'+host)
-                stampit = str(stamp())
-                put(leaderip,'sync/hostdown/'+host+'_/request','hostdown_0')
-                put(leaderip,'sync/hostdown/'+host+'_/request/'+myhost,'hostdown_0')
+                dels(etcd, 'cpuperf/'+host)
                 cmdline='/pace/hostlost.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+host
                 result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-                dels(leaderip,'ready/'+host)
-                dels(leaderip, 'running/', host)
-                dels(leaderip, 'host', host)
-                dels(leaderip, 'known/'+host)
-                dels(leaderip, 'sync/hostdown',host)
-                dosync('sync/ready/Del_ready_'+host+'/request','ready_'+stampit)
-                dosync('sync/running/____/request','running_'+stampit)
-                dosync('sync/pools/Del_pools_'+host+'/request','pools_'+stampit)
+                dels(etcd,'ready/'+host)
+                dels(etcd, 'running/', host)
+                dels(etcd, 'host', host)
+                dels(etcd, 'known/'+host)
+                dels(etcd, 'sync/hostdown',host)
 
 
 def heartbeat(*args):
