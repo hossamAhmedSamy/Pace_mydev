@@ -272,7 +272,7 @@ def zfspinginit():
         etcdip = myhostip
     initputzpool(leader, leaderip, myhost, myhostip)
     #space(etcdip)
-spare2('init', leader, leaderip, myhost, myhostip, etcdip)
+    spare2('init', leader, leaderip, myhost, myhostip, etcdip)
     #remknown('init', leader, leaderip, myhost, myhostip, etcdip)
     zpooltoimport('init', leader, leaderip, myhost, myhostip, etcdip)
     volumecheck('init', leader, leaderip, myhost, myhostip, etcdip)
