@@ -156,7 +156,10 @@ def refreshall():
  putzpool()
  
 def selectspareproc():
- global leader, myhost
+ global leader, myhost, selectsparerun
+ if selectsparerun == 1:
+  return
+ selectsparerun = 1
  try:
   clsscsi = 'nothing'
   spare2(leader, myhost)
@@ -176,6 +179,7 @@ def selectspareproc():
   with open('/root/pingerr','a') as f:
    f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+ selectsparerun = 0 
 
 def syncrequestproc():
  global leader, myhost
@@ -280,6 +284,7 @@ def zfspinginit():
 
 if __name__=='__main__':
  print('hihihih')
+ selectsparerun = 0 
  leaderip = sys.argv[1]
  myhost = sys.argv[2]
  zfspinginit()
