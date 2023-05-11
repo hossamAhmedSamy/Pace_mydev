@@ -70,9 +70,9 @@ echo udpating database >> /root/hostlosttmp
 # /pace/etcddel.py $leaderip sync/pools _${thehost}
 # /pace/etcdput.py $leaderip sync/pools/Del_${thehost}_--prefix/request/$myhost pools_$stamp
 # /pace/etcdput.py $leaderip sync/pools/Del_${thehost}_--prefix/request pools_$stamp
-# /pace/etcddel.py $leaderip sync/poolsnxt _${thehost}
-# /pace/etcdput.py $leaderip sync/poolsnxt/Del_${thehost}_--prefix/request/$myhost poolsnxt_$stamp
-# /pace/etcdput.py $leaderip sync/poolsnxt/Del_${thehost}_--prefix/request poolsnxt_$stamp
+# /pace/etcddel.py $leaderip sync/poolnxt _${thehost}
+# /pace/etcdput.py $leaderip sync/poolnxt/Del_${thehost}_--prefix/request/$myhost poolnxt_$stamp
+# /pace/etcdput.py $leaderip sync/poolnxt/Del_${thehost}_--prefix/request poolnxt_$stamp
 
 #echo  it is done >> /root/ostlosttmp
 #ETCDCTL_API=3 /pace/etcddel.py $leaderip sync/ready $thehost 

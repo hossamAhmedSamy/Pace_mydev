@@ -20,7 +20,7 @@ def importpools(*args):
  thehost=args[2]
  threads=[]
  pool=""
- mypools=get(myip,'poolsnxt',myhost)
+ mypools=get(myip,'poolnxt',myhost)
  if mypools[0] =='_1':
   return
 # with open('/TopStordata/forlocalpools') as f:

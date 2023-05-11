@@ -132,7 +132,7 @@ then
  fi
  #./etcddel.py sync --prefix
  ./etcddel.py needtoreplace --prefix
- ./etcddel.py poolsnxt --prefix
+ ./etcddel.py poolnxt --prefix
  ./etcddel.py known --prefix 2>/dev/null 
  /TopStor/HostManualconfigTZ $myip 
  /TopStor/HostManualconfigNTP $myip
@@ -213,7 +213,7 @@ then
  ./etcdput.py versions/$myhost $cversion
  ./etcddel.py leader --prefix 2>/dev/null
  ./etcddel.py pools --prefix 2>/dev/null
- ./etcddel.py poolsnxt --prefix 2>/dev/null
+ ./etcddel.py poolnxt --prefix 2>/dev/null
  ./etcddel.py cann --prefix 2>/dev/null
  ./etcddel.py prop --prefix 2>/dev/null
  #./etcddel.py Snapperiod --prefix 2>/dev/null

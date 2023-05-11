@@ -52,7 +52,7 @@ def zpooltoimport(*args):
      initqueue(leaderip, myhost) 
      return
 
- nextpools=get(leaderip, 'poolsnxt', '--prefix') 
+ nextpools=get(leaderip, 'poolnxt', '--prefix') 
  if 'not reachable' in str(nextpools):
         return
  needtoimport=[ x for x in nextpools if myhost in str(x)] 
@@ -66,7 +66,7 @@ def zpooltoimport(*args):
                   
  else:
   for poolline in needtoimport:
-   pool = poolline[0].replace('poolsnxt/','')
+   pool = poolline[0].replace('poolnxt/','')
    if pool in str(pools):
     continue
    ioperf(leaderip, myhost)
@@ -89,7 +89,7 @@ def zpooltoimport(*args):
    else:
     dels(leaderip, 'pools/',pool)
         
-   dels(leaderip, 'poolsnxt',pool)
+   dels(leaderip, 'poolnxt',pool)
     
  if myhost != leader:
   return
@@ -104,8 +104,8 @@ def zpooltoimport(*args):
     pool = poolinfo.split('_')[0]
     if pool not in str(needtoimport):
         nxthosts=selecthost(pool,readies,cpools)
-        poolsnxt=get(leaderip,'poolsnxt/'+pool)[0]
-        if poolsnxt in str(nxthosts):
+        poolnxt=get(leaderip,'poolnxt/'+pool)[0]
+        if poolnxt in str(nxthosts):
             continue 
         print('hihihih',nxthosts,pool)
         for nxthost in nxthosts:
@@ -114,9 +114,9 @@ def zpooltoimport(*args):
                 print('hostnxtpools',hostnxtpools,pool)
                 if pool not in str(hostnxtpools):
                     print('adding')
-                    dels(leaderip,'poolsnxt/'+pool)
-                    put(leaderip,'poolsnxt/'+pool,nxthost)
-                    dosync('poolsnxt', 'sync/poolsnxt/Add_'+pool+'_'+nxthost+'/request','poolsnxt_'+str(stamp()))
+                    dels(leaderip,'poolnxt/'+pool)
+                    put(leaderip,'poolnxt/'+pool,nxthost)
+                    dosync('poolnxt', 'sync/poolnxt/Add_'+pool+'_'+nxthost+'/request','poolnxt_'+str(stamp()))
                     break
  return
      
