@@ -7,6 +7,7 @@ from etcdgetpy import etcdget as get
 from etcddel import etcddel as dels
 from poolstoimport import getpoolstoimport
 from time import time as stamp
+from time import sleep
 from ast import literal_eval as mtuple
 
 
@@ -70,13 +71,14 @@ def zpooltoimport(*args):
     continue
    ioperf(leaderip, myhost)
    print('pool to be imported now', pool)
+   put(leaderip, 'pools/'+pool,myhost)
    cmdline= '/usr/sbin/zpool import  '+pool
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+   sleep(1)
    cmdline= '/usr/sbin/zpool status  '
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    print('result',result)
    if pool in result:
-    put(leaderip, 'pools/'+pool,myhost)
     put(etcdip, 'dirty/volume','0')
     print('before sync')
     dosync('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
@@ -84,6 +86,9 @@ def zpooltoimport(*args):
     print('After sync')
     #cmdline= 'systemctl restart zfs-zed  '
     #result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+   else:
+    dels(leaderip, 'pools/',pool)
+        
    dels(leaderip, 'poolsnxt',pool)
     
  if myhost != leader:
