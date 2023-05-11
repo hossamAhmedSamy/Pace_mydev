@@ -430,10 +430,13 @@ def solvedegradedraid(raid,disksfree):
     return
    cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], diskuid,'/dev/'+dmstup]
    forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   sleep(2)
    cmdline2=['/sbin/zpool', 'offline',raid['pool'],'/dev/'+dmstup]
    forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   sleep(2)
    cmdline2=['/sbin/zpool', 'detach',raid['pool'],diskuid]
    forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+   sleep(2)
    cmdline2=['/pace/putzpool.py']
    forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
    with open('/root/dmproblem','w') as f:

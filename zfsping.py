@@ -272,8 +272,7 @@ def zfspinginit():
         etcdip = myhostip
     initputzpool(leader, leaderip, myhost, myhostip)
     #space(etcdip)
-    #selectimport('init', leader, leaderip, myhost, myhostip, etcdip)
-    spare2('init', leader, leaderip, myhost, myhostip, etcdip)
+spare2('init', leader, leaderip, myhost, myhostip, etcdip)
     #remknown('init', leader, leaderip, myhost, myhostip, etcdip)
     zpooltoimport('init', leader, leaderip, myhost, myhostip, etcdip)
     volumecheck('init', leader, leaderip, myhost, myhostip, etcdip)
@@ -290,24 +289,6 @@ if __name__=='__main__':
    print('dic',dic)
    put(etcdip, 'dirty/'+dic,'1000')
  print('etcd',etcdip)
- #if myhost != leader:
- # getready = str(get('ready','--prefix'))
- # while leader not in getready:
- #  sleep(1)
- #  getready = str(get('ready','--prefix'))
- #myip = get('ActivePartners/'+myhost)[0]
- #myalias = get('alias/'+myhost)[0]
- #put('ready/'+myhost,myip)
- #put('nextlead/er',myhost+'/'+myip)
- #stampit = str(stamp())
- #dosync(leader,'sync/ready/Add_'+myhost+'_'+myip+'/request','ready_'+stampit)
- #dosync(leader,'sync/nextlead/Add_er_'+myhost+'::'+myip+'/request','next_'+stampit)
- #if myhost == cleader:
- # logmsg.sendlog('Partsu03','info','system',myalias,myip)
- #else:
- # logmsg.sendlog('Partsu04','info','system',myalias,myip)
- #refreshall() 
- #infloop = lazyloop()
  while True:
   zfspinginit()
   zload = getload(leaderip,myhost)
