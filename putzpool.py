@@ -213,10 +213,14 @@ def putzpool():
         size = '0'
     if 'UNAVAI' not in b[1] and 'FAULT' not in b[1] and 'dm-' not in b[0]:
      #print('bbbbbbbbbbbbbbbbbb',b)
-     devinfo = [x.split() for x in lsscsi if devname in x][0]
+     try:
+        devinfo = [x.split() for x in lsscsi if devname in x][0]
+   
      #print('devinfo',devinfo)
-     host = devinfo[3].split('-')[1]
-     size = devinfo[-1]
+        host = devinfo[3].split('-')[1]
+        size = devinfo[-1]
+     except:
+       print('b[1]',b[1])
      #print('devinfo',devinfo)
     #print('unavail devname',devname) 
     if 'resilvering' in str(b):
