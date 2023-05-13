@@ -77,6 +77,7 @@ def hostlost(host, hostip):
                 dels(etcd, 'running/', host)
                 dels(etcd, 'host', host)
                 dels(etcd, 'known/'+host)
+                dels(etcd, 'vol'+host)
                 dels(etcd, 'sync/hostdown',host)
                 cmdline='/pace/zpootoimport.py'
                 result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
