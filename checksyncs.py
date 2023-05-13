@@ -17,7 +17,7 @@ syncanitem = [ 'cversion','priv','dirty','hostdown', 'diskref', 'replipart','eva
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'localrun','known','nmspce','gateway','deens','enteepe', 'teezee','ceecee', 'pool','pools','cversion', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes' ]
-etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolnxt','pools', 'logged','ActivePartners','configured','ready', 'pool','nextlead']
+etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ActPool', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolnxt','pools', 'logged','ActivePartners','configured','ready', 'pool','nextlead']
 restartetcd = wholeetcd + etcdonly
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########

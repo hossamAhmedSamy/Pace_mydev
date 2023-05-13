@@ -21,7 +21,7 @@ def selecthosting(minhost,hostname,hostpools):
 
 
 def dosync(sync, *args):
-  global leader, leaderip, myhost, myhostip, etcdip
+  global leader, leaderip, myhost, myhostip, etcdip, stmapi
   #dels(leaderip, sync)  
   put(leaderip, *args)
   put(leaderip, args[0]+'/'+leader,args[1])
@@ -70,6 +70,10 @@ def zpooltoimport(*args):
         result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
         if result.returncode == 0:
             print('done')
+            guid="zpool get guid "+pool+" -H | awk '{print $3}'"
+            subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
+            put(leaderip,'ActPool/'+pool,guid)
+            dosync('actpool_', 'sync/ActPool/Add_'+pool+'_'+guid+'/request','actpool_'+str(stamp()))
             dels(etcdip, 'poouids/'+pool) 
         else:
             print('pool not ready yet')
@@ -123,22 +127,12 @@ def zpooltoimport(*args):
  hosts=get(leaderip,'host','/current')
  
  cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
+ activepools = get(leaderip, 'ActPool','--prefix')
  notactivepools = getpoolstoimport()
  toimportdic = dict()
- for notactive in notactivepools:
-    origname = notactive.split('-')[0]
-    ordnum = 0
-    if '-' in notactive:
-        ordnum = notactive.split('-')[1]
-    if origname not in str(cpools) and origname not in str(nextpools):
-        if origname not in toimportdic:
-            toimportdic[origname] = []
-        toimportdic[origname].append(int(ordnum))
- freepools = []
- for orig,ordlst in toimportdic.items():
-    freepools.append(orig+'-'+str(max(ordlst)))
-    
- cpools = cpools + freepools
+ for notpname,notpid in notactivepools:
+    if (notpname in str(activepools) and notpid in str(activepools)) or notpname not in str(activepools): 
+        cpools = cpools + [notpid] 
  print('with imported pools',cpools)
  readies=get(etcdip,'ready','--prefix')
  for poolinfo in cpools:
