@@ -71,8 +71,17 @@ def zpooltoimport(*args):
     continue
    ioperf(leaderip, myhost)
    print('pool to be imported now', pool)
+   poolord = 0
+   if '-' in pool:
+    poolord = pool.split('-')[1]
+   poolorig = pool.split('-')[0]
+   if poolord == '0':
+    pool = 'pdhcp'+poolorig
+   poolord = str(int(poolord) + 1)
+   cmdline= '/usr/sbin/zpool import  '+pool+' '+'pdhcp'+poolorig+'-'+poolord
+   print(cmdline)
+   pool = 'pdhcp'+poolorig+'-'+poolord
    put(leaderip, 'pools/'+pool,myhost)
-   cmdline= '/usr/sbin/zpool import  '+pool
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    sleep(1)
    cmdline= '/usr/sbin/zpool status  '
@@ -97,7 +106,22 @@ def zpooltoimport(*args):
  hosts=get(leaderip,'host','/current')
  
  cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
- cpools = cpools + getpoolstoimport()
+ notactivepools = getpoolstoimport()
+ toimportdic = dict()
+ for notactive in notactivepools:
+    origname = notactive.replace('pdhcp','').split('-')[0]
+    ordnum = 0
+    if '-' in notactive:
+        ordnum = notactive.replace('pdhcp','').split('-')[1]
+    if origname not in str(cpools):
+        if origname not in toimportdic:
+            toimportdic[origname] = []
+    toimportdic[origname].append(int(ordnum))
+ freepools = []
+ for orig,ordlst in toimportdic.items():
+    freepools.append(orig+'-'+str(max(ordlst)))
+    
+ cpools = cpools + freepools
  print('with imported pools',cpools)
  readies=get(etcdip,'ready','--prefix')
  for poolinfo in cpools:
