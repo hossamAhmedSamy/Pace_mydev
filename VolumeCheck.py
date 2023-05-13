@@ -124,6 +124,7 @@ def cifs( etcds, replis, dockers):
 def homes(etcds, replis, dockers):
  global leader, leaderip, myhost, myhostip, etcdip
  dirtyset = getdirtyvols('home', etcds, replis, dockers)
+ print('dirty',dirtyset)
  for res in dirtyset:
    reslist=res.split('/')
    print('update',reslist[1])
@@ -140,30 +141,6 @@ def homes(etcds, replis, dockers):
    put(etcdip,'dirty/volume','0')
 
 
-
-
-
-  global leader, leaderip, myhost, myhostip, etcdip
-  cmdline = '/TopStor/getvols.sh home'
-  result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
-  result = [x for x in result if 'pdhc' in x]
-  print('###############3')
-  for res in result:
-   reslist=res.split('/')
-   if reslist[1] not in str(etcds):
-    left='volumes/HOME/'+myhost+'/'+'/'.join(reslist[0:2])
-    put(leaderip, left,res)
-    dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
-    #broadcasttolocal(left,res)
-   if reslist[7] not in dockers:
-    print(reslist)
-    cmdline='/TopStor/cifs.sh '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs'
-    cmdline='/TopStor/VolumeActivateHome '+leaderip+' vol='+reslist[1]+' user=system'
-    print(cmdline)
-    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
-    print(result)
-    
-   
 def iscsi(etcds, replis):
  global leader, leaderip, myhost, myhostip, etcdip
  cmdline = 'targetcli ls '
