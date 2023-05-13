@@ -76,9 +76,9 @@ def zpooltoimport(*args):
     poolord = pool.split('-')[1]
    poolorig = pool.split('-')[0]
    if poolord == '0':
-    pool = 'pdhcp'+poolorig
+    pool = poolorig
    poolord = str(int(poolord) + 1)
-   cmdline= '/usr/sbin/zpool import  '+pool+' '+'pdhcp'+poolorig+'-'+poolord
+   cmdline= '/usr/sbin/zpool import  pdhcp'+pool+' pdhcp'+poolorig+'-'+poolord
    print(cmdline)
    pool = 'pdhcp'+poolorig+'-'+poolord
    put(leaderip, 'pools/'+pool,myhost)
