@@ -88,17 +88,9 @@ def zpooltoimport(*args):
     continue
    ioperf(leaderip, myhost)
    print('pool to be imported now', pool)
-   poolord = 0
-   if '-' in pool:
-    poolord = pool.split('-')[1]
-   poolorig = pool.split('-')[0]
-   if poolord == '0':
-    pool = poolorig
-   poolord = str(int(poolord) + 1)
-   cmdline= '/usr/sbin/zpool import '+pool+' '+poolorig+'-'+poolord
+   cmdline= '/usr/sbin/zpool import '+pool
    dels(leaderip, 'poolnxt', pool ) 
    print(cmdline)
-   pool = poolorig+'-'+poolord
    put(leaderip, 'pools/'+pool,myhost)
    res = subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
    result = res.stdout.decode('utf-8')
@@ -131,6 +123,8 @@ def zpooltoimport(*args):
  notactivepools = getpoolstoimport()
  toimportdic = dict()
  for notpname,notpid in notactivepools:
+    print(notpname)
+    print(notpid)
     if (notpname in str(activepools) and notpid in str(activepools)) or notpname not in str(activepools): 
         cpools = cpools + [notpid] 
  print('with imported pools',cpools)
