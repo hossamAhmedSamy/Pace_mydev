@@ -70,8 +70,8 @@ def zpooltoimport(*args):
         result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
         if result.returncode == 0:
             print('done')
-            guid="zpool get guid "+pool+" -H | awk '{print $3}'"
-            subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
+            cmdline="zpool get guid "+pool+" -H "
+            guid=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split()[2]
             put(leaderip,'ActPool/'+pool,guid)
             dosync('actpool_', 'sync/ActPool/Add_'+pool+'_'+guid+'/request','actpool_'+str(stamp()))
             dels(etcdip, 'poouids/'+pool) 
@@ -88,7 +88,8 @@ def zpooltoimport(*args):
     continue
    ioperf(leaderip, myhost)
    print('pool to be imported now', pool)
-   cmdline= '/usr/sbin/zpool import '+pool
+   poolid = get(leaderip,'ActPool/'+pool)[0]
+   cmdline= '/usr/sbin/zpool import '+poolid
    dels(leaderip, 'poolnxt', pool ) 
    print(cmdline)
    put(leaderip, 'pools/'+pool,myhost)
@@ -121,12 +122,11 @@ def zpooltoimport(*args):
  cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
  activepools = get(leaderip, 'ActPool','--prefix')
  notactivepools = getpoolstoimport()
- toimportdic = dict()
  for notpname,notpid in notactivepools:
     print(notpname)
     print(notpid)
     if (notpname in str(activepools) and notpid in str(activepools)) or notpname not in str(activepools): 
-        cpools = cpools + [notpid] 
+        cpools = cpools + [notpname] 
  print('with imported pools',cpools)
  readies=get(etcdip,'ready','--prefix')
  for poolinfo in cpools:
