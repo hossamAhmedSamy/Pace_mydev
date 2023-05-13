@@ -122,6 +122,27 @@ def cifs( etcds, replis, dockers):
    put(etcdip,'dirty/volume','0')
 
 def homes(etcds, replis, dockers):
+ global leader, leaderip, myhost, myhostip, etcdip
+ dirtyset = getdirtyvols('home', etcds, replis, dockers)
+ for res in dirtyset:
+   reslist=res.split('/')
+   print('update',reslist[1])
+   cmdline = '/TopStor/undockerthis.sh '+reslist[7]
+   result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+   left='volumes/HOMEE/'+myhost+'/'+'/'.join(reslist[0:2])
+   put(leaderip, left,res)
+   dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
+   #broadcasttolocal(left,res)
+   cmdline='/TopStor/cifs.py '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' HOMEE '+' '.join(reslist[9:])
+    #cmdline='/TopStor/VolumeActivateCIFS '+leaderip+' vol='+reslist[1]+' user=system'
+   result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+   print(result)
+   put(etcdip,'dirty/volume','0')
+
+
+
+
+
   global leader, leaderip, myhost, myhostip, etcdip
   cmdline = '/TopStor/getvols.sh home'
   result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
