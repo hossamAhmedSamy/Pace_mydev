@@ -116,8 +116,8 @@ def zpooltoimport(*args):
         ordnum = notactive.replace('pdhcp','').split('-')[1]
     if origname not in str(cpools) and origname not in str(nextpools):
         if origname not in toimportdic:
-            toimportdic[origname] = []
-    toimportdic[origname].append(int(ordnum))
+            toimportdic['phdcp'+origname] = []
+    toimportdic['pdhcp'+origname].append(int(ordnum))
  freepools = []
  for orig,ordlst in toimportdic.items():
     freepools.append(orig+'-'+str(max(ordlst)))
