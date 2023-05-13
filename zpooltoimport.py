@@ -63,6 +63,7 @@ def zpooltoimport(*args):
  if '_1' in str(poouids):
     poouids = []
  for poo in poouids:
+    print('poouids start')
     pool=poo[0].split('/')[1]
     if pool in str(mypools):
         cmdline = 'zpool reguid '+pool
@@ -73,6 +74,7 @@ def zpooltoimport(*args):
         else:
             print('pool not ready yet')
  if myhost not in str(needtoimport):
+  print(needtoimport)
   print('no need to import a pool here')
                   
  else:
@@ -89,7 +91,7 @@ def zpooltoimport(*args):
    if poolord == '0':
     pool = poolorig
    poolord = str(int(poolord) + 1)
-   cmdline= '/usr/sbin/zpool import -d /dev/disk/by-id/ '+pool+' '+poolorig+'-'+poolord
+   cmdline= '/usr/sbin/zpool import '+pool+' '+poolorig+'-'+poolord
    dels(leaderip, 'poolnxt', pool ) 
    print(cmdline)
    pool = poolorig+'-'+poolord
