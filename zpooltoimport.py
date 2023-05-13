@@ -51,14 +51,27 @@ def zpooltoimport(*args):
      etcdip = args[5]
      initqueue(leaderip, myhost) 
      return
-
+ poouids = get(etcdip,'poouids',myhost) 
  nextpools=get(leaderip, 'poolnxt', '--prefix') 
  if 'not reachable' in str(nextpools):
         return
  needtoimport=[ x for x in nextpools if myhost in str(x)] 
  pools = get(leaderip, 'pools/','--prefix')
+ mypools = [ x for x in pools if myhost in str(x) ]
  if 'not reachable' in str(pools):
         return
+ if '_1' in str(poouids):
+    poouids = []
+ for poo in poouids:
+    pool=poo[0].split('/')[1]
+    if pool in str(mypools):
+        cmdline = 'zpool reguid '+pool
+        result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
+        if result.returncode == 0:
+            print('done')
+            dels(etcdip, 'poouids/'+pool) 
+        else:
+            print('pool not ready yet')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
                   
@@ -76,19 +89,20 @@ def zpooltoimport(*args):
    if poolord == '0':
     pool = poolorig
    poolord = str(int(poolord) + 1)
-   cmdline= '/usr/sbin/zpool import -d /dev/disk/by-id/ pdhcp'+pool+' pdhcp'+poolorig+'-'+poolord
+   cmdline= '/usr/sbin/zpool import -d /dev/disk/by-id/ '+pool+' '+poolorig+'-'+poolord
+   dels(leaderip, 'poolnxt', pool ) 
    print(cmdline)
-   pool = 'pdhcp'+poolorig+'-'+poolord
+   pool = poolorig+'-'+poolord
    put(leaderip, 'pools/'+pool,myhost)
-   result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+   res = subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
+   result = res.stdout.decode('utf-8')
    sleep(1)
    cmdline= '/usr/sbin/zpool status  '
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    print('result',result)
    if pool in result:
     put(etcdip, 'dirty/volume','0')
-    cmdline = 'zpool reguid '+pool
-    subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+    put(etcdip, 'poouids/'+pool,myhost)
     print('before sync')
     print('sync pools Add')
     dosync('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
@@ -110,14 +124,14 @@ def zpooltoimport(*args):
  notactivepools = getpoolstoimport()
  toimportdic = dict()
  for notactive in notactivepools:
-    origname = notactive.replace('pdhcp','').split('-')[0]
+    origname = notactive.split('-')[0]
     ordnum = 0
     if '-' in notactive:
-        ordnum = notactive.replace('pdhcp','').split('-')[1]
+        ordnum = notactive.split('-')[1]
     if origname not in str(cpools) and origname not in str(nextpools):
         if origname not in toimportdic:
-            toimportdic['phdcp'+origname] = []
-    toimportdic['pdhcp'+origname].append(int(ordnum))
+            toimportdic[origname] = []
+        toimportdic[origname].append(int(ordnum))
  freepools = []
  for orig,ordlst in toimportdic.items():
     freepools.append(orig+'-'+str(max(ordlst)))
