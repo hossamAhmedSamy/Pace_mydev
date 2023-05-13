@@ -87,6 +87,8 @@ def zpooltoimport(*args):
    print('result',result)
    if pool in result:
     put(etcdip, 'dirty/volume','0')
+    cmdline = 'zpool reguid '+pool
+    subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     print('before sync')
     print('sync pools Add')
     dosync('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
