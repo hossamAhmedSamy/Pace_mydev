@@ -56,8 +56,6 @@ def zpooltoimport(*args):
  if 'not reachable' in str(nextpools):
         return
  needtoimport=[ x for x in nextpools if myhost in str(x)] 
- if 'not reachable' in str(needtoimport):
-        return
  pools = get(leaderip, 'pools/','--prefix')
  if 'not reachable' in str(pools):
         return
@@ -90,6 +88,7 @@ def zpooltoimport(*args):
    if pool in result:
     put(etcdip, 'dirty/volume','0')
     print('before sync')
+    print('sync pools Add')
     dosync('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
     print('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
     print('After sync')
@@ -140,6 +139,8 @@ def zpooltoimport(*args):
                     print('adding')
                     dels(leaderip,'poolnxt/'+pool)
                     put(leaderip,'poolnxt/'+pool,nxthost)
+
+                    print('sync poolnxt Add')
                     dosync('poolnxt', 'sync/poolnxt/Add_'+pool+'_'+nxthost+'/request','poolnxt_'+str(stamp()))
                     break
  return
