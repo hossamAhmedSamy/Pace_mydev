@@ -232,6 +232,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
        print('opers',opers)
        if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
+        print('cmdline',cmdline)
        else:
         cmdline='/TopStor/'+opers[0]+" "+" ".join(opers[1:])
        print('cmd',cmdline)
