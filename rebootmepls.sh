@@ -7,6 +7,7 @@ isreboot=isreboot`/pace/etcdget.py $leaderip rebootme/$myhost`
 echo $isreboot | grep pls
 if [ $? -eq 0 ];
 then
+  echo $isreboot > /root/rebootmepls
  ./etcdput.py $leaderip rebootme/$myhost donot 
  sleep 5
  /TopStor/resetdocker.sh
