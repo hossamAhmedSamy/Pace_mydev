@@ -89,6 +89,8 @@ def zpooltoimport(*args):
    ioperf(leaderip, myhost)
    print('pool to be imported now', pool)
    poolid = get(leaderip,'ActPool/'+pool)[0]
+   if poolid == '_1':
+    poolid = pool
    cmdline= '/usr/sbin/zpool import '+poolid
    dels(leaderip, 'poolnxt', pool ) 
    print(cmdline)
