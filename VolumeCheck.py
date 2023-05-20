@@ -151,6 +151,7 @@ def iscsi(etcds, replis):
  print('###############3')
  for res in result:
   reslist=res.split('/')
+  print('reslist1',reslist[1])
   if reslist[1] not in str(etcds):
    left='volumes/ISCSI/'+myhost+'/'+'/'.join(reslist[0:2])
    put(leaderip, left,res)
@@ -158,11 +159,8 @@ def iscsi(etcds, replis):
    #broadcasttolocal(left,res)
   if reslist[1] not in targets:
    print(reslist)
-   #cmdline='/TopStor/iscsi.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[2]+' '+reslist[3]+' '+ \
-   #        reslist[4]+' '+reslist[5]+' '+reslist[6]+' '+reslist[7]
-   cmdline='/TopStor/VolumeActivateISCSI '+leaderip+' vol='+reslist[1]+' user=system'
+   cmdline='/TopStor/iscsi.py '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[2]+' '+reslist[3]+' ISCSI '+reslist[4]+' '+reslist[5]+' '+reslist[6]+' '+reslist[7]
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
-   print(cmdline)
 
 
 def volumecheck(etcds, replis, *args):
