@@ -29,6 +29,7 @@ from etcdspace import space
 os.environ['ETCDCTL_API']= '3'
 ctask = 1
 dirtydic = { 'pool': 0, 'volume': 0 } 
+
 def heartbeatpls():
  global leader, myhost
  try:
@@ -137,7 +138,10 @@ def volumecheckproc():
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def refreshall():
- global leaderip, leader, myhost, myhostip, etcdip
+ global leaderip, leader, myhost, myhostip, etcdip, refresh
+ while refresh == 1:
+  sleep(1)
+ refresh = 1
  print('putzpool',leader, leaderip,myhost,myhostip)
  putzpool()
  allpools=get(etcdip, 'pools/','--prefix')
@@ -154,11 +158,11 @@ def refreshall():
  putzpool()
  spare2(leader, myhost)
  putzpool()
- 
+ refresh = 0 
 def selectspareproc():
  global leader, myhost, selectsparerun
- if selectsparerun == 1:
-  return
+ while selectsparerun == 1:
+  sleep(1)
  selectsparerun = 1
  try:
   clsscsi = 'nothing'
@@ -172,6 +176,7 @@ def selectspareproc():
   lsscsi=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
   if clsscsi != lsscsi:
    clsscsi = lsscsi
+   selectsparerun = 0 
    refreshall()
  except Exception as e:
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
@@ -285,6 +290,7 @@ def zfspinginit():
 if __name__=='__main__':
  print('hihihih')
  selectsparerun = 0 
+ refresh = 0 
  leaderip = sys.argv[1]
  myhost = sys.argv[2]
  zfspinginit()
