@@ -25,10 +25,10 @@ change=0
 #target='iqn.1994-05.com.redhat:dhcp13038'
 #disk='zd0'
 diskids=$disk'-'$myhost'-'$vol
-iqn='.2016-03.com.'$myhost':data'
-targetcli ls iscsi/ | grep ".$myhost:data" &>/dev/null
+iqn='.2016-03.com.'$ipaddr':data'
+targetcli ls iscsi/ | grep ".$ipaddr:data" &>/dev/null
 if [ $? -ne 0 ]; then
- targetcli iscsi/ create iqn.2016-03.com.${myhost}:data &>/dev/null
+ targetcli iscsi/ create iqn.2016-03.com.${ipaddr}:data &>/dev/null
 fi
 pdisk=`targetcli ls backstores/block`
 echo $pdisk | grep $disk 
@@ -42,7 +42,7 @@ tpg='tpg1'
 
 #targetcli iscsi/iqn${iqn} create $portalport  
 targetcli iscsi/iqn${iqn} set global auto_add_mapped_luns=false
-targetcli iscsi/iqn.2016-03.com.$myhost:data/${tpg}/portals delete 0.0.0.0 3260
+targetcli iscsi/iqn.2016-03.com.$ipaddr:data/${tpg}/portals delete 0.0.0.0 3260
 targetcli iscsi/iqn${iqn}/${tpg}/luns/ create /backstores/block/$diskids  
 targetcli iscsi/iqn${iqn}/${tpg}/acls/ create $target
 echo targetcli iscsi/iqn${iqn}/${tpg}/acls/ create $target
@@ -61,6 +61,6 @@ targetcli iscsi/iqn${iqn}/${tpg} set attribute generate_node_acls=1
 targetcli iscsi/iqn${iqn}/${tpg} set attribute authentication=0
 targetcli iscsi/iqn${iqn}/${tpg} set auth userid=$chapuser 
 targetcli iscsi/iqn${iqn}/${tpg} set auth password=$chappas
-targetcli iscsi/iqn.2016-03.com.$myhost:data/${tpg}/portals create $ipaddr $portalport 
+targetcli iscsi/iqn.2016-03.com.$ipaddr:data/${tpg}/portals create $ipaddr $portalport 
 targetcli saveconfig
  #targetcli saveconfig /pacedata/targetconfig
