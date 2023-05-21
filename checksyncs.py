@@ -97,6 +97,9 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  sync = syncleft.split('/')[1]
  flag = 1
  if sync in syncanitem and sync not in noinit:
+    if sync in 'cversion':
+        cmdline='/TopStor/systempull.sh samebranch'
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     if 'Snapperiod'in sync:
      print('found etctocron')
      etctocron(leaderip)
