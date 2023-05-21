@@ -72,6 +72,8 @@ def zpooltoimport(*args):
             print('done')
             cmdline="zpool get guid "+pool+" -H "
             guid=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split()[2]
+
+            dels(leaderip,'sync/ActPool', pool)
             put(leaderip,'ActPool/'+pool,guid)
             dosync('actpool_', 'sync/ActPool/Add_'+pool+'_'+guid+'/request','actpool_'+str(stamp()))
             dels(etcdip, 'poouids/'+pool) 
@@ -106,6 +108,7 @@ def zpooltoimport(*args):
     put(etcdip, 'poouids/'+pool,myhost)
     print('before sync')
     print('sync pools Add')
+    dels(leaderip,'sync/pools', pool)
     dosync('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
     print('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
     print('After sync')
