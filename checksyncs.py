@@ -91,15 +91,12 @@ def syncinit(leader,leaderip, myhost,myhostip):
 
 def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  global syncs, syncanitem, forReceivers, etcdonly, allsyncs
- noinit = [ 'replipart' , 'evacuatehost','hostdown' ]
+ noinit = [ 'cversion', 'replipart' , 'evacuatehost','hostdown' ]
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
  sync = syncleft.split('/')[1]
  flag = 1
  if sync in syncanitem and sync not in noinit:
-    if sync in 'cversion':
-        cmdline='/TopStor/systempull.sh samebranch'
-        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
     if 'Snapperiod'in sync:
      print('found etctocron')
      etctocron(leaderip)
@@ -208,7 +205,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
         dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
       if sync in 'cversion':
-        cmdline='/TopStor/systempull.sh samebranch'
+        cmdline='/TopStor/systempull.sh '+oper[1]
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       elif sync in 'Snapperiod' :
        etctocron(leaderip)
