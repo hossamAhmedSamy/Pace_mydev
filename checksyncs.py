@@ -205,7 +205,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
         dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
       if sync in 'cversion':
-        cmdline='/TopStor/systempull.sh '+oper[1]
+        cmdline='/TopStor/systempull.sh '+opers[1]
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       elif sync in 'Snapperiod' :
        etctocron(leaderip)
