@@ -27,6 +27,7 @@ syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### initial sync for known nodes : sync/Operation/initial Operation_stamp #######################
 ##### synced template for initial sync for known nodes : sync/Operation/initial/node Operation_stamp #######################
 ##### delete request of same sync if ActivePartners qty reached #######################
+software = 'na'
 def insync(leaderip, leader):
     print('checking in sync -------------------')
     isinsync = 1 
@@ -35,7 +36,8 @@ def insync(leaderip, leader):
         allcversion=get(leaderip,'cversion','--prefix')
         readis = get(leaderip,'ready','--prefix')
         for cver in allcversion:
-            if cver[1] != mycversion and cver[0].replace('cversion/','') in str(readis):
+            #if cver[1] != mycversion and cver[0].replace('cversion/','') in str(readis):
+            if cver[1] != mycversion and cver[0].replace('cversion/',''): 
                 stampi = str(timestamp())
                 put(leaderip,'sync/cversion/__checksy__/request','cversion_'+stampi)
                 isinsync = 0
