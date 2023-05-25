@@ -122,6 +122,7 @@ def zpooltoimport(*args):
  if myhost != leader:
   return
 
+ readies=get(etcdip,'ready','--prefix')
  hosts=get(leaderip,'host','/current')
  
  cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
@@ -130,10 +131,12 @@ def zpooltoimport(*args):
  for notpname,notpid in notactivepools:
     print(notpname)
     print(notpid)
-    if (notpname in str(activepools) and notpid in str(activepools)) or notpname not in str(activepools): 
+    if (notpname in str(activepools) and (notpid in str(activepools) or len(readies) == 1)) or notpname not in str(activepools): 
         cpools = cpools + [notpname] 
+    if len(readies) == 1:
+        dels(leaderip, 'ActPool/'+notpname)
+ 
  print('with imported pools',cpools)
- readies=get(etcdip,'ready','--prefix')
  for poolinfo in cpools:
     pool = poolinfo.split('_')[0]
     if pool not in str(needtoimport):
