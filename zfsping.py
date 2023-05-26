@@ -5,6 +5,7 @@ from poolall import getall as getall
 from getload import getload
 from sendhost import sendhost
 import subprocess,sys, logmsg, os
+from croncall import croncall
 from logqueue import queuethis
 from etcddel import etcddel as etcddel
 from etcdgetpy import etcdget as get
@@ -61,6 +62,15 @@ def iscsiwatchdogproc():
   with open('/root/pingerr','a') as f:
    f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+def croncallproc():
+ global leaderip, croncallrun, leader, myhost, myhostip
+ while croncallrun == 1:
+    print('sleeping croncall')
+    sleep(1)
+ print('running croncall')
+ croncallrun = 1
+ croncall(leaderip)    
+ croncallrun = 0
 
 def fapiproc():
   cmdline='/pace/fapilooper.sh' 
@@ -238,7 +248,7 @@ def spaceopti():
 
 
 #loopers = [ addknownproc, remknownproc, activeusersproc, iscsiwatchdogproc, putzpoolproc, addactiveproc, selectimportproc, zpooltoimportproc , volumecheckproc, selectspareproc , syncrequestproc ]
-loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc , putzpoolproc, spaceopti]
+loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc , putzpoolproc, spaceopti, croncallproc ]
 #loopers = [ zpooltoimportproc, volumecheckproc, selectspareproc , putzpoolproc]
 
 def CommonTask(task):
@@ -290,6 +300,7 @@ def zfspinginit():
 if __name__=='__main__':
  print('hihihih')
  selectsparerun = 0 
+ croncallrun = 0
  refresh = 0 
  leaderip = sys.argv[1]
  myhost = sys.argv[2]
