@@ -99,6 +99,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  if sync in syncanitem and sync not in noinit:
     if 'Snapperiod'in sync:
      print('found etctocron')
+     synckeys(leaderip,myhostip, sync,sync)
      etctocron(leaderip)
     if sync in 'user':
      print('syncing all users')
@@ -208,6 +209,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
         cmdline='/TopStor/systempull.sh '+opers[1]
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       elif sync in 'Snapperiod' :
+       synckeys(leaderip,myhostip, sync,sync)
        etctocron(leaderip)
       elif sync in 'diskref':
         cmdline='/pace/diskchange.sh '+' checksync'+' '+opers[0]+' '+opers[1]
