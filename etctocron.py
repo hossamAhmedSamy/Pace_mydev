@@ -12,10 +12,10 @@ def etctocron(leaderip, period='--prefix'):
   cronstr+=x+'\n'
  etccron=get(leaderip,'Snapperiod',period)
  for x in etccron:
-  cronid = x[0].split('/')[4]
-  yleft=x[1].split('/TopStor')[0].replace('%',' ')
+  cronid = str(x[0].split('/')[4])
+  yleft=str(x[1].split('/TopStor')[0].replace('%',' '))
   yright=x[1].split('/TopStor')[1].replace('%',' ')
-  cronstr += yleft+' /TopStor/putcron.sh /TopStor/etcdput.py '+leaderip+' /TopStor'+yright+'\n'
+  cronstr += yleft+' /TopStor/putcron.sh /TopStor/etcdput.py '+leaderip+'call/'+cronid+' /TopStor'+yright.replace(' ','::')+'\n'
  print(cronstr)
  with open('/TopStordata/crons','w') as f:
   f.write(cronstr)
