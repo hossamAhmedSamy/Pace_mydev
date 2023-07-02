@@ -34,4 +34,3 @@ for interface in convert_to_dicts(available_interfaces):
                     newLine = line.replace(oldName, newName)
                     file.write(newLine)
             
-        print(interface)
