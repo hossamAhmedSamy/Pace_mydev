@@ -24,5 +24,6 @@ for interface in convert_to_dicts(available_interfaces):
         print('AFTER RENAMING')
         subprocess.run(["ip", "link", "set", "dev", new_name, "up"], check=True)
         print(interface["DEVICE"])
+        veth_index += 1
 
     print(interface)
