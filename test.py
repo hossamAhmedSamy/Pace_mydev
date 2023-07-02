@@ -3,7 +3,6 @@ import subprocess
 def convert_to_dicts(data):
     keys = data[0].split()
     interfaces = []
-    #print(keys)   
     for values in data[1:]:
         if (values.replace(" ","") != ""):
             interface = dict(zip(keys,values.split()))
@@ -19,11 +18,7 @@ for interface in convert_to_dicts(available_interfaces):
     if (interface["TYPE"] == "ethernet"):
         new_name = "veth" + str(veth_index)
         subprocess.run(["ip", "link", "set", "dev", interface["DEVICE"], "down"], check=True)
-        print('BEFORE RENAMING')        
         subprocess.run(["ip", "link", "set", "dev", interface["DEVICE"], "name", new_name], check=True)
-        print('AFTER RENAMING')
         subprocess.run(["ip", "link", "set", "dev", new_name, "up"], check=True)
-        print(interface["DEVICE"])
         veth_index += 1
-
     print(interface)
