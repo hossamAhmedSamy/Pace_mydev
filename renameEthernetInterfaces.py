@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 def convert_to_dicts(data):
@@ -32,4 +33,5 @@ for interface in convert_to_dicts(available_interfaces):
                 for line in lines:
                     newLine = line.replace(oldName, newName)
                     file.write(newLine)
+            
         print(interface)
