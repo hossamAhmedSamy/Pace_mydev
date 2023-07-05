@@ -2,20 +2,26 @@
 ######################
 #exit
 ##########################
+echo $@ > /root/addtargets
 cd /pace
-rabbitip=`echo $@ | awk '{print $1}'`
-myhost=`hostname -s`;
-actives=`/pace/etcdget.py $rabbitip Active --prefix`
+etcdip=`echo $@ | awk '{print $1}'`
+myhost=`echo $@ | awk '{print $2}'`
+actives=`/pace/etcdget.py $etcdip Active --prefix`
 change=0
+#echo hi1 $myhost>> /root/targetadd
 #declare -a iscsitargets=(`cat /pacedata/iscsitargets | awk '{print $2}' `);
+initialtarget=`targetcli ls | wc -l`
+myip=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip`
 mycluster=`nmcli conn show mycluster | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
-declare -a iscsitargets=(`docker exec etcdclient /pace/iscsiclients.py $mycluster | grep target | awk -F'/' '{print $2}'`);
+declare -a iscsitargets=(`docker exec etcdclient /pace/iscsiclients.py $etcdip | grep target | awk -F'/' '{print $2}'`);
 currentdisks=`targetcli ls /iscsi`
 disks=(`lsblk -nS -o name,serial,vendor | grep -v sr0 |  grep -v LIO | awk '{print $1}'`)
+nodes=(`docker exec etcdclient /TopStor/etcdgetlocal.py Active --prefix | awk -F'Partners/' '{print $2}' | awk -F"'" '{print $1}'`)
 diskids=`lsblk -nS -o name,serial,vendor | grep -v sr0 | grep -v LIO | awk '{print $1" "$2}'`
 mappedhosts=`targetcli ls /iscsi | grep Mapped`;
 targets=`targetcli ls backstores/block | grep -v deactivated |  grep dev | awk -F'[' '{print $2}' | awk '{print $1}'`
 blocks=`targetcli ls backstores/block `
+#echo hi2 $myhost >> /root/targetadd
 echo targets $blocks
 for ddisk in  "${disks[@]}"; do
 	echo $blocks | grep $ddisk
@@ -29,22 +35,38 @@ for ddisk in  "${disks[@]}"; do
 		echo $ddisk is a part in the targets
 	fi
 done
-#myip=`/sbin/pcs resource show CC | grep Attributes | awk -F'ip=' '{print $2}' | awk '{print $1}'`
-myip=`nmcli conn show mynode | grep ipv4.addresses | awk '{print $2}' | awk -F'/' '{print $1}'`
+
+#echo hi3 >> /root/targetadd
 declare -a newdisks=();
+#for node in "${nodes[@]}"; do
+# echo $mappedhosts | grep $node
+# if [ $? -ne 0 ];
+# then
+  #nodeip=`docker exec etcdclient /TopStor/etcdgetlocalpy ready/$node`
+#  targetcli iscsi/ create iqn.2016-03.com.${node}:t1 
+#  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals delete 0.0.0.0 3260
+#  targetcli iscsi/iqn.2016-03.com.${node}:t1/tpg1/portals create $myip 3266
+# fi
+#done
 targetcli ls iscsi/ | grep ".$myhost:t1" &>/dev/null
 if [ $? -ne 0 ]; then
- targetcli iscsi/ create iqn.2016-03.com.${myhost}:t1 &>/dev/null
- targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals delete 0.0.0.0 3260
- targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals create $myip 3266
+ echo hicreate $myhost >> /root/targetadd
+
+ targetcli iscsi/ create iqn.2016-03.com.${myhost}:t1 
+ targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals delete 0.0.0.0 3260
+ targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals create $myip 3266
  change=1
 fi
+echo `targetcli /iscsi ls` >> /root/targetadd
+tpgs1=(`targetcli ls /iscsi | grep iqn`) 
+#echo hi$tpgs1 >> /root/targetadd
+#echo hi4 >> /root/targetadd
 targetcli ls iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals | grep $myip &>/dev/null
 if [ $? -ne 0 ]; then
  targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals ls | grep 3266 | awk -F'o-' '{print $2}' | awk -F':' '{print $1}'
  oldip=`targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals ls | grep 3266 | awk -F'o-' '{print $2}' | awk -F':' '{print $1}'`
  echo oldip=$oldip
- targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals delete$olidp 3266
+ #targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals delete$olidp 3266
  targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals create $myip 3266
 fi
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=true
@@ -69,6 +91,8 @@ for ddisk in "${disks[@]}"; do
   done
  fi
 done;
+
+#echo hi5 >> /root/targetadd
 for target in "${iscsitargets[@]}"; do
  echo $mappedhosts | grep $target &>/dev/null
  if [ $? -ne 0 ]; then
@@ -84,16 +108,31 @@ for target in "${iscsitargets[@]}"; do
  fi
 done
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=true
+tpgs1=(`targetcli ls /iscsi | grep iqn | grep TPG | grep ':t1'`)
 tpgs=(`targetcli ls /iscsi | grep iqn | grep TPG | grep ':t1' | awk -F'iqn' '{print $2}' | awk '{print $1}'`)
+
+#echo hi6.5 >> /root/targetadd
 for iqn in "${tpgs[@]}"; do
 	node=`echo $iqn | awk -F'.' '{print $4}' | awk -F':' '{print $1}'`
+#echo hi6 >> /root/targetadd
 	echo $actives | grep $node
 	if [ $? -ne 0 ];
 	then
-		targetcli /iscsi delete iqn$iqn
+#echo '##############################################################'>> /root/targetadd
+#echo hi$tpgs1 >> /root/targetadd
+#echo hi$iqn >> /root/targetadd
+#echo hi$node >> /root/targetadd
+#echo hi$actives >> /root/targetadd
+#echo '##############################################################' >> /root/targetadd
+		echo hidelete >> /root/targetadd
+			
+		#targetcli /iscsi delete iqn$iqn
 	fi
 done	
-for ddisk in "${disks[@]}"; do
+
+#echo hi7 >> /root/targetadd
+for node in "${nodes[@]}"; do
+ for ddisk in "${disks[@]}"; do
 	for iqn in "${tpgs[@]}"; do
  		devdisk=`echo $ddisk | awk '{print $1}'`
  		targetcli iscsi/iqn${iqn}/tpg1/luns/ ls | grep  ${devdisk}-${myhost}  
@@ -102,18 +141,27 @@ for ddisk in "${disks[@]}"; do
 			echo iqn$iqn has a map for $devdisk
 		else
 			echo iqn$iqn is not mapped to  $devdisk
-  			targetcli iscsi/iqn${iqn}/tpg1/acls/ create iqn.1994-05.com.redhat:$myhost
+  			targetcli iscsi/iqn${iqn}/tpg1/acls/ create iqn.1994-05.com.redhat:$node
    			targetcli iscsi/iqn${iqn}/tpg1/luns/ create /backstores/block/${devdisk}-${myhost}  
 		fi
 	done
+ done
 done
+#echo hi8 >> /root/targetadd
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=false
 
-
-
+#echo hi9 >> /root/targetadd
 targetcli saveconfig
-if [ $change -eq 1 ];
+
+endingtarget=`targetcli ls | wc -l`
+if [[ $initialtarget != $endingtarget ]];
 then
- targetcli saveconfig /pacedata/targetconfig
- sleep 1 
+  stamp=`date +%s%N`
+  #/TopStor/etcdput.py $mycluster sync/diskref/______/request diskref_$stamp
 fi
+#if [ $change -eq 1 ];
+#then
+# targetcli saveconfig /pacedata/targetconfig
+# sleep 1 
+#:wq
+#fi
