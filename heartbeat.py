@@ -103,6 +103,7 @@ def heartbeat(*args):
                             result =(host,'ok') if 'open' in result  else (host,'lost')
                     put(etcd,'refreshdisown','yes')
                 dels(leaderip, 'sync/hostdown/'+host,'--prefix')
+                dels(leaderip, 'cpuperf/'+host)
                 stampit = str(stamp())
                 put(leaderip,'sync/hostdown/'+host+'_/request','hostdown_0')
                 put(leaderip,'sync/hostdown/'+host+'_/request/'+myhost,'hostdown_0')

@@ -2,6 +2,7 @@
 ######################
 #exit
 ##########################
+echo $@ > /root/addtargets
 cd /pace
 etcdip=`echo $@ | awk '{print $1}'`
 myhost=`echo $@ | awk '{print $2}'`
@@ -65,7 +66,7 @@ if [ $? -ne 0 ]; then
  targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals ls | grep 3266 | awk -F'o-' '{print $2}' | awk -F':' '{print $1}'
  oldip=`targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals ls | grep 3266 | awk -F'o-' '{print $2}' | awk -F':' '{print $1}'`
  echo oldip=$oldip
- targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals delete$olidp 3266
+ #targetcli iscsi/iqn.2016-03.com.${myhost}:t1/tpg1/portals delete$olidp 3266
  targetcli iscsi/iqn.2016-03.com.$myhost:t1/tpg1/portals create $myip 3266
 fi
 targetcli /iscsi/iqn.2016-03.com.${myhost}:t1 set global auto_add_mapped_luns=true
@@ -123,9 +124,9 @@ for iqn in "${tpgs[@]}"; do
 #echo hi$node >> /root/targetadd
 #echo hi$actives >> /root/targetadd
 #echo '##############################################################' >> /root/targetadd
-#		echo hidelete >> /root/targetadd
+		echo hidelete >> /root/targetadd
 			
-		targetcli /iscsi delete iqn$iqn
+		#targetcli /iscsi delete iqn$iqn
 	fi
 done	
 
@@ -156,7 +157,7 @@ endingtarget=`targetcli ls | wc -l`
 if [[ $initialtarget != $endingtarget ]];
 then
   stamp=`date +%s%N`
-  /TopStor/etcdput.py $mycluster sync/diskref/______/request diskref_$stamp
+  #/TopStor/etcdput.py $mycluster sync/diskref/______/request diskref_$stamp
 fi
 #if [ $change -eq 1 ];
 #then

@@ -16,7 +16,7 @@ dirtydic = { 'pool': 0, 'volume': 0 }
 syncanitem = ['priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group' ]
 special1 = [ 'passwd' ]
-wholeetcd = [ 'pool','pools', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready' ]
+wholeetcd = [ 'nmspce','gateway','deens','enteepe', 'teezee','ceecee','cversion', 'pool','pools', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ready' ]
 etcdonly = [ 'cleanlost','balancedtype','sizevol', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolsnxt','pools', 'logged','ActivePartners','configured','pool','nextlead']
 restartetcd = wholeetcd + etcdonly
 syncs = etcdonly + syncanitem + special1 + wholeetcd
@@ -27,7 +27,31 @@ syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### initial sync for known nodes : sync/Operation/initial Operation_stamp #######################
 ##### synced template for initial sync for known nodes : sync/Operation/initial/node Operation_stamp #######################
 ##### delete request of same sync if ActivePartners qty reached #######################
+def insync(leaderip):
 
+    isinsync = 1 
+    allsyncs=get(leaderip,'sync','--prefix')
+    allsyncs=[x for x in allsyncs if 'initial' not in x[0] ]
+    print('before',allsyncs)
+    for sync in allsyncs:
+        syncgroup = [ x for x in allsyncs if sync[1] in x[1] ]
+        print('syncgroup',syncgroup)
+        initrequest = [ x for x in syncgroup if 'request/dhcp' not in x[0] ]
+        if len(syncgroup) > 0 and len(initrequest) == 0:
+            print('to delete', sync)
+            dels(leaderip,'sync',sync[1])
+            isinsync = 0
+            break
+        if len(syncgroup) > 0:
+            isinsync = 0 
+            break
+    if isinsync:
+        print('the cluster is in sync')
+        put(leaderip,'isinsync', 'yes')
+    else:
+        print('some nodes still syncing')
+        put(leaderip,'isinsync', 'no')
+        
 def initchecks(leader, leaderip, myhost, myhostip):
     if leader == myhost:
         return leaderip
@@ -162,7 +186,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       if sync in 'Snapperiod' :
        etctocron(leaderip)
       elif sync in 'diskref':
-        cmdline='/pace/diskref.sh '+leader+' '+ leaderip+' '+ myhost+' '+ myhostip
+        cmdline='/pace/diskchange.sh '+' checksync'+' '+opers[0]+' '+opers[1]
+        print('diskref',cmdline)
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       elif sync in 'hostdown':
         cmdline='/pace/hostdown.sh '+opers[0]
@@ -232,6 +257,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    print(actives,'prune',prune, 'ready/Del' in str(toprunedic[prune][1:]))
    if toprunedic[prune][0] > actives or ((('ready/Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0]+1 >= actives):
     dels(leaderip,'sync',prune) 
+  insync(leaderip) 
     #print(prune,toprunedic[prune])
   
  return     
