@@ -180,6 +180,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if myhost != leader:
     print(leader,leaderip,myhost,myhostip, syncinfo)
     doinitsync(leader,leaderip,myhost,myhostip, syncinfo)
+   else:
+    syncinit(leader,leaderip, myhost,myhostip)
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]

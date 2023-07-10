@@ -26,7 +26,7 @@ def thread_add(user):
  userigroup=user[1].split(':')
  userid=userigroup[0]
  usergd=userigroup[1]
- cmdline=['/TopStor/UnixAddGroup_sync',leader, leaderip, myhost, myhsotip, username,userid,usergd,groupusers]
+ cmdline=['/TopStor/UnixAddGroup_sync',leader, leaderip, myhost, myhostip, username,userid,usergd,groupusers]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
 #def thread_del(*user):
