@@ -42,6 +42,7 @@ def getdirtyvols(vtype, etcds, replis, dockers):
         else:
             if reslist[1] in str(etcdactive):
                 dirtyset.add(res)
+                print('here2', res)
         if reslist[1] not in str(etcds):
             dirtyset.add(res)
         for dckr in dockers.split('\n'):
@@ -53,7 +54,7 @@ def getdirtyvols(vtype, etcds, replis, dockers):
                 if reslist[1] not in str(result):
                     print('not in')
                     dirtyset.add(res)
-        if reslist[7] not in dockers:
+        if reslist[7] not in dockers and 'active' in reslist[-1]:
             dirtyset.add(res)
     return dirtyset
 
