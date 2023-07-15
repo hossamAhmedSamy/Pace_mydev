@@ -16,14 +16,14 @@ def delall(*args):
 
 def getall(*args):
  global leader, leaderip, myhost, myhostip, etcdip
- if args[0]=='init':
+ if len(args) > 0:
+    if args[0]=='init':
         leader = args[1]
         leaderip = args[2]
         myhost = args[3]
         myhostip = args[4]
         etcdip = args[5]
         return
-
 
  if len(args) == 0:
   alls=get(leaderip, 'lists','--prefix')
@@ -32,11 +32,11 @@ def getall(*args):
   alls=get(leaderip, args[1]+'/lists/'+args[0])
  else:
   alls=get(leaderip, 'lists/'+args[0])
- if len(alls) > 0 and alls[0] != -1:
+ if len(alls) > 0 and '_1' != str(alls[0]) :
   alls=mtuple(alls[0])
   return alls
  else:
-  return [-1]
+  return ['_1']
 
 def putall(*args):
  global leader, leaderip, myhost, myhostip, etcdip
@@ -56,5 +56,5 @@ def norm(val):
    return float(val[:-1])*float(units['B'])
 
 if __name__=='__main__':
-
+ getall('init',sys.argv[1:])
  getall(*sys.argv[1:])

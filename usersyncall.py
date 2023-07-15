@@ -4,38 +4,39 @@ from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
 from ast import literal_eval as mtuple
 
-myip = '0'
-
+leader, leaderip, myhost, myhostip = '','','',''
+def usrfninit(ldr,ldrip,hst,hstip):
+ global allusers, leader ,leaderip, myhost, myhostip
+ leader, leaderip, myhost, myhostip = ldr, ldrip, hst, hstip
+ return
 allusers = []
-def thread_add(leader, myip, user):
+
+def thread_add(user):
  global myusers
+ global allusers, leader ,leaderip, myhost, myhostip
  username=user[0].replace('usersinfo/','')
  if 'NoUser' == username:
   return
  with open('/root/usersync2','w') as f:
   f.write(str(user)+' + '+str(username)+'\n')
  if username in str(myusers):
-  userhashlocal=get(myip,'usershash/'+username)[0]
-  userhash=get(leader,'usershash/'+username)[0]
-  if userhashlocal not in userhash:
-   userinfo=user[1].split(':')
-   userid=userinfo[0]
-   usergd=userinfo[1]
-   userhome=userinfo[2]
-   cmdline=['/TopStor/UnixAddUser_sync',username,userhash,userid,usergd,userhome]
-   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  userhashlocal=get(myhostip,'usershash/'+username)[0]
+  userhash=get(leaderip,'usershash/'+username)[0]
+  #if userhashlocal not in userhash:
+  # userinfo=user[1].split(':')
+  # userid=userinfo[0]
+  # usergd=userinfo[1]
  else:
-  userinfo=user[1].split(':')
-  userid=userinfo[0]
-  usergd=userinfo[1]
-  userhash=get(leader,'usershash/'+username)[0]
-  userhome=userinfo[2]
-  cmdline=['/TopStor/UnixAddUser_sync',username,userhash,userid,usergd,userhome]
-  with open('/root/tmpusersync','w') as f:
-   f.write('user: '+str(userhash))
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  userhash=get(leaderip,'usershash/'+username)[0]
+ userinfo=user[1].split(':')
+ userid=userinfo[0]
+ usergd=userinfo[1]
+ userhome=userinfo[2]
+ cmdline=['/TopStor/UnixAddUser_sync',leader, leaderip, myhost, myhostip, username,userhash,userid,usergd,userhome]
+ result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
-def thread_del(leader,myip, *user):
+def thread_del(*user):
+ global allusers, leader ,leaderip, myhost, myhostip
  global allusers
  username=user[0].replace('usersinfo/','')
  if 'NoUser' == username:
@@ -45,16 +46,15 @@ def thread_del(leader,myip, *user):
   cmdline=['/TopStor/UnixDelUser_sync',username,'system']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
-def usersyncall(leader, hostip,tosync='usersinfo'):
+def usersyncall(tosync='usersinfo'):
+ global allusers, leader ,leaderip, myhost, myhostip
  global allusers
  global myusers
- global myip 
- myip = hostip
- allusers=get(leader,'usersinfo','--prefix')
- myusers=get(myip,'usersinfo','--prefix')
+ allusers=get(leaderip,'usersinfo','--prefix')
+ myusers=get(myhostip,'usersinfo','--prefix')
  print(';;;;;;;;;;;;;;;;',myusers)
  if tosync != 'usersinfo': 
-  users=get(leader,'modified','user')
+  users=get(leaderip,'modified','user')
   users = [ x for x in users if myhost not in str(x) ]
   users = [ x[0].split('/')[2] for x in users ]
   allusers = [ x for x in allusers if x[0].replace('usersinfo/','') in users]
@@ -64,41 +64,52 @@ def usersyncall(leader, hostip,tosync='usersinfo'):
     delusers.append(user)
   myusers= [ x for x in myusers if x[0].replace('usersinfo/','') in delusers ]
  threads=[]
- if '-1' in allusers:
+ if '_1' in allusers:
   allusers=[]
- if '-1' in myusers:
+ if '_1' in myusers:
   myusers=[]
  for user in allusers:
-  thread_add(leader,myip, user)
- leader=get(leader,'leader','--prefix')
+  thread_add(user)
+ leader=get(leaderip,'leader','--prefix')
  if myhost not in str(leader):
   for user in myusers:
    if user in allusers:
     print(user,allusers)
    else:
-    thread_del(leader,myip, user)
+    thread_del(user)
  if tosync != 'usersinfo': 
   for user in users:
-   gethosts = get(leader,'modified/user/'+user)[0]
+   gethosts = get(leaderip,'modified/user/'+user)[0]
    if myhost not in gethosts:
-    put(leader,'modified/user/'+user,gethosts+'/'+myhost)
+    put(leaderip,'modified/user/'+user,gethosts+'/'+myhost)
   #  broadcasttolocal('modified/user/'+user,gethosts+'/'+myhost)
 
-def oneusersync(leader, oper,usertosync):
+def oneusersync(oper,usertosync):
+ global allusers, leader ,leaderip, myhost, myhostip
  global allusers
  global myusers
- global myip
  print('args',oper,usertosync)
- myusers=get(myip,'usersinfo','--prefix')
- user=get(leader,'usersinfo', usertosync)[0]
- if user == -1:
+ myusers=get(myhostip,'usersinfo','--prefix')
+ user=get(leaderip,'usersinfo', usertosync)[0]
+ if user == '_1':
   return
  if oper == 'Add':
-  thread_add(leader,myip, user)
+  thread_add(user)
  else:
-  thread_del(leader,myip, user)
+  thread_del(user)
  
   
 if __name__=='__main__':
-# usersyncall(*sys.argv[1:])
- oneusersync(*sys.argv[1:])
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
+ leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
+ leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
+ myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
+ myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ if len(sys.argv[1:]) < 2:
+    print(' syncing all users')
+    usersyncall(*sys.argv[1:])
+ else:
+    oneusersync(*sys.argv[1:])

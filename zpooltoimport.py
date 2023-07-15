@@ -11,21 +11,34 @@ from ast import literal_eval as mtuple
 
 
 #leader=get('leader','--prefix')[0][0].split('/')[1]
-stamp = str(stamp())
+stampi = str(stamp())
 
-def selecthost(minhost,hostname,hostpools):
+def selecthosting(minhost,hostname,hostpools):
  if len(hostpools) < minhost[1]:
   minhost = (hostname, len(hostpools))
  return minhost
 
 
-def dosync(leader,sync, *args):
-  global leaderip, myhost
-  dels(leaderip, sync)  
+def dosync(sync, *args):
+  global leader, leaderip, myhost, myhostip, etcdip
+  #dels(leaderip, sync)  
   put(leaderip, *args)
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
 
+def selecthost(pool,readies,cpools):
+    selectedhost = [ 10000,'' ]
+    print('cpools',cpools)
+    for hostinfo in readies:
+        print('hostinfo',readies)
+        host = hostinfo[0].split('/')[1]
+        counts = list(str(cpools)).count(host)
+        if selectedhost[0] > counts:
+            selectedhost =  [ counts, [ host ] ]
+        elif selectedhost[0] == counts:
+            selectedhost[1] = selectedhost[1] + [ host ]
+    return selectedhost[1]
+        
 def zpooltoimport(*args):
  global leader, leaderip, myhost, myhostip, etcdip
  if args[0]=='init':
@@ -37,25 +50,31 @@ def zpooltoimport(*args):
      initqueue(leaderip, myhost) 
      return
 
- needtoimport=get(etcdip, 'poolsnxt', myhost) 
- cpools = get(etcdip, 'pools/','--prefix')
+ nextpools=get(etcdip, 'poolsnxt', '--prefix') 
+ needtoimport=[ x for x in nextpools if myhost in str(x)] 
+ pools = get(etcdip, 'pools/','--prefix')
  if myhost not in str(needtoimport):
   print('no need to import a pool here')
+                  
  else:
   for poolline in needtoimport:
    pool = poolline[0].replace('poolsnxt/','')
-   if pool in str(cpools):
+   if pool in str(pools):
     continue
    ioperf(leaderip, myhost)
-   print('pool', pool)
+   print('pool to be imported now', pool)
    cmdline= '/usr/sbin/zpool import  '+pool
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    cmdline= '/usr/sbin/zpool status  '
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
+   print('result',result)
    if pool in result:
     put(leaderip, 'pools/'+pool,myhost)
     put(etcdip, 'dirty/volume','0')
-    dosync(leader,'pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+stamp)
+    print('before sync')
+    dosync('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
+    print('pools_', 'sync/pools/Add_'+pool+'_'+myhost+'/request','pools_'+str(stamp()))
+    print('After sync')
     #cmdline= 'systemctl restart zfs-zed  '
     #result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
    dels(leaderip, 'poolsnxt',pool)
@@ -63,33 +82,44 @@ def zpooltoimport(*args):
  if myhost != leader:
   return
 
- knowns=get(etcdip, 'ready','--prefix')
- hosts=get(leaderip,'hosts','/current')
- pools = getpoolstoimport()
- print('pools',pools)
- needtoimport=get(etcdip, 'poolsnxt', '--prefix') 
- for pool in pools:
-  print('found', pool)
-  if pool not in str(needtoimport):
-   minhost=(myhost,float('inf'))
-   for host in hosts: 
-    hostname = host[0].split('/')[1]
-    hostpools=mtuple(host[1])
-    minhost = selecthost(minhost,hostname,hostpools)
-   put(leaderip, 'poolsnxt/'+pool,minhost[0])
+ hosts=get(leaderip,'host','/current')
+ 
+ cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
+ cpools = cpools + getpoolstoimport()
+ print('with imported pools',cpools)
+ readies=get(etcdip,'ready','--prefix')
+ for poolinfo in cpools:
+    pool = poolinfo.split('_')[0]
+    if pool not in str(needtoimport):
+        nxthosts=selecthost(pool,readies,cpools)
+        print('hihihih',nxthosts,pool)
+        for nxthost in nxthosts:
+            if nxthost not in str(poolinfo):
+                hostnxtpools = [ x for x in nextpools if nxthost in str(x) ]
+                print('hostnxtpools',hostnxtpools,pool)
+                if pool not in str(hostnxtpools):
+                    print('adding')
+                    dels(leaderip,'poolsnxt/'+pool)
+                    put(leaderip,'poolsnxt/'+pool,nxthost)
+                    dosync('poolsnxt', 'sync/poolsnxt/Add_'+pool+'_'+nxthost+'/request','poolsnxt_'+str(stamp()))
+                    break
  return
      
        
 if __name__=='__main__':
-    if len(sys.argv) > 1:
-        leader = sys.argv[1]
-        leaderip = sys.argv[2]
-        myhost = sys.argv[3]
-        myhostip = sys.argv[4]
-        etcdip = sys.argv[5]
-        
-
-        zpooltoimport(*sys.argv)
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
+    leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
+    leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
+    myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
+    myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+    if leader == myhost:
+        etcdip = leaderip 
+    else:
+        etcdip = myhostip
+    zpooltoimport('hi')
  #cmdline='cat /pacedata/perfmon'
  #perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
  #if '1' in perfmon:

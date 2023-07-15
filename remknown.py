@@ -44,7 +44,7 @@ def remknown(*args):
  if knownchange == 1:
   known=get(etcdip, 'known','--prefix')
   
- if str(nextone) != '-1':
+ if str(nextone) != '_1':
   if str(nextone[1]).split('/')[0] not in  str(known):
    etcddel(leaderip, 'nextlead/er')
    nextone=[]
@@ -52,7 +52,7 @@ def remknown(*args):
   for kno in known:
    kn=kno 
    heart=get(leaderip, kn[1],'local','--prefix')
-   if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in kn[1]):
+   if( '_1' in str(heart) or len(heart) < 1) or (heart[0][1] not in kn[1]):
     thelost = kn[0].split('/')[1]
     etcddel(leaderip, kn[0])
     etcddel(leaderip, 'host',thelost)
@@ -91,7 +91,7 @@ def remknown(*args):
  if poss != []:
   for pos in poss:
    heart = get(etcdip, pos[1],'local','--prefix')
-   if( '-1' in str(heart) or len(heart) < 1) or (heart[0][1] not in pos[1]):
+   if( '_1' in str(heart) or len(heart) < 1) or (heart[0][1] not in pos[1]):
     etcddel(leaderip, 'ready/'+pos[0].replace('possible',''))
     dosync(leader,'sync/ready/Del_ready::_'+pos[0].replace('possible','')+'/request','ready_'+stamp)
     etcddel(leaderip, pos[0])
