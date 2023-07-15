@@ -65,7 +65,7 @@ def remknown(*args):
     dosync(leader,'sync/volumes/request','volumes_'+stamp)
     etcddel(leaderip, 'pools',thelost)
     etcddel(leaderip, 'sync/pools','_'+thelost)
-    dosync(leader,'sync/poolsnxt/Del_poolsnxt_'+thelost+'/request','poolsnxt_'+stamp)
+    dosync(leader,'sync/poolnxt/Del_poolnxt_'+thelost+'/request','poolnxt_'+stamp)
     dosync(leader,'sync/pools/Del_pools_'+thelost+'/request','pools_'+stamp)
     etcddel(leaderip, 'sync/nextlead',thelost)
     if kn[1] in str(nextone):

@@ -19,7 +19,7 @@ def importpools(*args):
  thehost=args[3]
  threads=[]
  pool=""
- mypools=get(etcdip,'poolsnxt',myhost)
+ mypools=get(etcdip,'poolnxt',myhost)
 # with open('/TopStordata/forlocalpools') as f:
 #  for line in f:
  print('mypools',myhost,thehost,mypools)

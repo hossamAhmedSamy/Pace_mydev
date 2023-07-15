@@ -23,7 +23,7 @@ then
   echo leader is dead but another process was in the way to fix.
   exit
 fi
-echo /TopStor/docker_primary.sh $leader $leaderip $clusterip
+echo /TopStor/docker_primary.sh $leader $myhostip $leaderip $clusterip
 /TopStor/docker_primary.sh $leader $myhostip $leaderip $clusterip
 echo docker exec etcdclient /TopStor/logmsg.py Partst05 info system $myhost 
 docker exec etcdclient /TopStor/logmsg.py Partst05 info system $myhost 
@@ -36,6 +36,5 @@ docker exec etcdclient /TopStor/logmsg.py Partst02 warning system $losthost
 /pace/etcddel.py $leaderip sync/leader/Add --prefix
 /pace/etcdput.py $leaderip sync/leader/Add_${myhost}_$myip/request leader_$stamp
 /pace/etcdput.py $leaderip sync/leader/Add_${myhost}_$myip/request/$myhost leader_$stamp
-echo importing all pools >> /root/zfspingtmp2
-/pace/etcddel.py $leaderip toimport/$myhost 
-docker exec etcdclient /TopStor/etcdput.py etcd refreshdisown yes
+#/pace/etcddel.py $leaderip toimport/$myhost 
+docker exec etcdclient /TopStor/etcdput.py etcd refreshdisown/$myhost yes
