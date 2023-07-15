@@ -172,6 +172,10 @@ def syncrequest(leader,leaderip,myhost, myhostip):
     print('multiple requests',myrequests)
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  print('myrequests', myrequests)
+ rebootflag = 0
+ if 'sync/namespace' in str(myrequests) and 'sync/ipaddr' in str(myrequests):
+  rebootflag = 2
+  put(leaderip,'rebootwait/'+myhost,'pls')
  for syncinfo in myrequests:
   flag = 1
   if  len(syncinfo[0]) == 1:
@@ -180,6 +184,8 @@ def syncrequest(leader,leaderip,myhost, myhostip):
    if myhost != leader:
     print(leader,leaderip,myhost,myhostip, syncinfo)
     doinitsync(leader,leaderip,myhost,myhostip, syncinfo)
+   else:
+    syncinit(leader,leaderip, myhost,myhostip)
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]
@@ -235,6 +241,10 @@ def syncrequest(leader,leaderip,myhost, myhostip):
       else:
        print('opers',opers)
        if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
+        if sync in [ 'namespace', 'ipaddr' ]:
+         rebootflag -=rebootflag
+         if rebootflag == 0:
+            dels(leaderip,'rebootwait/'+myhost)
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
         print('cmdline',cmdline)
        else:
