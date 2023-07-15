@@ -27,6 +27,7 @@ syncs = etcdonly + syncanitem + special1 + wholeetcd
 ##### initial sync for known nodes : sync/Operation/initial Operation_stamp #######################
 ##### synced template for initial sync for known nodes : sync/Operation/initial/node Operation_stamp #######################
 ##### delete request of same sync if ActivePartners qty reached #######################
+software = 'na'
 def insync(leaderip, leader):
     print('checking in sync -------------------')
     isinsync = 1 
@@ -36,12 +37,13 @@ def insync(leaderip, leader):
         readis = get(leaderip,'ready','--prefix')
         for cver in allcversion:
             if cver[1] != mycversion and cver[0].replace('cversion/','') in str(readis):
-                stampi = str(timestamp())
-                put(leaderip,'sync/cversion/__checksy__/request','cversion_'+stampi)
+            #if cver[1] != mycversion and cver[0].replace('cversion/',''): 
+                #stampi = str(timestamp())
+                #put(leaderip,'sync/cversion/__checksy__/request','cversion_'+stampi)
                 isinsync = 0
                 break
-        if isinsync == 1:
-            dels(leaderip,'sync/cversion','--prefix')
+        #if isinsync == 1:
+        #    dels(leaderip,'sync/cversion','--prefix')
     
      
     if isinsync == 1:
@@ -52,7 +54,7 @@ def insync(leaderip, leader):
         allsyncs=get(leaderip,'sync','--prefix')
         allsyncs=[x for x in allsyncs if 'initial' not in x[0] ]
         for sync in allsyncs:
-            syncgroup = [ x for x in allsyncs if sync[1] in x[1] ]
+            syncgroup = [ x for x in allsyncs if sync[1] in x[1] and 'cversion' not in x[0] ]
             print('syncgroup',syncgroup)
             initrequest = [ x for x in syncgroup if 'request/dhcp' not in x[0] ]
             if len(syncgroup) > 0 and len(initrequest) == 0:
@@ -89,7 +91,7 @@ def syncinit(leader,leaderip, myhost,myhostip):
 
 def doinitsync(leader,leaderip,myhost, myhostip, syncinfo):
  global syncs, syncanitem, forReceivers, etcdonly, allsyncs
- noinit = [ 'replipart' , 'evacuatehost','hostdown' ]
+ noinit = [ 'cversion', 'replipart' , 'evacuatehost','hostdown' ]
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
  sync = syncleft.split('/')[1]
@@ -203,7 +205,7 @@ def syncrequest(leader,leaderip,myhost, myhostip):
         dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
       if sync in 'cversion':
-        cmdline='/TopStor/systempull.sh samebranch'
+        cmdline='/TopStor/systempull.sh '+opers[1]
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       elif sync in 'Snapperiod' :
        etctocron(leaderip)
