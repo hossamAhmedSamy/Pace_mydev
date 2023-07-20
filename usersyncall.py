@@ -11,23 +11,15 @@ def usrfninit(ldr,ldrip,hst,hstip):
  return
 allusers = []
 
-def thread_add(user):
+def thread_add(user,tosync):
  global myusers
  global allusers, leader ,leaderip, myhost, myhostip
- username=user[0].replace('usersinfo/','')
+ username=user[0].replace(tosync+'usersinfo/','')
  if 'NoUser' == username:
   return
  with open('/root/usersync2','w') as f:
   f.write(str(user)+' + '+str(username)+'\n')
- if username in str(myusers):
-  userhashlocal=get(myhostip,'usershash/'+username)[0]
-  userhash=get(leaderip,'usershash/'+username)[0]
-  #if userhashlocal not in userhash:
-  # userinfo=user[1].split(':')
-  # userid=userinfo[0]
-  # usergd=userinfo[1]
- else:
-  userhash=get(leaderip,'usershash/'+username)[0]
+ userhash=get(leaderip,tosync+'usershash/'+username)[0]
  userinfo=user[1].split(':')
  userid=userinfo[0]
  usergd=userinfo[1]
@@ -35,7 +27,7 @@ def thread_add(user):
  cmdline=['/TopStor/UnixAddUser_sync',leader, leaderip, myhost, myhostip, username,userhash,userid,usergd,userhome]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
-def thread_del(*user):
+def thread_del(user):
  global allusers, leader ,leaderip, myhost, myhostip
  global allusers
  username=user[0].replace('usersinfo/','')
@@ -46,43 +38,31 @@ def thread_del(*user):
   cmdline=['/TopStor/UnixDelUser_sync',username,'system']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
-def usersyncall(tosync='usersinfo'):
+def usersyncall(tosync=''):
  global allusers, leader ,leaderip, myhost, myhostip
  global allusers
  global myusers
- allusers=get(leaderip,'usersinfo','--prefix')
- myusers=get(myhostip,'usersinfo','--prefix')
+ allusers=get(leaderip,tosync+'usersinfo','--prefix')
+ if 'pullsync' in tosync:
+    syncip = leaderip
+ else:
+    syncip = myhostip
+ myusers=get(syncip,'usersinfo','--prefix')
  print(';;;;;;;;;;;;;;;;',myusers)
- if tosync != 'usersinfo': 
-  users=get(leaderip,'modified','user')
-  users = [ x for x in users if myhost not in str(x) ]
-  users = [ x[0].split('/')[2] for x in users ]
-  allusers = [ x for x in allusers if x[0].replace('usersinfo/','') in users]
-  delusers = []
-  for user in users:
-   if user not in str(allusers):
-    delusers.append(user)
-  myusers= [ x for x in myusers if x[0].replace('usersinfo/','') in delusers ]
  threads=[]
  if '_1' in allusers:
   allusers=[]
  if '_1' in myusers:
   myusers=[]
  for user in allusers:
-  thread_add(user)
+  thread_add(user,tosync)
  leader=get(leaderip,'leader','--prefix')
- if myhost not in str(leader):
+ if myhost not in str(leader) or 'pullsync' in tosync:
   for user in myusers:
    if user in allusers:
     print(user,allusers)
    else:
     thread_del(user)
- if tosync != 'usersinfo': 
-  for user in users:
-   gethosts = get(leaderip,'modified/user/'+user)[0]
-   if myhost not in gethosts:
-    put(leaderip,'modified/user/'+user,gethosts+'/'+myhost)
-  #  broadcasttolocal('modified/user/'+user,gethosts+'/'+myhost)
 
 def oneusersync(oper,usertosync):
  global allusers, leader ,leaderip, myhost, myhostip
