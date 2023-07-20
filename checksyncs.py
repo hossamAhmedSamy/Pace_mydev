@@ -95,7 +95,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync):
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
  if 'pullsync' in pullsync:
-    syncleft.repalce(pullsync,'')
+    syncleft = syncleft.replace(pullsync,'')
  sync = syncleft.split('/')[1]
  flag = 1
  if sync in syncanitem and sync not in noinit:
@@ -106,12 +106,12 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync):
     if sync in 'user':
      print('syncing all users')
      usrfninit(leader,leaderip, myhost,myhostip)
-     usersyncall() 
+     usersyncall(pullsync) 
      synckeys(leaderip, myhostip, pullsync+'user', 'user')
     if sync in 'group':
      print('syncing all groups')
      grpfninit(leader,leaderip, myhost,myhostip)
-     groupsyncall()
+     groupsyncall(pullsync)
     if sync in ['tz','ntp','gw','dns']: 
      cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
      print('cmd',cmdline)
@@ -128,15 +128,15 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync):
   if sync == 'Partnr':
    synckeys(leaderip, myhostip, 'Partner','Partner')
   else:
-   synckeys(leaderip, myhostip, sync,sync)
+   synckeys(leaderip, myhostip, pullsync+sync,sync)
   print('sycs',sync, myhost)
      
  if sync not in syncs:
   print('there is a sync that is not defined:',sync)
   return 
  if flag:
-    put(leaderip,syncleft+'/'+myhost, stamp)
- synckeys(leaderip,myhostip, syncleft, syncleft)
+    put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
+ synckeys(leaderip,myhostip, pullsync+syncleft, syncleft)
 
  return
 
@@ -176,6 +176,8 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
  else:
     etcdip = myhostip
  allsyncs = get(leaderip,pullsync+'sync','request') 
+ print("get("+leaderip+",pullsync+sync','request')")
+ print('pallysncs',pullsync, allsyncs)
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) or ('request/' and '/'+clusterhost) in str(x) ] 
  myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
@@ -194,7 +196,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   if '/initial/' in str(syncinfo):
    if myhost != leader or 'pullsync' in pullsync:
     print(leader,leaderip,myhost,myhostip, syncinfo)
-    doinitsync(leader,leaderip,myhost,myhostip, syncinfo)
+    doinitsync(leader,leaderip,myhost,myhostip, syncinfo,pullsync)
    elif myhost != leader:
     syncinit(leader,leaderip, myhost,myhostip)
   else:
@@ -328,7 +330,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   insync(leaderip, leader) 
     #print(prune,toprunedic[prune])
  if myhost == leader and 'pullsync' not in pullsync:
-    syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullsync')
+    syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullsync/')
  return     
 
 def restetcd(leader,leaderip, myhost,myhostip):
