@@ -31,7 +31,7 @@ def thread_del(user):
  global allusers, leader ,leaderip, myhost, myhostip
  global allusers
  username=user[0].replace('usersinfo/','')
- if 'NoUser' == username:
+ if 'admin' == username or 'NoUser' == username:
   return
  if username not in str(allusers):
   print(username,str(allusers))
