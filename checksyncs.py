@@ -266,7 +266,8 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         cmdline='/TopStor/'+opers[0]+" "+" ".join(opers[1:])
        print('cmd',cmdline)
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-   if sync in special1 and myhost != leader :
+   #if sync in special1 and myhost != leader :
+   if sync in special1 :
       cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       #cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+opers[2] +' '+ opers[3]
