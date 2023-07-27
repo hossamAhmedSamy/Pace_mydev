@@ -167,12 +167,11 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
     print('***************************************************************************')
 
  flag=1
+ clusterhost = myhost
  if leader == myhost:
     etcdip = leaderip
     if 'pullsync' in pullsync:
         clusterhost = leaderip
-    else:
-        clusterhost = myhost
  else:
     etcdip = myhostip
  allsyncs = get(leaderip,pullsync+'sync','request') 
