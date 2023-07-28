@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import subprocess,sys, datetime
 from etcddel import etcddel as deli 
+from etcdput import etcdput as put 
 
 
 def setall(hostn,leader):
@@ -13,8 +14,13 @@ def setall(hostn,leader):
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py ActivePartners/'+hostn
  hostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  if myhost in hostn:
+  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
+  leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+  put(leaderip, 'configured/'+hostn,'no')
+  put(myip, 'configured/'+hostn,'no')
+  put(leaderip, 'rebootme/'+hostn,'pls')
   cmdline=['/TopStor/docker_setup.sh','reset']
-  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  #result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  else:
     cmdline=['/pace/removetargetdisks.sh', hostn, hostip]
     result=subprocess.run(cmdline,stdout=subprocess.PIPE)
