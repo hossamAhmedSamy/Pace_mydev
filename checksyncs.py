@@ -165,7 +165,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
     print('***************************************************************************')
     print('syncing replication data')
     print('***************************************************************************')
-
+ evacuatefinish = 1
  flag=1
  clusterhost = myhost
  if leader == myhost:
@@ -249,14 +249,23 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
       elif 'syncfn' in opers[0]:
         print('opers',opers)
         if 'evacuatehost' in str(syncleft):
-            put(myhostip, syncleft+'/'+myhost, stamp)
-        if myhost == leader:
-            synclen = len(get(leaderip,'sync/evacuatehost',opers[1]))
-            readies = len(get(leaderip, 'ready','--prefix'))+1
-            if len(readies) >= synclen:
-                dels(leaderip,'bybyleader')
-                put(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[1])
-        else:
+            if myhost == leader:
+                synclen = len(get(leaderip,'sync/evacuatehost',opers[1]))
+                readieslen = len(get(leaderip, 'ready','--prefix'))+1
+                print('hihihihihihihihihihihihihi')
+                print(readieslen,synclen)
+                print('hihihihihihihihihihihihihi')
+                if readieslen <= synclen:
+                    dels(leaderip,'bybyleader')
+                    dels(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[1])
+                else:
+                    print('evacuatefinish change to 0')
+                    evacuatefinish =  0
+            else:
+                put(myhostip, syncleft+'/'+myhost, stamp)
+                globals()[opers[1]](*opers[2:])
+
+        else:        
             globals()[opers[1]](*opers[2:])
       elif sync == 'priv':
         user=syncleft.split('/')[2]
@@ -280,6 +289,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
        print('cmd',cmdline)
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    #if sync in special1 and myhost != leader :
+
    if sync in special1 :
       cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
@@ -288,12 +298,16 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
-   if flag:
+   if flag and evacuatefinish == 1:
     put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
    if myhost != leader:
+    print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
     put(myhostip, syncleft+'/'+myhost, stamp)
     put(myhostip, syncleft, stamp)
-   elif myhsot == leader and 'pullsync' in pullsync:
+   if myhost == leader and evacuatefinish == 1 and flag:
+    print('2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+    put(myhostip, syncleft+'/'+myhost, stamp)
+   elif myhost == leader and 'pullsync' in pullsync:
     put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
      
  cmdline = '/TopStor/getcversion.sh '+leaderip+' '+leader+' '+myhost+' '+'checksync'
@@ -340,7 +354,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    #if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
    #print('actives:',actives,'prune',prunex, 'ready/Del' in str(toprunedic[prune][1:]))
    #if toprunedic[prune][0] > actives or ((('ready' in str(toprunedic[prune][1:])) or ('Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0] > readis):
-   if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis) and 'evacuatehost' not in prune:
+   if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
     dels(leaderip,'sync',prune) 
   insync(leaderip, leader) 
     #print(prune,toprunedic[prune])
