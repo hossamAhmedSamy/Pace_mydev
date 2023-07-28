@@ -57,7 +57,7 @@ def insync(leaderip, leader):
         for sync in allsyncs:
             syncgroup = [ x for x in allsyncs if sync[1] in x[1] and 'cversion' not in x[0] ]
             initrequest = [ x for x in syncgroup if 'request/dhcp' not in x[0] ]
-            if len(syncgroup) > 0 and len(initrequest) == 0:
+            if len(syncgroup) > 0 and len(initrequest) == 0 and 'evacuatehost' not in sync[1]:
                 print('to delete', sync)
                 dels(leaderip,'sync',sync[1])
                 isinsync = 0
@@ -294,7 +294,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
     put(myhostip, '/'.join(done[0].split('/')[:-1]), done[1])
   deleted = set()
   for done in localdones:
-   if done[1] not in str(otherdones) and done[1] not in deleted:
+   if done[1] not in str(otherdones) and done[1] not in deleted and 'evacuatehost' not in done[1]:
     dels(myhostip, 'sync', done[1])
     deleted.add(done[1])
  else:
@@ -309,7 +309,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   notrights = [ x for x in dhcps if x not in requests ]
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   print(notrights)
-  for notr  in notrights:
+  for notr  in notrights and 'evacuatehost' not in notr:
     dels(leaderip, 'sync', notr)
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   toprunedic = dict()
@@ -325,7 +325,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    #if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
    #print('actives:',actives,'prune',prunex, 'ready/Del' in str(toprunedic[prune][1:]))
    #if toprunedic[prune][0] > actives or ((('ready' in str(toprunedic[prune][1:])) or ('Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0] > readis):
-   if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
+   if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis) and 'evacuatehost' not in prune:
     dels(leaderip,'sync',prune) 
   insync(leaderip, leader) 
     #print(prune,toprunedic[prune])
