@@ -3,11 +3,15 @@ import subprocess,sys, datetime
 from etcddel import etcddel as deli 
 
 
-def setall(hostn,hostip,leader):
+def setall(hostn,leader):
+
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
  myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ print('hihihih')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
  myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py ActivePartners/'+hostn
+ hostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  if myhost in hostn:
   cmdline=['/TopStor/docker_setup.sh','reset']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
