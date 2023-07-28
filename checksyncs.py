@@ -247,8 +247,17 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         for dirt in dirtydic:
             put(etcdip, 'dirty/'+dirt, str(dirtydic[dirt]))
       elif 'syncfn' in opers[0]:
-       print('opers',opers)
-       globals()[opers[1]](*opers[2:])
+        print('opers',opers)
+        if 'evacuatehost' in str(syncleft):
+            put(myhostip, syncleft+'/'+myhost, stamp)
+        if myhost == leader:
+            synclen = len(get(leaderip,'sync/evacuatehost',opers[1]))
+            readies = len(get(leaderip, 'ready','--prefix'))+1
+            if len(readies) >= synclen:
+                dels(leaderip,'bybyleader')
+                put(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[1])
+        else:
+            globals()[opers[1]](*opers[2:])
       elif sync == 'priv':
         user=syncleft.split('/')[2]
         synckeys(leaderip, myhostip, 'usersinfo/'+user, 'usersinfo/'+user)
