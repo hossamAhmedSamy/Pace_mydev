@@ -16,8 +16,8 @@ def setall(hostn,leader):
  if myhost in hostn:
   cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
   leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
-  put(leaderip, 'configured/'+hostn,'no')
-  put(myip, 'configured/'+hostn,'no')
+  put(leaderip, 'configured/'+hostn,'reset')
+  put(myip, 'configured/'+hostn,'reset')
   put(leaderip, 'rebootme/'+hostn,'pls')
   cmdline=['/TopStor/docker_setup.sh','reset']
   #result=subprocess.run(cmdline,stdout=subprocess.PIPE)

@@ -12,7 +12,7 @@ then
 	if [ $? -eq 0 ];
 	then
  		configured=`/pace/etcdget.py $leaderip configured/$myhost`
-		echo S$configured  | echo yes
+		echo S$configured  | egrep 'yes|reset'
 		if [ $? -ne 0 ];
 		then
 			configured='no'
