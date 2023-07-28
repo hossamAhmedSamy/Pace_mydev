@@ -309,8 +309,9 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   notrights = [ x for x in dhcps if x not in requests ]
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   print(notrights)
-  for notr  in notrights and 'evacuatehost' not in notr:
-    dels(leaderip, 'sync', notr)
+  for notr  in notrights: 
+    if 'evacuatehost' not in str(notr):
+        dels(leaderip, 'sync', notr)
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   toprunedic = dict()
   for prune in toprune:
