@@ -18,13 +18,13 @@ def setall(hostn,leader):
   leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
   put(leaderip, 'configured/'+hostn,'reset')
   put(myip, 'configured/'+hostn,'reset')
-  put(leaderip, 'rebootme/'+hostn,'pls')
+  put(leaderip, 'rebootme/'+hostn,'pls_fromevacuate')
   cmdline=['/TopStor/docker_setup.sh','reset']
   #result=subprocess.run(cmdline,stdout=subprocess.PIPE)
  else:
     cmdline=['/pace/removetargetdisks.sh', hostn, hostip]
     result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-    cmdline=['/pace/hostlost.sh',leader, leaderip, myhostip, myip, hostn]
+    cmdline=['/pace/hostlost.sh',leader, leaderip, myhost, myip, hostn]
     result=subprocess.run(cmdline,stdout=subprocess.PIPE)
     deli(myip,"",hostn)
 
