@@ -15,12 +15,9 @@ then
 fi
 isreboot=`/pace/etcdget.py $leaderip rebootme/$myhost`$isrebootlocal
 
-echo $isreboot | grep pls
-if [ $? -ne 0 ];
+echo S$isreboot | grep pls
+if [ $? -eq 0 ];
 then
-	echo S$isreboot | grep pls
-	if [ $? -eq 0 ];
-	then
  		configured=`/pace/etcdget.py $leaderip configured/$myhost`$configuredlocal
 		echo S$configured  | egrep 'yes|reset'
 		if [ $? -ne 0 ];
@@ -33,6 +30,5 @@ then
  		reboot
 	else
 		echo $isreboot ____ no reboot
-	fi
 fi
 #/sbin/reboot
