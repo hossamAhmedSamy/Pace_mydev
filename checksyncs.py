@@ -255,7 +255,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         if 'evacuatehost' in str(syncleft):
             if myhost == leader:
                 synclen = len(get(leaderip,'sync/evacuatehost',opers[1]))
-                readieslen = len(get(leaderip, 'ready','--prefix'))+1
+                readieslen = len(get(leaderip, 'ready','--prefix'))
                 print('hihihihihihihihihihihihihi')
                 print(readieslen,synclen)
                 print('hihihihihihihihihihihihihi')
