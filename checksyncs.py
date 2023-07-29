@@ -21,6 +21,8 @@ etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ActPool', 'alias', 'hostipsu
 restartetcd = wholeetcd + etcdonly
 replisyncs = ['user','group']
 syncs = etcdonly + syncanitem + special1 + wholeetcd
+
+noinit = [ 'cversion', 'replipart' , 'evacuatehost','hostdown','namespace' , 'ipaddr']
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with bash script: sync/Operation/commandline_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with python script: sync/Operation/syncfn_commandline_oper1_oper2_../request Operation_stamp###########
@@ -81,14 +83,11 @@ def initchecks(leader, leaderip, myhost, myhostip):
 def checksync(hostip='request',*args):
  synctypes[hostip](*args)
 
-noinit = [ 'cversion', 'replipart' , 'evacuatehost','hostdown','namespace' ]
 
 def syncinit(leader,leaderip, myhost,myhostip):
  global syncs, syncanitem, forReceivers, etcdonly, allsyncs, noinit
  stamp = int(timestamp() + 3600)
 
- if sync in noinit:
-  return
  for sync in syncs:
   put(leaderip,'sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
   put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+'_'+str(stamp)) 
@@ -102,9 +101,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync):
     syncleft = syncleft.replace(pullsync,'')
  sync = syncleft.split('/')[1]
  flag = 1
- if sync in noinit:
-  return
- if sync in syncanitem :
+ if sync in syncanitem and sync not in noinit :
     if 'Snapperiod'in sync:
      print('found etctocron')
      synckeys(leaderip,myhostip, sync,sync)
