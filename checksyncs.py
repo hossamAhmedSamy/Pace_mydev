@@ -252,6 +252,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         print('opers',opers)
         if 'evacuatehost' in str(syncleft):
             isready = get(etcdip, 'ready',opers[2])
+            evacuateflag = 1
             if opers[2] not in str(isready):    
                 globals()[opers[1]](*opers[2:])
                 dels(etcdip, 'ActivePartners',opers[2])
@@ -262,7 +263,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
                     put(discip, 'excepts/'+opers[2],opers[2])
                     dels(discip,'possible', opers[2])
                     dels(leaderip,'possible', opers[2])
-                evacuateflag = 1
+                evacuateflag = 0 
 
         else:        
             globals()[opers[1]](*opers[2:])
