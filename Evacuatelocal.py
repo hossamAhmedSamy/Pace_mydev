@@ -13,9 +13,9 @@ def setall(hostn,leader):
  myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py ActivePartners/'+hostn
  hostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
+ leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  if myhost in hostn:
-  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
-  leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
   put(leaderip, 'configured/'+hostn,'reset')
   put(myip, 'configured/'+hostn,'reset')
   put(leaderip, 'rebootme/'+hostn,'pls_fromevacuate')
