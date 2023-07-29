@@ -59,7 +59,7 @@ def insync(leaderip, leader):
         for sync in allsyncs:
             syncgroup = [ x for x in allsyncs if sync[1] in x[1] and 'cversion' not in x[0] ]
             initrequest = [ x for x in syncgroup if 'request/dhcp' not in x[0] ]
-            if len(syncgroup) > 0 and len(initrequest) == 0 and 'evacuatehost' not in sync[1]:
+            if len(syncgroup) > 0 and len(initrequest) == 0 :
                 print('to delete', sync)
                 dels(leaderip,'sync',sync[1])
                 isinsync = 0
@@ -195,6 +195,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         rebootflag = 2
         put(leaderip,'rebootwait/'+myhost,'pls_fromnamespace')
  for syncinfo in myrequests:
+  evacuateflag = 0
   flag = 1
   if  len(syncinfo[0]) == 1:
     continue
@@ -250,16 +251,18 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
       elif 'syncfn' in opers[0]:
         print('opers',opers)
         if 'evacuatehost' in str(syncleft):
-            if myhost == leader:
-                dels(leaderip,'bybyleader')
-                dels(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[2])
-                discip = '10.11.11.253'
-                put(leaderip, 'excepts/'+opers[2],opers[2])
-                put(discip, 'excepts/'+opers[2],opers[2])
-                dels(discip,'possible', opers[2])
-                dels(leaderip,'possible', opers[2])
-            else:
+            isready = get(etcdip, 'ready',opers[2])
+            if opers[2] not in str(isready):    
                 globals()[opers[1]](*opers[2:])
+                dels(etcdip, 'ActivePartners',opers[2])
+                if myhost == leader:
+                    dels(leaderip,'bybyleader')
+                    discip = '10.11.11.253'
+                    put(leaderip, 'excepts/'+opers[2],opers[2])
+                    put(discip, 'excepts/'+opers[2],opers[2])
+                    dels(discip,'possible', opers[2])
+                    dels(leaderip,'possible', opers[2])
+                evacuateflag = 1
 
         else:        
             globals()[opers[1]](*opers[2:])
@@ -294,13 +297,13 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
-   if flag:
+   if flag == 1 and evacuateflag == 0:
     put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
-   if myhost != leader:
+   if myhost != leader and flag == 1 and evacuateflag == 0:
     print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
     put(myhostip, syncleft+'/'+myhost, stamp)
     put(myhostip, syncleft, stamp)
-   if myhost == leader  and flag:
+   if myhost == leader  and flag == 1 and evacuateflag == 0:
     print('2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
     put(myhostip, syncleft+'/'+myhost, stamp)
    elif myhost == leader and 'pullsync' in pullsync:
@@ -318,7 +321,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
     put(myhostip, '/'.join(done[0].split('/')[:-1]), done[1])
   deleted = set()
   for done in localdones:
-   if done[1] not in str(otherdones) and done[1] not in deleted and 'evacuatehost' not in done[1]:
+   if done[1] not in str(otherdones) and done[1] not in deleted :
     dels(myhostip, 'sync', done[1])
     deleted.add(done[1])
  else:
@@ -333,9 +336,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   notrights = [ x for x in dhcps if x not in requests ]
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   print(notrights)
-  for notr  in notrights: 
-    if 'evacuatehost' not in str(notr):
-        dels(leaderip, 'sync', notr)
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   toprunedic = dict()
   for prune in toprune:
@@ -369,6 +369,8 @@ def restetcd(leader,leaderip, myhost,myhostip):
  
 runcmd={'Snapperiod':'etctocron'} 
 synctypes={'syncinit':syncinit, 'syncrequest':syncrequest, 'syncall':syncall , 'restetcd': restetcd}
+
+
 if __name__=='__main__':
     leaderip=sys.argv[2]
     myhost=sys.argv[3]
