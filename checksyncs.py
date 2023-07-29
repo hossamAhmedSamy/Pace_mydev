@@ -262,6 +262,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
                 dels(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[2])
                 discip = '10.11.11.253'
                 put(leaderip, 'excepts/'+opers[2],opers[2])
+                put(discip, 'excepts/'+opers[2],opers[2])
                 dels(discip,'possible', opers[2])
                 dels(leaderip,'possible', opers[2])
                 #else:
