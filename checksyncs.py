@@ -259,16 +259,15 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
                 #print('hihihihihihihihihihihihihi')
                 #if readieslen <= synclen:
                 dels(leaderip,'bybyleader')
-                dels(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[1])
+                dels(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[2])
                 discip = '10.11.11.253'
-                put(discip, 'excepts/'+opers[1],opers[1])
-                dels(discip,'possible', opers[1])
-                dels(leaderip,'possible', opers[1])
+                put(leaderip, 'excepts/'+opers[2],opers[2])
+                dels(discip,'possible', opers[2])
+                dels(leaderip,'possible', opers[2])
                 #else:
                 #    print('evacuatefinish change to 0')
                 #    evacuatefinish =  0
             else:
-                put(myhostip, syncleft+'/'+myhost, stamp)
                 globals()[opers[1]](*opers[2:])
 
         else:        
