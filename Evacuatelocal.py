@@ -24,6 +24,8 @@ def setall(hostn,leader):
  else:
     cmdline=['/pace/removetargetdisks.sh', hostn, hostip]
     result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+    cmdline=['/pace/hostlost.sh',leader, leaderip, myhostip, myip, hostn]
+    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
     deli(myip,"",hostn)
 
 if __name__=='__main__':
