@@ -81,24 +81,30 @@ def initchecks(leader, leaderip, myhost, myhostip):
 def checksync(hostip='request',*args):
  synctypes[hostip](*args)
 
+noinit = [ 'cversion', 'replipart' , 'evacuatehost','hostdown','namespace' ]
+
 def syncinit(leader,leaderip, myhost,myhostip):
- global syncs, syncanitem, forReceivers, etcdonly, allsyncs
+ global syncs, syncanitem, forReceivers, etcdonly, allsyncs, noinit
  stamp = int(timestamp() + 3600)
+
+ if sync in noinit:
+  return
  for sync in syncs:
   put(leaderip,'sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
   put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+'_'+str(stamp)) 
  return
 
 def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync):
- global syncs, syncanitem, forReceivers, etcdonly, allsyncs
- noinit = [ 'cversion', 'replipart' , 'evacuatehost','hostdown' ]
+ global syncs, syncanitem, forReceivers, etcdonly, allsyncs, noinit
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
  if 'pullsync' in pullsync:
     syncleft = syncleft.replace(pullsync,'')
  sync = syncleft.split('/')[1]
  flag = 1
- if sync in syncanitem and sync not in noinit:
+ if sync in noinit:
+  return
+ if sync in syncanitem :
     if 'Snapperiod'in sync:
      print('found etctocron')
      synckeys(leaderip,myhostip, sync,sync)
