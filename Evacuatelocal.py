@@ -4,7 +4,7 @@ from etcddel import etcddel as deli
 from etcdput import etcdput as put 
 
 
-def setall(hostn,leader):
+def setall(hostn,*arg):
 
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternode'
  myhost=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
@@ -13,6 +13,8 @@ def setall(hostn,leader):
  myip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py ActivePartners/'+hostn
  hostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
+ cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leader'
+ leader=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py leaderip'
  leaderip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  if myhost in hostn:
