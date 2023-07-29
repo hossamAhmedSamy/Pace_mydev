@@ -264,6 +264,9 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
                 if readieslen <= synclen:
                     dels(leaderip,'bybyleader')
                     dels(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[1])
+                    discip = '10.11.11.253'
+                    dels(discip,'possible', opers[1])
+                    dels(leaderip,'possible', opers[1])
                 else:
                     print('evacuatefinish change to 0')
                     evacuatefinish =  0
