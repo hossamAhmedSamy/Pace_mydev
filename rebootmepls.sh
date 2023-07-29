@@ -5,19 +5,19 @@ leaderip=`echo $@ | awk '{print $1}'`
 myhost=`echo $@ | awk '{print $2}'`
 myhostip=`docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip`
 leader=`docker exec etcdclient /TopStor/etcdgetlocal.py leader`
-iswait='isreboot'`/pace/etcdget.py $leaderip rebootwait/$myhost`
-configuredlocal=''
-isrebootlocal=''
+configuredlocal='S'
+isrebootlocal='S'
+echo $myhost | grep $leader
+if [ $? -ne 0 ];
+then
+	isrebootlocal='S'`/pace/etcdget.py $myhostip rebootme/$myhost`
+ 	configuredlocal='S'`/pace/etcdget.py $myhostip configured/$myhost`
+fi
+isreboot=`/pace/etcdget.py $leaderip rebootme/$myhost`$isrebootlocal
+
 echo $isreboot | grep pls
 if [ $? -ne 0 ];
 then
-	echo $myhost | grep $leader
-	if [ $? -ne 0 ];
-	then
-		isrebootlocal='isreboot'`/pace/etcdget.py $myhostip rebootme/$myhost`
- 		configuredlocal=`/pace/etcdget.py $myhostip configured/$myhost`
-	fi
-	isreboot=`/pace/etcdget.py $leaderip rebootme/$myhost`$isrebootlocal
 	echo S$isreboot | grep pls
 	if [ $? -eq 0 ];
 	then
