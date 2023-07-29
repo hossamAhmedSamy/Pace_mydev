@@ -193,7 +193,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
  rebootflag = 0
  if 'sync/namespace' in str(myrequests) and 'sync/ipaddr' in str(myrequests):
   rebootflag = 2
-  put(leaderip,'rebootwait/'+myhost,'pls')
+  put(leaderip,'rebootwait/'+myhost,'pls_fromnamespace')
  for syncinfo in myrequests:
   flag = 1
   if  len(syncinfo[0]) == 1:
@@ -251,20 +251,20 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         print('opers',opers)
         if 'evacuatehost' in str(syncleft):
             if myhost == leader:
-                synclen = len(get(leaderip,'sync/evacuatehost',opers[1]))
-                readieslen = len(get(leaderip, 'ready','--prefix'))
-                print('hihihihihihihihihihihihihi')
-                print(readieslen,synclen)
-                print('hihihihihihihihihihihihihi')
-                if readieslen <= synclen:
-                    dels(leaderip,'bybyleader')
-                    dels(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[1])
-                    discip = '10.11.11.253'
-                    dels(discip,'possible', opers[1])
-                    dels(leaderip,'possible', opers[1])
-                else:
-                    print('evacuatefinish change to 0')
-                    evacuatefinish =  0
+                #synclen = len(get(leaderip,'sync/evacuatehost',opers[1]))
+                #readieslen = len(get(leaderip, 'ready','--prefix'))
+                #print('hihihihihihihihihihihihihi')
+                #print(readieslen,synclen)
+                #print('hihihihihihihihihihihihihi')
+                #if readieslen <= synclen:
+                dels(leaderip,'bybyleader')
+                dels(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[1])
+                discip = '10.11.11.253'
+                dels(discip,'possible', opers[1])
+                dels(leaderip,'possible', opers[1])
+                #else:
+                #    print('evacuatefinish change to 0')
+                #    evacuatefinish =  0
             else:
                 put(myhostip, syncleft+'/'+myhost, stamp)
                 globals()[opers[1]](*opers[2:])
