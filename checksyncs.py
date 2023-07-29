@@ -192,8 +192,9 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
  print('myrequests', myrequests)
  rebootflag = 0
  if 'sync/namespace' in str(myrequests) and 'sync/ipaddr' in str(myrequests):
-  rebootflag = 2
-  put(leaderip,'rebootwait/'+myhost,'pls_fromnamespace')
+    if '/namespace/initial' not in str(myrequests) and '/ipaddr/initial' not in str(myrequests):
+        rebootflag = 2
+        put(leaderip,'rebootwait/'+myhost,'pls_fromnamespace')
  for syncinfo in myrequests:
   flag = 1
   if  len(syncinfo[0]) == 1:
