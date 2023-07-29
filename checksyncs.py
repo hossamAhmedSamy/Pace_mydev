@@ -189,8 +189,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
     myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] and '/initial' not in x[0] ] 
  else:
     myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
- if 'evacuatehost' in str(myrequests):
-    myrequests = [ x for x in myrequests if 'evacuatehost' in str(x) ]
  if len(myrequests) > 1:
     print('multiple requests',myrequests)
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
