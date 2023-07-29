@@ -168,7 +168,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
     print('***************************************************************************')
     print('syncing replication data')
     print('***************************************************************************')
- evacuatefinish = 1
  flag=1
  clusterhost = myhost
  if leader == myhost:
@@ -252,12 +251,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         print('opers',opers)
         if 'evacuatehost' in str(syncleft):
             if myhost == leader:
-                #synclen = len(get(leaderip,'sync/evacuatehost',opers[1]))
-                #readieslen = len(get(leaderip, 'ready','--prefix'))
-                #print('hihihihihihihihihihihihihi')
-                #print(readieslen,synclen)
-                #print('hihihihihihihihihihihihihi')
-                #if readieslen <= synclen:
                 dels(leaderip,'bybyleader')
                 dels(leaderip, 'ActivePartners/dhcpEvacuateNode',opers[2])
                 discip = '10.11.11.253'
@@ -265,9 +258,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
                 put(discip, 'excepts/'+opers[2],opers[2])
                 dels(discip,'possible', opers[2])
                 dels(leaderip,'possible', opers[2])
-                #else:
-                #    print('evacuatefinish change to 0')
-                #    evacuatefinish =  0
             else:
                 globals()[opers[1]](*opers[2:])
 
@@ -304,13 +294,13 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    if sync not in syncs:
     print('there is a sync that is not defined:',sync)
     return
-   if flag and evacuatefinish == 1:
+   if flag:
     put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
    if myhost != leader:
     print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
     put(myhostip, syncleft+'/'+myhost, stamp)
     put(myhostip, syncleft, stamp)
-   if myhost == leader and evacuatefinish == 1 and flag:
+   if myhost == leader  and flag:
     print('2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
     put(myhostip, syncleft+'/'+myhost, stamp)
    elif myhost == leader and 'pullsync' in pullsync:
