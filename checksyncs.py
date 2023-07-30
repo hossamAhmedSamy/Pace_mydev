@@ -89,8 +89,8 @@ def syncinit(leader,leaderip, myhost,myhostip):
  stamp = int(timestamp() + 3600)
 
  for sync in syncs:
-  put(leaderip,'sync/'+sync+'/'+'initial/request',sync+'_'+str(stamp)) 
-  put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+'_'+str(stamp)) 
+  put(leaderip,'sync/'+sync+'/'+'initial/request',sync+'_initial_'+str(stamp)) 
+  put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+'_initial_'+str(stamp)) 
  return
 
 def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync):
@@ -257,7 +257,8 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
                 globals()[opers[1]](*opers[2:])
                 dels(etcdip, 'ActivePartners',opers[2])
                 if myhost == leader:
-                    dels(leaderip,'bybyleader')
+                    dels(leaderip,'reboot', opers[2])
+                    dels(leaderip,'bybyleader',opers[2])
                     discip = '10.11.11.253'
                     put(leaderip, 'excepts/'+opers[2],opers[2])
                     put(discip, 'excepts/'+opers[2],opers[2])
@@ -332,6 +333,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   readisonly = ('leader','next','ActivePartners', 'alias','nextlead', 'hostdown','pool','volume', '/dirty', 'running','/ready/', 'diskref', '/add')
   print('pruuuuuuuuuuuuuuuuuuuuuning')
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
+  toprune = allsyncs
   dhcps = [x[1] for x in allsyncs if 'request/dhcp' in x[0] ]
   requests = [ x[1] for x in allsyncs if 'request/dhcp' not in x[0] ]
   notrights = [ x for x in dhcps if x not in requests ]
@@ -352,7 +354,9 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    #print('actives:',actives,'prune',prunex, 'ready/Del' in str(toprunedic[prune][1:]))
    #if toprunedic[prune][0] > actives or ((('ready' in str(toprunedic[prune][1:])) or ('Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0] > readis):
    if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
-    dels(leaderip,'sync',prune) 
+    if 'initial' not in prune:
+        print('deleteing',prune)
+        dels(leaderip,'sync',prune) 
   insync(leaderip, leader) 
     #print(prune,toprunedic[prune])
  if myhost == leader and 'pullsync' not in pullsync:
