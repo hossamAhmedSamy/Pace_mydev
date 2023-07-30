@@ -177,8 +177,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
  else:
     etcdip = myhostip
  allsyncs = get(leaderip,pullsync+'sync','request') 
- print("get("+leaderip+",pullsync+sync','request')")
- print('pallysncs',pullsync, allsyncs)
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) or ('request/' and '/'+clusterhost) in str(x) ] 
  if myhost == leader:
