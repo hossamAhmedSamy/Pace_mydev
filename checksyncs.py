@@ -60,7 +60,7 @@ def insync(leaderip, leader):
             syncgroup = [ x for x in allsyncs if sync[1] in x[1] and 'cversion' not in x[0] ]
             initrequest = [ x for x in syncgroup if 'request/dhcp' not in x[0] ]
             if len(syncgroup) > 0 and len(initrequest) == 0 :
-                print('to delete', sync)
+                print('to delete', sync,'syncgroup',len(syncgroup),'initrequest',len(initrequest))
                 dels(leaderip,'sync',sync[1])
                 isinsync = 0
                 break
@@ -340,12 +340,12 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   toprunedic = dict()
   for prune in toprune:
-   if prune[1] not in toprunedic:
+   if prune[1] not in toprunedic and 'request/dhcp' in prune[0]:
     toprunedic[prune[1]] = [1,prune[0]]
    else:
-    toprunedic[prune[1]][0] += 1
-    toprunedic[prune[1]].append(prune[0])
-  print('toproune check',toprunedic)
+    if 'request/dhcp' in prune[0]:
+        toprunedic[prune[1]][0] += 1
+        toprunedic[prune[1]].append(prune[0])
   for prune in toprunedic:
    isinreadis = [ x for x in readisonly if x in str(toprunedic[prune][1:]) ]
    #if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
@@ -354,6 +354,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
     if 'initial' not in prune:
         print('deleteing',prune)
+        print('because',toprunedic[prune][0] > actives, len(isinreadis), toprunedic[prune][0], readis)
         dels(leaderip,'sync',prune) 
   insync(leaderip, leader) 
     #print(prune,toprunedic[prune])
