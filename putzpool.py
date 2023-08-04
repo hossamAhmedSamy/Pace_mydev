@@ -13,7 +13,7 @@ def putzpool():
  sitechange=0
  readyhosts=get(myip, 'ready','--prefix')
  knownpools=[f for f in listdir('/TopStordata/') if 'pdhcp' in f and 'pree' not in f ]
- cmdline='/sbin/zpool status -L'
+ cmdline='/sbin/zpool status '
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
  sty=str(result)[2:][:-3].replace('\\t','').split('\\n')
  cmdline='/bin/lsscsi -is'
@@ -65,8 +65,10 @@ def putzpool():
  for a in sty:
   #print('aaaaaa',a)
   b=a.split()
+  print('theb0',b,a)
   if len(b) > 0:
    b.append(b[0])
+   actualdisk=b[0]
    if any(drive in str(b[0]) for drive in drives):
     for lss in lsscsi:
      if any('/dev/'+b[0] in lss for drive in drives):
@@ -150,6 +152,7 @@ def putzpool():
    lraids.append(rdict)
     
   elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or 'dm-' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5) or 'UNAVA' in str(b):
+    print('theb',b)
     if 'dm-' in str(b) :
         missingdisks[0] += 1
         b[1] = 'FAULT'
@@ -194,7 +197,7 @@ def putzpool():
      #else:
      # cmdline='/pace/hostlost.sh '+z[6]
      # subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
-    if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop'] and 'UNAVAIL' not in b[1] and 'FAULT' not in b[1]:
+    if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop'] and 'UNAVAIL' not in b[1] and 'FAULT' not in b[1] and 'OFF' not in b[1]:
      b[1] = 'ONLINE' 
     changeop=b[1]
     if host=='_1':
@@ -227,7 +230,7 @@ def putzpool():
         silvering = 'yes' 
         silveringflag = 'yes'
         
-    ddict={'name':b[0],'actualdisk':b[-1], 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering}
+    ddict={'name':b[0],'actualdisk':actualdisk, 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering}
     silvering = 'no'
     disklist.append(ddict)
     ldisks.append(ddict)

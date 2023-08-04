@@ -531,11 +531,15 @@ def spare2(*args):
  if myhost == leader:
     solvetheasks(needtoreplace)
  myneedtoreplace = [x for x in needtoreplace if myhost in str(x) ] 
+ exception = get(etcdip,'offlinethis','--prefix')
  print('it is needtoreplace',needtoreplace)
  for raidinfo in myneedtoreplace:
   print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
   print('need to replace',raidinfo)
   poolname = raidinfo[0].split('/')[-3]
+  if poolname in str(exception):
+   print('this pool should not be automatically healed ')
+   continue
   dmcmd = 'zpool status '+poolname
   chkstatus = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
   if 'resilvering' in chkstatus:
@@ -590,6 +594,9 @@ def spare2(*args):
  availability = get(etcdip, 'balance','--prefix')
  degradedpools=[x for x in newop['pools'] if myhost in x['host'] and  'DEGRADED' in x['status']]
  for spool in newop['pools']:
+  if spool['name']  in str(exception):
+   print('this pool should not be automatically healed ')
+   continue
   for sraid in spool['raidlist']:
     if myhost not in str(sraid):
      continue
@@ -606,6 +613,9 @@ def spare2(*args):
  print(degradedpools)
  print(len(degradedraids))
  for raid in degradedraids:
+  if raid['pool']  in str(exception):
+   print('this pool should not be automatically healed ')
+   continue
   for disk in raid['disklist']:
    if 'ONLINE' not in disk['changeop']:
      dels(etcdip, 'disk',disk['actualdisk'])
@@ -620,6 +630,9 @@ def spare2(*args):
  print('degraded raids:',degradedraids)
  print('#####################')
  for raid in degradedraids:
+  if raid['pool']  in str(exception):
+   print('this pool should not be automatically healed ')
+   continue
   disksfree = solvedegradedraid(raid, disksfree)
  print('#####################')
  print('continue to the spare' )
@@ -633,6 +646,9 @@ def spare2(*args):
  raidsset = set()
  
  for spool in newop['pools']:
+   if spool['name']  in str(exception):
+    print('this pool should not be automatically healed ')
+    continue
    if spool['name'] not in str(getcurrent) or 'ree' in spool['name']:
     continue
    for sraid in spool['raidlist']:
@@ -653,6 +669,9 @@ def spare2(*args):
   return
   
  for raid in allraids:
+    if raid['pool']  in str(exception):
+     print('this pool should not be automatically healed ')
+     continue
     rankdisks=[]
     raid['raidrank']=[10000000,10000000]
     print('raiddisklist',raid['disklist'])
@@ -685,6 +704,9 @@ def spare2(*args):
  currentraid = raid.copy()
  foundranks = [] 
  for raid in allraids:
+  if raid['pool']  in str(exception):
+     print('this pool should not be automatically healed ')
+     continue
   combinedrank = abs(raid['raidrank'][0])*1000 + raid['raidrank'][1]
   if combinedrank == 0:
    continue
