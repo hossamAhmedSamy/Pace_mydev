@@ -343,7 +343,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   readisonly = ('leader','next','ActivePartners', 'alias','nextlead', 'hostdown','pool','volume', '/dirty', 'running','/ready/', 'diskref', '/add')
   print('pruuuuuuuuuuuuuuuuuuuuuning')
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
-  toprune = allsyncs
   dhcps = [x[1] for x in allsyncs if 'request/dhcp' in x[0] ]
   requests = [ x[1] for x in allsyncs if 'request/dhcp' not in x[0] ]
   notrights = [ x for x in dhcps if x not in requests ]
