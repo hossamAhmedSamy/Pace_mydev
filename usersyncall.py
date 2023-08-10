@@ -48,7 +48,7 @@ def usersyncall(tosync=''):
  else:
     syncip = myhostip
  myusers=get(syncip,'usersinfo','--prefix')
- myusers = [ x for x in myusers if 'admin' ==  x[0].split('/')[-1] ]
+ myusers = [ x for x in myusers if 'admin' !=  x[0].split('/')[-1] ]
  print(';;;;;;;;;;;;;;;;',myusers)
  threads=[]
  if '_1' in allusers:
