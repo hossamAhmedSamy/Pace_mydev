@@ -27,7 +27,7 @@ def thread_add(user,tosync):
  cmdline=['/TopStor/UnixAddUser_sync',leader, leaderip, myhost, myhostip, username,userhash,userid,usergd,userhome]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
-def thread_del(user):
+def thread_del(user,pullsync='normal'):
  global allusers, leader ,leaderip, myhost, myhostip
  global allusers
  username=user[0].replace('usersinfo/','')
@@ -35,7 +35,7 @@ def thread_del(user):
   return
  if username not in str(allusers):
   print(username,str(allusers))
-  cmdline=['/TopStor/UnixDelUser_sync',username,'system']
+  cmdline=['/TopStor/UnixDelUser',leaderip, username,'system',pullsync]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
 def usersyncall(tosync=''):
@@ -48,6 +48,7 @@ def usersyncall(tosync=''):
  else:
     syncip = myhostip
  myusers=get(syncip,'usersinfo','--prefix')
+ myusers = [ x for x in musers if 'admin' ==  x[0].split('/')[-1] ]
  print(';;;;;;;;;;;;;;;;',myusers)
  threads=[]
  if '_1' in allusers:
@@ -63,7 +64,7 @@ def usersyncall(tosync=''):
     print(user,allusers)
    else:
     if 'admin' not in str(user):
-     thread_del(user)
+     thread_del(user,tosync)
 
 def oneusersync(oper,usertosync):
  global allusers, leader ,leaderip, myhost, myhostip
