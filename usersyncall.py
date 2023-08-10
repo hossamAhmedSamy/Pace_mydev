@@ -62,7 +62,8 @@ def usersyncall(tosync=''):
    if user in allusers:
     print(user,allusers)
    else:
-    thread_del(user)
+    if 'admin' not in str(user):
+     thread_del(user)
 
 def oneusersync(oper,usertosync):
  global allusers, leader ,leaderip, myhost, myhostip
@@ -76,7 +77,8 @@ def oneusersync(oper,usertosync):
  if oper == 'Add':
   thread_add(user)
  else:
-  thread_del(user)
+  if 'admin' not in str(user):
+   thread_del(user)
  
   
 if __name__=='__main__':

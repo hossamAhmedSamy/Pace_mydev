@@ -43,6 +43,7 @@ def insync(leaderip, leader):
             #if cver[1] != mycversion and cver[0].replace('cversion/',''): 
                 #stampi = str(timestamp())
                 #put(leaderip,'sync/cversion/__checksy__/request','cversion_'+stampi)
+                print('version mismatch')
                 isinsync = 0
                 break
         #if isinsync == 1:
@@ -62,9 +63,12 @@ def insync(leaderip, leader):
             if len(syncgroup) > 0 and len(initrequest) == 0 :
                 print('to delete', sync,'syncgroup',len(syncgroup),'initrequest',len(initrequest))
                 dels(leaderip,'sync',sync[1])
+                print('some syncs not to initialize or remove')
                 isinsync = 0
                 break
             if len(syncgroup) > 0:
+                print(syncgroup)
+                print("some nodes didn't sync completely")
                 isinsync = 0 
                 break
     if isinsync:
@@ -348,17 +352,15 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   toprunedic = dict()
   for prune in toprune:
-   if prune[1] not in toprunedic and 'request/dhcp' in prune[0]:
+   if prune[1] not in toprunedic and 'request' in prune[0]:
     toprunedic[prune[1]] = [1,prune[0]]
    else:
-    if 'request/dhcp' in prune[0]:
+    if 'request' in prune[0]:
         toprunedic[prune[1]][0] += 1
         toprunedic[prune[1]].append(prune[0])
   for prune in toprunedic:
    isinreadis = [ x for x in readisonly if x in str(toprunedic[prune][1:]) ]
-   #if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
-   #print('actives:',actives,'prune',prunex, 'ready/Del' in str(toprunedic[prune][1:]))
-   #if toprunedic[prune][0] > actives or ((('ready' in str(toprunedic[prune][1:])) or ('Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0] > readis):
+   print(toprunedic[prune][0],prune,actives)
    if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
     if 'initial' not in prune:
         print('deleteing',prune)
