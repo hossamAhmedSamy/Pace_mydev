@@ -299,19 +299,11 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    #if sync in special1 and myhost != leader :
 
    if sync in special1 :
-<<<<<<< HEAD
-     try:
-      cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
-      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-     except:
-        print('for admin problems')
-=======
       try:
        cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       except:
        print('in case of admin change, the reuslt is not that ok')
->>>>>>> dcbf42da6b0e8397bd2f1ba4bb3ade4f40b59cb8
       #cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+opers[2] +' '+ opers[3]
       #result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync not in syncs:
