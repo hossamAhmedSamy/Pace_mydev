@@ -43,6 +43,7 @@ def insync(leaderip, leader):
             #if cver[1] != mycversion and cver[0].replace('cversion/',''): 
                 #stampi = str(timestamp())
                 #put(leaderip,'sync/cversion/__checksy__/request','cversion_'+stampi)
+                print('version mismatch')
                 isinsync = 0
                 break
         #if isinsync == 1:
@@ -62,9 +63,12 @@ def insync(leaderip, leader):
             if len(syncgroup) > 0 and len(initrequest) == 0 :
                 print('to delete', sync,'syncgroup',len(syncgroup),'initrequest',len(initrequest))
                 dels(leaderip,'sync',sync[1])
+                print('some syncs not to initialize or remove')
                 isinsync = 0
                 break
             if len(syncgroup) > 0:
+                print(syncgroup)
+                print("some nodes didn't sync completely")
                 isinsync = 0 
                 break
     if isinsync:
@@ -177,12 +181,17 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
  else:
     etcdip = myhostip
  allsyncs = get(leaderip,pullsync+'sync','request') 
+ if 'pullsync' in pullsync:
+    print('allsyncs',pullsync,allsyncs)
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) or ('request/' and '/'+clusterhost) in str(x) ] 
  if myhost == leader:
-    myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] and '/initial' not in x[0] ] 
+    if 'pullsync' in pullsync:
+        myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
+    else:
+        myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] and '/initial' not in x[0] ] 
  else:
-    myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
+    myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] and 'pullsync' not in pullsync ] 
  if len(myrequests) > 1:
     print('multiple requests',myrequests)
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
@@ -290,8 +299,11 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    #if sync in special1 and myhost != leader :
 
    if sync in special1 :
-      cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
-      result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      try:
+       cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
+       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      except:
+       print('in case of admin change, the reuslt is not that ok')
       #cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+opers[2] +' '+ opers[3]
       #result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync not in syncs:
@@ -331,7 +343,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   readisonly = ('leader','next','ActivePartners', 'alias','nextlead', 'hostdown','pool','volume', '/dirty', 'running','/ready/', 'diskref', '/add')
   print('pruuuuuuuuuuuuuuuuuuuuuning')
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
-  toprune = allsyncs
   dhcps = [x[1] for x in allsyncs if 'request/dhcp' in x[0] ]
   requests = [ x[1] for x in allsyncs if 'request/dhcp' not in x[0] ]
   notrights = [ x for x in dhcps if x not in requests ]
@@ -340,17 +351,15 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   toprunedic = dict()
   for prune in toprune:
-   if prune[1] not in toprunedic and 'request/dhcp' in prune[0]:
+   if prune[1] not in toprunedic and 'request' in prune[0]:
     toprunedic[prune[1]] = [1,prune[0]]
    else:
-    if 'request/dhcp' in prune[0]:
+    if 'request' in prune[0]:
         toprunedic[prune[1]][0] += 1
         toprunedic[prune[1]].append(prune[0])
   for prune in toprunedic:
    isinreadis = [ x for x in readisonly if x in str(toprunedic[prune][1:]) ]
-   #if toprunedic[prune][0] >= actives or 'request/'+leader not in str(toprunedic[prune]):
-   #print('actives:',actives,'prune',prunex, 'ready/Del' in str(toprunedic[prune][1:]))
-   #if toprunedic[prune][0] > actives or ((('ready' in str(toprunedic[prune][1:])) or ('Del' in str(toprunedic[prune][1:])) or ('hostdown' in str(toprunedic[prune][1:]))) and toprunedic[prune][0] > readis):
+   print(toprunedic[prune][0],prune,actives)
    if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
     if 'initial' not in prune:
         print('deleteing',prune)
