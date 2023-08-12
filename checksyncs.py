@@ -164,6 +164,205 @@ def syncall(leader,leaderip,myhost, myhostip):
 
 
  return
+def replisyncrequest(leader,leaderip,myhost, myhostip):
+ global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
+ print('***************************************************************************')
+ print('syncing replication data')
+ print('***************************************************************************')
+ flag=1
+ if leader == myhost:
+    etcdip = leaderip
+ else:
+    etcdip = myhostip
+ allsyncs = get(leaderip,'replisync','request') 
+ donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
+ leaderdones = [ x for x in allsyncs if '/request/'+leader in str(x) ]
+ mysyncs = [ x[1] for x in allsyncs if '/request/'+myhost in str(x) ] 
+ if myhost == leader:
+    myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
+ else:
+    myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/'+leader in x[0] ] 
+ if len(myrequests) > 1:
+    print('multiple requests',myrequests)
+    myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
+ print('myrequests', myrequests)
+ return
+ rebootflag = 0
+ if 'sync/namespace' in str(myrequests) and 'sync/ipaddr' in str(myrequests):
+    if '/namespace/initial' not in str(myrequests) and '/ipaddr/initial' not in str(myrequests):
+        rebootflag = 2
+        put(leaderip,'rebootwait/'+myhost,'pls_fromnamespace')
+ for syncinfo in myrequests:
+  evacuateflag = 0
+  flag = 1
+  if  len(syncinfo[0]) == 1:
+    continue
+  if '/initial/' in str(syncinfo):
+   if myhost != leader or 'pullsync' in pullsync:
+    print(leader,leaderip,myhost,myhostip, syncinfo)
+    doinitsync(leader,leaderip,myhost,myhostip, syncinfo,pullsync)
+   elif myhost != leader:
+    syncinit(leader,leaderip, myhost,myhostip)
+  else:
+   syncleft = syncinfo[0]
+   stamp = syncinfo[1]
+   print('syncleft',syncleft)
+   if 'pullsync' in pullsync:
+    syncleft = syncleft.replace(pullsync,'')
+   sync = syncleft.split('/')[1]
+   opers= syncleft.split('/')[2].split('_')
+   print('#########################################################################')
+   print('the sync',sync)
+   if sync in wholeetcd :
+    if sync == 'Partnr':
+      synckeys(leaderip, myhostip, 'Partner', 'Partner')
+    else:
+        synckeys(leaderip,myhostip, sync,sync)
+   if sync in etcdonly and myhost != leader:
+     if opers[0] == 'Add':
+      if 'Split' in opers[1]:
+       put(myhostip,sync,opers[2].replace(':::','_').replace('::','/'))
+      else:
+       print('oper', opers, sync)
+       put(myhostip,sync+'/'+opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
+     else:
+      print(sync,opers)
+      if 'ready' not in sync:
+        dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
+   if sync in syncanitem:
+      if sync in 'cversion':
+        cmdline='/TopStor/systempull.sh '+opers[1]
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      elif sync in 'Snapperiod' :
+       synckeys(leaderip,myhostip, sync,sync)
+       etctocron(leaderip)
+      elif sync in 'diskref':
+        cmdline='/pace/diskchange.sh '+' checksync'+' '+opers[0]+' '+opers[1]
+        print('diskref',cmdline)
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      elif sync in 'hostdown':
+        cmdline='/pace/hostdown.sh '+opers[0]
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      elif sync in 'dirty':
+        for dirt in dirtydic:
+            put(etcdip, 'dirty/'+dirt, str(dirtydic[dirt]))
+      elif 'syncfn' in opers[0]:
+        print('opers',opers)
+        if 'evacuatehost' in str(syncleft):
+            isready = get(etcdip, 'ready',opers[2])
+            evacuateflag = 1
+            if opers[2] not in str(isready):    
+                globals()[opers[1]](*opers[2:])
+                dels(etcdip, 'ActivePartners',opers[2])
+                if myhost == leader:
+                    dels(leaderip,'reboot', opers[2])
+                    dels(leaderip,'bybyleader',opers[2])
+                    discip = '10.11.11.253'
+                    put(leaderip, 'excepts/'+opers[2],opers[2])
+                    put(discip, 'excepts/'+opers[2],opers[2])
+                    dels(discip,'possible', opers[2])
+                    dels(leaderip,'possible', opers[2])
+                evacuateflag = 0 
+
+        else:        
+            globals()[opers[1]](*opers[2:])
+      elif sync == 'priv':
+        user=syncleft.split('/')[2]
+        synckeys(leaderip, myhostip, 'usersinfo/'+user, 'usersinfo/'+user)
+        newinfo = get(myhostip,'usersinfo/'+user)[0]
+        oldinfo = get(leaderip, 'usersinfo/'+user)[0]
+        if oldinfo != newinfo:
+            flag = 0
+ 
+      else:
+       print('opers',opers)
+       if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
+        if sync in [ 'namespace', 'ipaddr' ]:
+         rebootflag -=rebootflag
+         if rebootflag == 0:
+            dels(leaderip,'rebootwait/'+myhost)
+        cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
+        print('cmdline',cmdline)
+       else:
+        cmdline='/TopStor/'+opers[0]+" "+" ".join(opers[1:])
+       print('cmd',cmdline)
+       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+   #if sync in special1 and myhost != leader :
+
+   if sync in special1 :
+      try:
+       cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
+       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+      except:
+       print('in case of admin change, the reuslt is not that ok')
+      #cmdline='/TopStor/'+opers[0].split(':')[1]+' '+result+' '+opers[2] +' '+ opers[3]
+      #result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+   if sync not in syncs:
+    print('there is a sync that is not defined:',sync)
+    return
+   if flag == 1 and evacuateflag == 0:
+    put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
+   if myhost != leader and flag == 1 and evacuateflag == 0:
+    print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+    put(myhostip, syncleft+'/'+myhost, stamp)
+    put(myhostip, syncleft, stamp)
+   if myhost == leader  and flag == 1 and evacuateflag == 0:
+    print('2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+    put(myhostip, syncleft+'/'+myhost, stamp)
+   elif myhost == leader and 'pullsync' in pullsync:
+    put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
+     
+ cmdline = '/TopStor/getcversion.sh '+leaderip+' '+leader+' '+myhost+' '+'checksync'
+ subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT)
+ if myhost != leader:
+  dones = get(leaderip,'sync','/request/dhcp')
+  otherdones = [ x for x in dones if '/request/dhcp' in str(x) ] 
+  localdones = get(myhostip, 'sync', '--prefix')
+  for done in otherdones:
+   if str(done) not in str(localdones):
+    put(myhostip, done[0],done[1])
+    put(myhostip, '/'.join(done[0].split('/')[:-1]), done[1])
+  deleted = set()
+  for done in localdones:
+   if done[1] not in str(otherdones) and done[1] not in deleted :
+    dels(myhostip, 'sync', done[1])
+    deleted.add(done[1])
+ else:
+  print('hihihihi')
+  actives = len(get(myhostip,'ActivePartners','--prefix')) 
+  readis = len(get(leaderip,'ready','--prefix')) 
+  readisonly = ('leader','next','ActivePartners', 'alias','nextlead', 'hostdown','pool','volume', '/dirty', 'running','/ready/', 'diskref', '/add')
+  print('pruuuuuuuuuuuuuuuuuuuuuning')
+  toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
+  dhcps = [x[1] for x in allsyncs if 'request/dhcp' in x[0] ]
+  requests = [ x[1] for x in allsyncs if 'request/dhcp' not in x[0] ]
+  notrights = [ x for x in dhcps if x not in requests ]
+  print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
+  print(notrights)
+  print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
+  toprunedic = dict()
+  for prune in toprune:
+   if prune[1] not in toprunedic and 'request' in prune[0]:
+    toprunedic[prune[1]] = [1,prune[0]]
+   else:
+    if 'request' in prune[0]:
+        toprunedic[prune[1]][0] += 1
+        toprunedic[prune[1]].append(prune[0])
+  for prune in toprunedic:
+   isinreadis = [ x for x in readisonly if x in str(toprunedic[prune][1:]) ]
+   print(toprunedic[prune][0],prune,actives)
+   if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
+    if 'initial' not in prune:
+        print('deleteing',prune)
+        print('because',toprunedic[prune][0] > actives, len(isinreadis), toprunedic[prune][0], readis)
+        dels(leaderip,'sync',prune) 
+  insync(leaderip, leader) 
+    #print(prune,toprunedic[prune])
+ #if myhost == leader and 'pullsync' not in pullsync:
+    #syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullsync/')
+    
+ return     
+
 
 
 def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
@@ -367,10 +566,13 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         dels(leaderip,'sync',prune) 
   insync(leaderip, leader) 
     #print(prune,toprunedic[prune])
- if myhost == leader and 'pullsync' not in pullsync:
-    syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullsync/')
+ #if myhost == leader and 'pullsync' not in pullsync:
+    #syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullsync/')
+ replisyncrequest(leader, leaderip, myhost, myhostip) 
+    
  return     
 
+     
 def restetcd(leader,leaderip, myhost,myhostip):
     if myhost == leader:
         return
