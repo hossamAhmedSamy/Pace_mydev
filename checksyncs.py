@@ -174,6 +174,9 @@ def replisyncrequest(leader,leaderip,myhost, myhostip):
     etcdip = leaderip
  else:
     etcdip = myhostip
+ replirevs = get(leaderip,'replirev')
+ print(replirevs)
+ return
  allsyncs = get(leaderip,'replisync','request') 
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
  leaderdones = [ x for x in allsyncs if '/request/'+leader in str(x) ]
