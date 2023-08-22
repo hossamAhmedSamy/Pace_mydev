@@ -1,21 +1,25 @@
 #!/usr/bin/python3
 import subprocess,sys
 from etcdgetpy import etcdget as get
+from etcdgetnoportpy import etcdget as getnoport
 from etcdput import etcdput as put
+from etcddel import etcddel as dels 
 from ast import literal_eval as mtuple
 from socket import gethostname as hostname
 
 allusers= []
 leader, leaderip, myhost, myhostip = '','','',''
-def grpfninit(ldr,ldrip,hst,hstip):
- global allusers, leader ,leaderip, myhost, myhostip
- leader, leaderip, myhost, myhostip = ldr, ldrip, hst, hstip 
+
+
+def grpfninit(ldr,ldrip,hst,hstip,pprt='-1'):
+ global allusers, leader ,leaderip, myhost, myhostip,pport
+ leader, leaderip, myhost, myhostip, pport = ldr, ldrip, hst, hstip, pprt
  return
 #def thread_add(*user):
 
 def thread_add(user,tosync):
  global allusers, leader ,leaderip, myhost, myhostip
- username=user[0].replace(tosync+'usersigroup/','')
+ username=user[0].replace('usersigroup/','')
  if 'Everyone' == username:
   return
  groupusers=user[1].split('/')[2]
@@ -41,10 +45,13 @@ def thread_del(user):
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
 def groupsyncall(tosync=''):
- global allusers, leader ,leaderip, myhost, myhostip
+ global allusers, leader ,leaderip, myhost, myhostip, pport
  global myusers
- allusers=get(leaderip, tosync+'usersigroup','--prefix')
  if 'pullsync' in tosync:
+    allusers=getnoport(leaderip,pport,'usersigroup','--prefix')
+ else:
+    allusers=get(leaderip,'usersigroup','--prefix')
+ if myhost in leader:
     syncip = leaderip
  else:
     syncip = myhostip
@@ -56,13 +63,14 @@ def groupsyncall(tosync=''):
  if '_1' in myusers:
   myusers=[]
  for user in myusers:
-  if user in allusers:
-   print(user,allusers)
-  else:
+  if user not in allusers:
    thread_del(user)
+   dels(syncip, user[0])
 
  for user in allusers:
+  print(user)
   thread_add(user,tosync)
+  put(syncip, user[0],user[1])
    
 def onegroupsync(oper,usertosync):
  global allusers, leader ,leaderip, myhost, myhostip

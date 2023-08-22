@@ -1,85 +1,95 @@
 #!/usr/bin/python3
 import subprocess,sys
 from etcdgetpy import etcdget as get
+from etcdgetnoportpy import etcdget as getnoport
 from etcdput import etcdput as put
+from etcddel import etcddel as dels 
 from ast import literal_eval as mtuple
 
 leader, leaderip, myhost, myhostip = '','','',''
-def usrfninit(ldr,ldrip,hst,hstip):
- global allusers, leader ,leaderip, myhost, myhostip
- leader, leaderip, myhost, myhostip = ldr, ldrip, hst, hstip
+def usrfninit(ldr,ldrip,hst,hstip,pprt='-1'):
+ global allusers, leader ,leaderip, myhost, myhostip, pport
+ leader, leaderip, myhost, myhostip, pport = ldr, ldrip, hst, hstip, pprt
  return
 allusers = []
 
-def thread_add(user,tosync):
+def thread_add(user,syncip, tosync=''):
  global myusers
- global allusers, leader ,leaderip, myhost, myhostip
- username=user[0].replace(tosync+'usersinfo/','')
+ global allusers, leader ,leaderip, myhost, myhostip,pport
+ username=user[0].replace('usersinfo/','')
  if 'NoUser' == username:
   return
  with open('/root/usersync2','w') as f:
   f.write(str(user)+' + '+str(username)+'\n')
- userhash=get(leaderip,tosync+'usershash/'+username)[0]
+ if 'pullsync' in tosync:
+    userhash=getnoport(leaderip,pport,'usershash/'+username)[0]
+ else:
+    userhash=get(leaderip,'usershash/'+username)[0]
  userinfo=user[1].split(':')
  userid=userinfo[0]
  usergd=userinfo[1]
  userhome=userinfo[2]
  cmdline=['/TopStor/UnixAddUser_sync',leader, leaderip, myhost, myhostip, username,userhash,userid,usergd,userhome]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+ put(syncip, user[0],user[1])
+ put(syncip, 'usershash/'+username,userhash)
+ print(' '.join(cmdline)) 
 
-def thread_del(user,pullsync='normal'):
+def thread_del(user,syncip, pullsync='normal'):
  global allusers, leader ,leaderip, myhost, myhostip
  global allusers
  username=user[0].replace('usersinfo/','')
- if 'admin' == username or 'NoUser' == username:
+ if  'NoUser' == username:
   return
- if username not in str(allusers):
-  print(username,str(allusers))
+ if username not in str(allusers) and 'admin' != username:
   cmdline=['/TopStor/UnixDelUser',leaderip, username,'system',pullsync]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
+  dels(syncip,'user',username)
 
 def usersyncall(tosync=''):
- global allusers, leader ,leaderip, myhost, myhostip
+ global allusers, leader ,leaderip, myhost, myhostip,pport
  global allusers
  global myusers
- allusers=get(leaderip,tosync+'usersinfo','--prefix')
  if 'pullsync' in tosync:
+    allusers=getnoport(leaderip,pport,'usersinfo','--prefix')
+ else:
+    allusers=get(leaderip,'usersinfo','--prefix')
+ if myhost in leader:
     syncip = leaderip
  else:
     syncip = myhostip
  myusers=get(syncip,'usersinfo','--prefix')
- myusers = [ x for x in myusers if 'admin' !=  x[0].split('/')[-1] ]
- print(';;;;;;;;;;;;;;;;',myusers)
  threads=[]
  if '_1' in allusers:
   allusers=[]
  if '_1' in myusers:
   myusers=[]
  for user in allusers:
-  thread_add(user,tosync)
+  thread_add(user,syncip, tosync)
  leader=get(leaderip,'leader','--prefix')
  if myhost not in str(leader) or 'pullsync' in tosync:
   for user in myusers:
-   if user in allusers:
-    print(user,allusers)
-   else:
-    if 'admin' not in str(user):
-     thread_del(user,tosync)
+   if user not in allusers:
+     thread_del(user, syncip, tosync)
 
 def oneusersync(oper,usertosync):
- global allusers, leader ,leaderip, myhost, myhostip
+ global allusers, leader ,leaderip, myhost, myhostip, pport
  global allusers
  global myusers
  print('args',oper,usertosync)
  myusers=get(myhostip,'usersinfo','--prefix')
  user=get(leaderip,'usersinfo', usertosync)[0]
+ if myhost in leader:
+    syncip = leaderip
+ else:
+    syncip = myhostip
+ 
  if user == '_1':
   return
  if oper == 'Add':
-  thread_add(user)
+  thread_add(user,syncip)
  else:
-  if 'admin' not in str(user):
-   thread_del(user)
+   thread_del(user,syncip)
  
   
 if __name__=='__main__':
@@ -92,7 +102,6 @@ if __name__=='__main__':
  cmdline='docker exec etcdclient /TopStor/etcdgetlocal.py clusternodeip'
  myhostip=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').replace('\n','').replace(' ','')
  if len(sys.argv[1:]) < 2:
-    print(' syncing all users')
     usersyncall(*sys.argv[1:])
  else:
     oneusersync(*sys.argv[1:])
