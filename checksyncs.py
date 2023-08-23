@@ -175,6 +175,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
  print('***************************************************************************')
  flag=1
  pport = replirev[1]
+ myalias = replirev[0].split('/')[-2]
  allsyncs = getnoport(leaderip,pport,'sync','request') 
  newallsyncs = []
  for sync in allsyncs:
