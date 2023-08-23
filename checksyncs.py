@@ -99,7 +99,7 @@ def syncinit(leader,leaderip, myhost,myhostip):
   put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+'_initial_'+str(stamp)) 
  return
 
-def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync='',pport=''):
+def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync='',pport='',myalias=''):
  global syncs, syncanitem, forReceivers, etcdonly, allsyncs, noinit
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
@@ -144,7 +144,7 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync='',pport=''):
     if 'pullsync' not in pullsync:
         put(leaderip,syncleft+'/'+myhost, stamp)
     else:
-        putnoport(leaderip,pport,syncleft+'/'+myhost, stamp)
+        putnoport(leaderip,pport,syncleft+'/'+myalias, stamp)
         
  if 'pullsync' not in pullsync:
     synckeys(leaderip,myhostip, syncleft, syncleft)
@@ -176,6 +176,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
  flag=1
  pport = replirev[1]
  myalias = replirev[0].split('/')[-2]
+ print(myalias)
  allsyncs = getnoport(leaderip,pport,'sync','request') 
  newallsyncs = []
  for sync in allsyncs:
@@ -184,7 +185,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
              newallsyncs.append(sync)
  print(newallsyncs)
  donerequests = [ x for x in newallsyncs if '/request/dhcp' in str(x) ] 
- mysyncs = [ x[1] for x in newallsyncs if '/request/'+myhost in str(x) ] 
+ mysyncs = [ x[1] for x in newallsyncs if '/request/'+myalias in str(x) ] 
  print(donerequests)
  print(mysyncs)
  if myhost == leader:
@@ -210,7 +211,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
     continue
   if '/initial/' in str(syncinfo):
    print(leader,leaderip,myhost,myhostip, syncinfo)
-   doinitsync(leader,leaderip,myhost,myhostip, syncinfo,'pullsync',pport)
+   doinitsync(leader,leaderip,myhost,myhostip, syncinfo,'pullsync',pport,myalias)
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]
@@ -319,6 +320,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
     put(myhostip, syncleft+'/'+myhost, stamp)
    elif myhost == leader and 'pullsync' in pullsync:
     put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
+ print('hihihihihih')
  if myhost != leader:
   dones = get(leaderip,'sync','/request/dhcp')
   otherdones = [ x for x in dones if '/request/dhcp' in str(x) ] 
