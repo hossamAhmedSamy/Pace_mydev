@@ -7,8 +7,8 @@ from etcdputnoport import etcdput as putnoport
 from etcdput import etcdput as put 
 from Evacuatelocal import setall
 from etcddel import etcddel as dels
-from usersyncall import usersyncall, usrfninit
-from groupsyncall import groupsyncall, grpfninit
+from usersyncall import usersyncall, usrfninit, oneusersync
+from groupsyncall import groupsyncall, grpfninit, onegroupsync
 from socket import gethostname as hostname
 from etcdsync import synckeys
 from time import time as timestamp
@@ -173,9 +173,10 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
  print('***************************************************************************')
  print('syncing replication data')
  print('***************************************************************************')
- return
  flag=1
  pport = replirev[1]
+ grpfninit(leader,leaderip, myhost,myhostip,pport)
+ usrfninit(leader,leaderip, myhost,myhostip,pport)
  myalias = replirev[0].split('/')[-2]
  print(myalias)
  allsyncs = getnoport(leaderip,pport,'sync','request') 
@@ -216,9 +217,6 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]
-   print('syncleft',syncleft)
-   if 'pullsync' in pullsync:
-    syncleft = syncleft.replace(pullsync,'')
    sync = syncleft.split('/')[1]
    opers= syncleft.split('/')[2].split('_')
    print('#########################################################################')
@@ -294,11 +292,16 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
         print('cmdline',cmdline)
        else:
-        cmdline='/TopStor/'+opers[0]+" "+" ".join(opers[1:])
-       print('cmd',cmdline)
-       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-   #if sync in special1 and myhost != leader :
-
+        if 'Add' in str(' '.join(opers)):
+            if 'user' in sync:
+               oneusersync('Add',opers[2],'pullsync') 
+            else:
+               onegroupsync('Add',opers[2],'pullsync') 
+        else:
+            if 'user' in sync:
+               oneusersync('Del',opers[2],'pullsync') 
+            else:
+               onegroupsync('Del',opers[2],'pullsync') 
    if sync in special1 :
       try:
        cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
@@ -311,74 +314,18 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
     print('there is a sync that is not defined:',sync)
     return
    if flag == 1 and evacuateflag == 0:
-    put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
-   if myhost != leader and flag == 1 and evacuateflag == 0:
-    print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
-    put(myhostip, syncleft+'/'+myhost, stamp)
-    put(myhostip, syncleft, stamp)
-   if myhost == leader  and flag == 1 and evacuateflag == 0:
-    print('2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
-    put(myhostip, syncleft+'/'+myhost, stamp)
-   elif myhost == leader and 'pullsync' in pullsync:
-    put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
- print('hihihihihih')
- if myhost != leader:
-  dones = get(leaderip,'sync','/request/dhcp')
-  otherdones = [ x for x in dones if '/request/dhcp' in str(x) ] 
-  localdones = get(myhostip, 'sync', '--prefix')
-  for done in otherdones:
-   if str(done) not in str(localdones):
-    put(myhostip, done[0],done[1])
-    put(myhostip, '/'.join(done[0].split('/')[:-1]), done[1])
-  deleted = set()
-  for done in localdones:
-   if done[1] not in str(otherdones) and done[1] not in deleted :
-    dels(myhostip, 'sync', done[1])
-    deleted.add(done[1])
- else:
-  print('hihihihi')
-  actives = len(get(myhostip,'ActivePartners','--prefix')) 
-  readis = len(get(leaderip,'ready','--prefix')) 
-  readisonly = ('leader','next','ActivePartners', 'alias','nextlead', 'hostdown','pool','volume', '/dirty', 'running','/ready/', 'diskref', '/add')
-  print('pruuuuuuuuuuuuuuuuuuuuuning')
-  toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
-  dhcps = [x[1] for x in allsyncs if 'request/dhcp' in x[0] ]
-  requests = [ x[1] for x in allsyncs if 'request/dhcp' not in x[0] ]
-  notrights = [ x for x in dhcps if x not in requests ]
-  print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
-  print(notrights)
-  print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
-  toprunedic = dict()
-  for prune in toprune:
-   if prune[1] not in toprunedic and 'request' in prune[0]:
-    toprunedic[prune[1]] = [1,prune[0]]
-   else:
-    if 'request' in prune[0]:
-        toprunedic[prune[1]][0] += 1
-        toprunedic[prune[1]].append(prune[0])
-  for prune in toprunedic:
-   isinreadis = [ x for x in readisonly if x in str(toprunedic[prune][1:]) ]
-   print(toprunedic[prune][0],prune,actives)
-   if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
-    if 'initial' not in prune:
-        print('deleteing',prune)
-        print('because',toprunedic[prune][0] > actives, len(isinreadis), toprunedic[prune][0], readis)
-        dels(leaderip,'sync',prune) 
-  insync(leaderip, leader) 
-    #print(prune,toprunedic[prune])
- #if myhost == leader and 'pullsync' not in pullsync:
-    #syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullsync/')
-    
+    print(';;;;;;;;;;;;;;;;;;;;updating the remote leader')
+    putnoport(leaderip,pport,syncleft+'/'+myalias, stamp)
  return     
 
 
 
 def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
  global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
- if 'pullsync' in pullsync:
-    print('***************************************************************************')
-    print('syncing replication data')
-    print('***************************************************************************')
+ #if 'pullsync' in pullsync:
+ #   print('***************************************************************************')
+ #   print('syncing replication data')
+ #   print('***************************************************************************')
  flag=1
  clusterhost = myhost
  if leader == myhost:
@@ -544,10 +491,15 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
  else:
   print('hihihihi')
   actives = len(get(leaderip,'ActivePartners','--prefix')) 
-  receivers = len(get(leaderip,'Partner','Receiver')) 
+  receivers = get(leaderip,'Partner','Receiver') 
+  if '_1' == receivers[0]:
+    receivers = 0
+  else:
+    receivers = len(receivers)
   readis = len(get(leaderip,'ready','--prefix')) 
   readisonly = ('leader','next','ActivePartners', 'alias','nextlead', 'hostdown','pool','volume', '/dirty', 'running','/ready/', 'diskref', '/add')
   print('pruuuuuuuuuuuuuuuuuuuuuning')
+  print('receiver',get(leaderip,'Partner','Receiver'))
   toprune = [ x for x in allsyncs if 'initial' not in x[0] ]
   dhcps = [x[1] for x in allsyncs if 'request/dhcp' in x[0] ]
   requests = [ x[1] for x in allsyncs if 'request/dhcp' not in x[0] ]
@@ -569,20 +521,21 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    if prune.split('_')[0] in forReceivers:
     totalactives = actives + receivers
     totalreadis = readis + receivers
+    print('actives',readis,receivers)
    else:
     totalactives = actives
     totalreadis = readis
+   print('totalactives',totalactives, totalreadis)
    if toprunedic[prune][0] > totalactives or ( len(isinreadis) > 0 and toprunedic[prune][0] > totalreadis):
     if 'initial' not in prune:
         print('deleteing',prune)
-        print('totalactives',totalactives)
         print('because',toprunedic[prune][0] > totalactives, len(isinreadis), toprunedic[prune][0], totalreadis)
         dels(leaderip,'sync',prune) 
-  insync(leaderip, leader) 
  replirevs = get(leaderip,'replirev','--prefix')
  print(replirevs)
  for replirev in replirevs:
      replisyncrequest(replirev,leader, leaderip, myhost, myhostip) 
+ insync(leaderip, leader) 
     
  return     
 

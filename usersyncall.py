@@ -72,13 +72,13 @@ def usersyncall(tosync=''):
    if user not in allusers:
      thread_del(user, syncip, tosync)
 
-def oneusersync(oper,usertosync):
+def oneusersync(oper,usertosync,tosync=''):
  global allusers, leader ,leaderip, myhost, myhostip, pport
- global allusers
- global myusers
  print('args',oper,usertosync)
- myusers=get(myhostip,'usersinfo','--prefix')
- user=get(leaderip,'usersinfo', usertosync)[0]
+ if 'pullsync' in tosync:
+    user=getnoport(leaderip,pport,'usersinfo', usertosync)[0]
+ else:
+    user=get(leaderip,'usersinfo', usertosync)[0]
  if myhost in leader:
     syncip = leaderip
  else:
@@ -87,9 +87,9 @@ def oneusersync(oper,usertosync):
  if user == '_1':
   return
  if oper == 'Add':
-  thread_add(user,syncip)
+  thread_add(user,syncip,tosync)
  else:
-   thread_del(user,syncip)
+   thread_del(user,syncip,tosync)
  
   
 if __name__=='__main__':

@@ -17,7 +17,7 @@ def grpfninit(ldr,ldrip,hst,hstip,pprt='-1'):
  return
 #def thread_add(*user):
 
-def thread_add(user,tosync):
+def thread_add(user):
  global allusers, leader ,leaderip, myhost, myhostip
  username=user[0].replace('usersigroup/','')
  if 'Everyone' == username:
@@ -69,13 +69,16 @@ def groupsyncall(tosync=''):
 
  for user in allusers:
   print(user)
-  thread_add(user,tosync)
+  thread_add(user)
   put(syncip, user[0],user[1])
    
-def onegroupsync(oper,usertosync):
- global allusers, leader ,leaderip, myhost, myhostip
+def onegroupsync(oper,usertosync,tosync=''):
+ global allusers, leader ,leaderip, myhost, myhostip, pport
  global myusers
- user=get(leaderip,'usersigroup', usertosync)[0]
+ if 'pullsync' in tosync:
+    user=getnoport(leaderip, pport, 'usersigroup', usertosync)[0]
+ else:
+    user=get(leaderip,'usersigroup', usertosync)[0]
  print('user',user)
  if oper == 'Add':
   thread_add(user)
