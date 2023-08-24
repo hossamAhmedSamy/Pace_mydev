@@ -173,6 +173,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
  print('***************************************************************************')
  print('syncing replication data')
  print('***************************************************************************')
+ return
  flag=1
  pport = replirev[1]
  myalias = replirev[0].split('/')[-2]
