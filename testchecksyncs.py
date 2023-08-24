@@ -524,8 +524,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    if myhost == leader  and flag == 1 and evacuateflag == 0:
     print('2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
     put(myhostip, syncleft+'/'+myhost, stamp)
-   elif myhost == leader and 'pullsync' in pullsync:
-    put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
      
  cmdline = '/TopStor/getcversion.sh '+leaderip+' '+leader+' '+myhost+' '+'checksync'
  subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT)
@@ -544,7 +542,8 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
     deleted.add(done[1])
  else:
   print('hihihihi')
-  actives = len(get(myhostip,'ActivePartners','--prefix')) 
+  actives = len(get(leaderip,'ActivePartners','--prefix')) 
+  receivers = len(get(leaderip,'Partner','Receiver')) 
   readis = len(get(leaderip,'ready','--prefix')) 
   readisonly = ('leader','next','ActivePartners', 'alias','nextlead', 'hostdown','pool','volume', '/dirty', 'running','/ready/', 'diskref', '/add')
   print('pruuuuuuuuuuuuuuuuuuuuuning')
@@ -566,15 +565,19 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   for prune in toprunedic:
    isinreadis = [ x for x in readisonly if x in str(toprunedic[prune][1:]) ]
    print(toprunedic[prune][0],prune,actives)
-   if toprunedic[prune][0] > actives or ( len(isinreadis) > 0 and toprunedic[prune][0] > readis):
+   if prune.split('_')[0] in forReceivers:
+    totalactives = actives + receivers
+    totalreadis = readis + receivers
+   else:
+    totalactives = actives
+    totalreadis = readis
+   if toprunedic[prune][0] > totalactives or ( len(isinreadis) > 0 and toprunedic[prune][0] > totalreadis):
     if 'initial' not in prune:
         print('deleteing',prune)
-        print('because',toprunedic[prune][0] > actives, len(isinreadis), toprunedic[prune][0], readis)
+        print('totalactives',totalactives)
+        print('because',toprunedic[prune][0] > totalactives, len(isinreadis), toprunedic[prune][0], totalreadis)
         dels(leaderip,'sync',prune) 
   insync(leaderip, leader) 
-    #print(prune,toprunedic[prune])
- #if myhost == leader and 'pullsync' not in pullsync:
-    #syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullsync/')
  replirevs = get(leaderip,'replirev','--prefix')
  print(replirevs)
  for replirev in replirevs:
