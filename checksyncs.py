@@ -295,11 +295,15 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
                oneusersync('Add',opers[2],'pullsync') 
             else:
                onegroupsync('Add',opers[2],'pullsync') 
-        else:
+        elif 'Del' in opers[0]:
             if 'user' in sync:
                oneusersync('Del',opers[2],'pullsync') 
             else:
                onegroupsync('Del',opers[2],'pullsync') 
+        else:    #'UnixChange' in opers[0]:
+            cmdline = '/TopStor/'+opers[0]+' '+leaderip+' '+" ".join(opers[2:]) 
+            print('cmdline',cmdline)
+            result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
    if sync in special1 :
       try:
        cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]

@@ -42,6 +42,7 @@ def thread_del(username):
  global allusers, leader ,leaderip, myhost, myhostip
  if 'Everyone' == username:
   return
+ print(username)
  if username not in str(allusers):
   print(username,str(allusers))
   cmdline=['/TopStor/UnixDelGroup',leaderip, username,'system']
@@ -67,6 +68,7 @@ def groupsyncall(tosync=''):
   myusers=[]
  for user in myusers:
   if user not in allusers:
+   user = user[0].split('/')[1] 
    thread_del(user)
    dels(syncip, user[0])
 

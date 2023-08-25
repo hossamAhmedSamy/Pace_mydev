@@ -35,10 +35,9 @@ def thread_add(user,syncip, tosync=''):
  put(syncip, 'usershash/'+username,userhash)
  print(' '.join(cmdline)) 
 
-def thread_del(user,syncip, pullsync='normal'):
+def thread_del(username,syncip, pullsync='normal'):
  global allusers, leader ,leaderip, myhost, myhostip
  global allusers
- username=user[0].replace('usersinfo/','')
  if  'NoUser' == username:
   return
  if username not in str(allusers) and 'admin' != username:
@@ -70,25 +69,28 @@ def usersyncall(tosync=''):
  if myhost not in str(leader) or 'pullsync' in tosync:
   for user in myusers:
    if user not in allusers:
+     user=user[0].replace('usersinfo/','')
      thread_del(user, syncip, tosync)
 
 def oneusersync(oper,usertosync,tosync=''):
  global allusers, leader ,leaderip, myhost, myhostip, pport
  print('args',oper,usertosync)
- if 'pullsync' in tosync:
-    user=getnoport(leaderip,pport,'usersinfo', usertosync)[0]
- else:
-    user=get(leaderip,'usersinfo', usertosync)[0]
  if myhost in leader:
     syncip = leaderip
  else:
     syncip = myhostip
  
- if user == '_1':
-  return
  if oper == 'Add':
-  thread_add(user,syncip,tosync)
+    if 'pullsync' in tosync:
+        user=getnoport(leaderip,pport,'usersinfo', usertosync)[0]
+    else:
+        user=get(leaderip,'usersinfo', usertosync)[0]
+    thread_add(user,syncip,tosync)
  else:
+   if 'pullsync' in tosync:
+    user = usertosync
+   else:
+    user=user[0].replace('usersinfo/','')
    thread_del(user,syncip,tosync)
  
   
