@@ -27,9 +27,12 @@ def thread_add(user):
   groupusers='users'
  else:
   groupusers='users'+groupusers
- userigroup=user[1].split(':')
- userid=userigroup[0]
- usergd=userigroup[1]
+ try:
+  userigroup=user[1].split(':')
+  userid=userigroup[0]
+  usergd=userigroup[1]
+ except:
+    return
  cmdline=['/TopStor/UnixAddGroup_sync',leader, leaderip, myhost, myhostip, username,userid,usergd,groupusers]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
@@ -41,7 +44,7 @@ def thread_del(user):
   return
  if username not in str(allusers):
   print(username,str(allusers))
-  cmdline=['/TopStor/UnixDelGroup_sync',username,'system']
+  cmdline=['/TopStor/UnixDelGroup',leaderip, username,'system']
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
 def groupsyncall(tosync=''):
@@ -79,7 +82,8 @@ def onegroupsync(oper,usertosync,tosync=''):
     user=getnoport(leaderip, pport, 'usersigroup', usertosync)[0]
  else:
     user=get(leaderip,'usersigroup', usertosync)[0]
- print('user',user)
+ print(oper,'group',user)
+ exit()
  if oper == 'Add':
   thread_add(user)
  else:

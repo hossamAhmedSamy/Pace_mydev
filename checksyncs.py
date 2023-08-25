@@ -185,11 +185,8 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
      for forr in forReceivers:
          if '/'+forr+'/' in sync[0]:
              newallsyncs.append(sync)
- print(newallsyncs)
  donerequests = [ x for x in newallsyncs if '/request/dhcp' in str(x) ] 
- mysyncs = [ x[1] for x in newallsyncs if '/request/'+myalias in str(x) ] 
- print(donerequests)
- print(mysyncs)
+ mysyncs = [ x[1] for x in newallsyncs if '/request/dhcp'+myalias in str(x) or '/request/'+myalias in str(x)] 
  if myhost == leader:
      etcdip = leaderip
      myrequests = [ x for x in newallsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] ] 
@@ -197,7 +194,6 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
     etcdip = myhostip
     myrequests = [ x for x in newallsyncs if x[1] not in mysyncs  and '/request/'+leader in x[0] ] 
  if len(myrequests) > 1:
-     print('multiple requests',myrequests)
      myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  
  print('myrequests', myrequests)
@@ -291,7 +287,9 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
             dels(leaderip,'rebootwait/'+myhost)
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
         print('cmdline',cmdline)
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
        else:
+        print(opers,sync)
         if 'Add' in str(' '.join(opers)):
             if 'user' in sync:
                oneusersync('Add',opers[2],'pullsync') 
@@ -315,7 +313,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
     return
    if flag == 1 and evacuateflag == 0:
     print(';;;;;;;;;;;;;;;;;;;;updating the remote leader')
-    putnoport(leaderip,pport,syncleft+'/'+myalias, stamp)
+    putnoport(leaderip,pport,syncleft+'/dhcp'+myalias, stamp)
  return     
 
 
@@ -517,19 +515,14 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         toprunedic[prune[1]].append(prune[0])
   for prune in toprunedic:
    isinreadis = [ x for x in readisonly if x in str(toprunedic[prune][1:]) ]
-   print(toprunedic[prune][0],prune,actives)
    if prune.split('_')[0] in forReceivers:
     totalactives = actives + receivers
     totalreadis = readis + receivers
-    print('actives',readis,receivers)
    else:
     totalactives = actives
     totalreadis = readis
-   print('totalactives',totalactives, totalreadis)
    if toprunedic[prune][0] > totalactives or ( len(isinreadis) > 0 and toprunedic[prune][0] > totalreadis):
     if 'initial' not in prune:
-        print('deleteing',prune)
-        print('because',toprunedic[prune][0] > totalactives, len(isinreadis), toprunedic[prune][0], totalreadis)
         dels(leaderip,'sync',prune) 
  replirevs = get(leaderip,'replirev','--prefix')
  print(replirevs)
