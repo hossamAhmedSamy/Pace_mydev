@@ -22,6 +22,7 @@ then
 		echo S$configured  | egrep 'yes|reset'
 		if [ $? -ne 0 ];
 		then
+			rm -rf /TopStordata/*
 			configured='no'
 		fi
  		echo $configured > /root/nodeconfigured
