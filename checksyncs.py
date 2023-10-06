@@ -13,9 +13,10 @@ from socket import gethostname as hostname
 from etcdsync import synckeys
 from time import time as timestamp
 from etctocron import etctocron 
+from collectconfig import collectConfig
 
 dirtydic = { 'pool': 0, 'volume': 0 } 
-syncanitem = [ 'cversion','priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
+syncanitem = [ 'getconfig','cversion','priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group', 'GrpChange', 'UsrChange' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'localrun','known','nmspce','gateway','deens','enteepe', 'teezee','ceecee', 'pool','pools','cversion', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ports', 'offlines']
@@ -24,7 +25,7 @@ restartetcd = wholeetcd + etcdonly
 replisyncs = ['user','group']
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 
-noinit = [ 'cversion', 'replipart' , 'evacuatehost','hostdown','namespace' , 'ipaddr']
+noinit = [ 'getconfig','cversion', 'replipart' , 'evacuatehost','hostdown','namespace' , 'ipaddr']
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with bash script: sync/Operation/commandline_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with python script: sync/Operation/syncfn_commandline_oper1_oper2_../request Operation_stamp###########
@@ -234,6 +235,8 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
       if 'ready' not in sync:
         dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
+      if 'getconfig' in sync:
+        collectConfig(leaderip, myhost)
       if sync in 'cversion':
         cmdline='/TopStor/systempull.sh '+opers[1]
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
