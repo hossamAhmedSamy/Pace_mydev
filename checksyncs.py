@@ -262,6 +262,8 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
                 globals()[opers[1]](*opers[2:])
                 dels(etcdip, 'ActivePartners',opers[2])
                 if myhost == leader:
+                    cmdline = '/TopStor/promserver.sh '+leaderip
+                    subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
                     dels(leaderip,'reboot', opers[2])
                     dels(leaderip,'bybyleader',opers[2])
                     discip = '10.11.11.253'
@@ -423,6 +425,8 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
                 globals()[opers[1]](*opers[2:])
                 dels(etcdip, 'ActivePartners',opers[2])
                 if myhost == leader:
+                    cmdline = '/TopStor/promserver.sh '+leaderip
+                    subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
                     dels(leaderip,'reboot', opers[2])
                     dels(leaderip,'bybyleader',opers[2])
                     discip = '10.11.11.253'
