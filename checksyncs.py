@@ -16,11 +16,11 @@ from etctocron import etctocron
 from collectconfig import collectConfig
 
 dirtydic = { 'pool': 0, 'volume': 0 } 
-syncanitem = [ 'getconfig','cversion','priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
+syncanitem = [ 'getconfig','cversion','priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','nextlead','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group', 'GrpChange', 'UsrChange' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'offlinethis','localrun','known','nmspce','gateway','deens','enteepe', 'teezee','ceecee', 'pool','pools','cversion', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ports', 'offlines']
-etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ActPool', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolnxt','pools', 'logged','ActivePartners','configured','ready', 'pool','nextlead']
+etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ActPool', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolnxt','pools', 'logged','ActivePartners','configured','ready', 'pool']
 restartetcd = wholeetcd + etcdonly
 replisyncs = ['user','group']
 syncs = etcdonly + syncanitem + special1 + wholeetcd
@@ -235,6 +235,11 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
       if 'ready' not in sync:
         dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
+      if 'nextlead' in sync:
+        synckeys(leaderip,myhostip, sync,sync)
+        if myhostip in str(get(myhostip,'nextlead','--prefix')):
+            cmdline='//TopStor/promrepli.sh '+leaderip
+            result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       if 'getconfig' in sync:
         collectConfig(leaderip, myhost)
       if sync in 'cversion':
@@ -400,6 +405,11 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
       if 'ready' not in sync:
         dels(myhostip,opers[1].replace(':::','_').replace('::','/'),opers[2].replace(':::','_').replace('::','/'))
    if sync in syncanitem:
+      if 'nextlead' in sync:
+        synckeys(leaderip,myhostip, sync,sync)
+        if myhostip in str(get(myhostip,'nextlead','--prefix')):
+            cmdline='//TopStor/promrepli.sh '+leaderip
+            result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       if sync in 'cversion':
         cmdline='/TopStor/systempull.sh '+opers[1]
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')

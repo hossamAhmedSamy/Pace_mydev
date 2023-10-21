@@ -25,6 +25,7 @@ then
 fi
 echo /TopStor/docker_primary.sh $leader $myhostip $leaderip $clusterip
 /TopStor/docker_primary.sh $leader $myhostip $leaderip $clusterip
+/TopStor/promserver.sh $leaderip 
 echo docker exec etcdclient /TopStor/logmsg.py Partst05 info system $myhost 
 docker exec etcdclient /TopStor/logmsg.py Partst05 info system $myhost 
 echo $perfmon | grep 1
