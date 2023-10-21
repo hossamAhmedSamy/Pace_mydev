@@ -237,8 +237,8 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
    if sync in syncanitem:
       if 'nextlead' in sync:
         synckeys(leaderip,myhostip, sync,sync)
-        if myhostip in str(get(myhostip,'nextlead','--prefix')):
-            cmdline='//TopStor/promrepli.sh '+leaderip
+        if myhost in str(get(myhostip,'nextlead','--prefix')):
+            cmdline='/TopStor/promrepli.sh '+leaderip+' '+myhostip
             result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       if 'getconfig' in sync:
         collectConfig(leaderip, myhost)
@@ -407,8 +407,8 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    if sync in syncanitem:
       if 'nextlead' in sync:
         synckeys(leaderip,myhostip, sync,sync)
-        if myhostip in str(get(myhostip,'nextlead','--prefix')):
-            cmdline='//TopStor/promrepli.sh '+leaderip
+        if myhost in str(get(myhostip,'nextlead','--prefix')):
+            cmdline='/TopStor/promrepli.sh '+leaderip+' '+myhostip
             result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       if sync in 'cversion':
         cmdline='/TopStor/systempull.sh '+opers[1]
