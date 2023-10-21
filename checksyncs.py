@@ -239,7 +239,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
         synckeys(leaderip,myhostip, sync,sync)
         if myhost in str(get(myhostip,'nextlead','--prefix')):
             cmdline='/TopStor/promrepli.sh '+leaderip+' '+myhostip
-            result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+            result=subprocess.run(cmdline.split(),stderr=subprocess.STDOUT)
       if 'getconfig' in sync:
         collectConfig(leaderip, myhost)
       if sync in 'cversion':
@@ -409,8 +409,8 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         synckeys(leaderip,myhostip, sync,sync)
         if myhost in str(get(myhostip,'nextlead','--prefix')):
             cmdline='/TopStor/promrepli.sh '+leaderip+' '+myhostip
-            result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
-      if sync in 'cversion':
+            result=subprocess.run(cmdline.split(),stderr=subprocess.STDOUT)
+      elif sync in 'cversion':
         cmdline='/TopStor/systempull.sh '+opers[1]
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       elif sync in 'Snapperiod' :
