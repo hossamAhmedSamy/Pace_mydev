@@ -240,9 +240,9 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
         if myhost in str(get(myhostip,'nextlead','--prefix')):
             cmdline='/TopStor/promrepli.sh '+leaderip+' '+myhostip
             result=subprocess.run(cmdline.split(),stderr=subprocess.STDOUT)
-      if 'getconfig' in sync:
+      elif 'getconfig' in sync:
         collectConfig(leaderip, myhost)
-      if sync in 'cversion':
+      elif sync in 'cversion':
         cmdline='/TopStor/systempull.sh '+opers[1]
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       elif sync in 'Snapperiod' :
@@ -259,7 +259,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
         for dirt in dirtydic:
             put(etcdip, 'dirty/'+dirt, str(dirtydic[dirt]))
       elif 'syncfn' in opers[0]:
-        print('opers',opers)
+        print('opers_syncfn',opers)
         if 'evacuatehost' in str(syncleft):
             isready = get(etcdip, 'ready',opers[2])
             evacuateflag = 1
@@ -289,7 +289,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
             flag = 0
  
       else:
-       print('opers',opers)
+       print('opers_else',opers)
        if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
         if sync in [ 'namespace', 'ipaddr' ]:
          rebootflag -=rebootflag
@@ -410,6 +410,8 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         if myhost in str(get(myhostip,'nextlead','--prefix')):
             cmdline='/TopStor/promrepli.sh '+leaderip+' '+myhostip
             result=subprocess.run(cmdline.split(),stderr=subprocess.STDOUT)
+      elif 'getconfig' in sync:
+        collectConfig(leaderip, myhost)
       elif sync in 'cversion':
         cmdline='/TopStor/systempull.sh '+opers[1]
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
