@@ -65,7 +65,6 @@ def putzpool():
  for a in sty:
   #print('aaaaaa',a)
   b=a.split()
-  print('theb0',b,a)
   if len(b) > 0:
    b.append(b[0])
    actualdisk=b[0]
@@ -152,7 +151,6 @@ def putzpool():
    lraids.append(rdict)
     
   elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or 'dm-' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5) or 'UNAVA' in str(b):
-    print('theb',b)
     if 'dm-' in str(b) :
         missingdisks[0] += 1
         b[1] = 'FAULT'
@@ -197,7 +195,7 @@ def putzpool():
      #else:
      # cmdline='/pace/hostlost.sh '+z[6]
      # subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
-    if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop'] and 'UNAVAIL' not in b[1] and 'FAULT' not in b[1] and 'OFF' not in b[1]:
+    if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop'] and 'UNAVAIL' not in b[1] and 'FAULT' not in b[1] and 'OFF' not in b[1] and 'REMOVED' not in b[1]:
      b[1] = 'ONLINE' 
     changeop=b[1]
     if host=='_1':
@@ -214,18 +212,11 @@ def putzpool():
         diskid = b[0]
         devname = b[0] 
         size = '0'
-    if 'UNAVAI' not in b[1] and 'FAULT' not in b[1] and 'dm-' not in b[0]:
-     #print('bbbbbbbbbbbbbbbbbb',b)
-     try:
-        devinfo = [x.split() for x in lsscsi if devname in x][0]
-   
-     #print('devinfo',devinfo)
-        host = devinfo[3].split('-')[1]
-        size = devinfo[-1]
-     except:
-       print('b[1]',b[1])
-     #print('devinfo',devinfo)
-    #print('unavail devname',devname) 
+    if 'OFF' not in b[1] and 'REMOVED' not in b[1] and 'UNAVAI' not in b[1] and 'FAULT' not in b[1] and 'dm-' not in b[0]:
+     print('bbbbbbbbbbbbbbbbbb',b)
+     devinfo = [x.split() for x in lsscsi if devname[-20:] in x][0]
+     host = devinfo[3].split('-')[1]
+     size = devinfo[-1]
     if 'resilvering' in str(b):
         silvering = 'yes' 
         silveringflag = 'yes'
