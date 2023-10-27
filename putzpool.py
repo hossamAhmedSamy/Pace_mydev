@@ -225,6 +225,7 @@ def putzpool():
     silvering = 'no'
     disklist.append(ddict)
     ldisks.append(ddict)
+ print('disklistpls',disklist)
  if len(freepool) > 0:
   raidlist=[]
   zdict={ 'name':'pree','changeop':'pree', 'available':'0', 'status':'pree', 'host':myhost,'used':'0', 'alloc': '0', 'empty': '0','size':'0', 'dedup': '0', 'compressratio': '0', 'raidlist': raidlist, 'volumes':[]}
