@@ -376,7 +376,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
    if myhost != leader or 'pullsync' in pullsync:
     print(leader,leaderip,myhost,myhostip, syncinfo)
     doinitsync(leader,leaderip,myhost,myhostip, syncinfo,pullsync)
-   elif myhost != leader:
+   elif myhost == leader:
     syncinit(leader,leaderip, myhost,myhostip)
   else:
    syncleft = syncinfo[0]
