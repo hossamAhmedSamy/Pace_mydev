@@ -211,6 +211,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
   if '/initial/' in str(syncinfo):
    print(leader,leaderip,myhost,myhostip, syncinfo)
    doinitsync(leader,leaderip,myhost,myhostip, syncinfo,'pullsync',pport,myalias)
+   return
   else:
    syncleft = syncinfo[0]
    stamp = syncinfo[1]
