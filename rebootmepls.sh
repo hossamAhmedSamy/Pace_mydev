@@ -27,7 +27,12 @@ then
 		fi
  		echo $configured > /root/nodeconfigured
  		./etcdput.py $leaderip rebootme/$myhost donot 
- 		./etcdput.py $myhostip rebootme/$myhost donot 
+
+		echo $myhost | grep $leader
+		if [ $? -ne 0 ];
+		then
+ 			./etcdput.py $myhostip rebootme/$myhost donot 
+		fi
  		/TopStor/resetdocker.sh
  		reboot
 	else
