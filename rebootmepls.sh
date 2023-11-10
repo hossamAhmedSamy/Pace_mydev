@@ -27,6 +27,7 @@ then
 		fi
  		echo $configured > /root/nodeconfigured
  		./etcdput.py $leaderip rebootme/$myhost donot 
+ 		./etcdput.py $myhostip rebootme/$myhost donot 
  		/TopStor/resetdocker.sh
  		reboot
 	else
