@@ -25,7 +25,7 @@ then
 			rm -rf /TopStordata/*
 			configured='no'
 		fi
- 		echo $configured > /root/nodeconfigured
+ 		echo ${configured}_$isreboot > /root/nodeconfigured
  		./etcdput.py $leaderip rebootme/$myhost donot 
 
 		echo $myhost | grep $leader
