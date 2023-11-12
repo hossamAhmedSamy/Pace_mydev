@@ -103,7 +103,7 @@ tpgs=(`targetcli ls /iscsi | grep iqn | grep TPG | grep ':t1' | awk -F'iqn' '{pr
 for node in "${nodes[@]}"; do
  for ddisk in "${disks[@]}"; do
 	for iqn in "${tpgs[@]}"; do
- 		targetcli iscsi/iqn${iqn}/tpg1/acls/ ls | grep $node >/dev/null
+ 		targetcli iscsi/iqn${iqn}/tpg1/acls/ ls | grep redhat:$node >/dev/null
 		if [ $? -ne 0 ];
 		then
   			targetcli iscsi/iqn${iqn}/tpg1/acls/ create iqn.1994-05.com.redhat:$node

@@ -9,7 +9,7 @@ needrescan=0;
 nodes=(`docker exec etcdclient /TopStor/etcdget.py $etcdip ready --prefix | awk -F"', " '{print $2}' | awk -F"'" '{print $2}'`)
 #nodes=(`docker exec etcdclient /TopStor/etcdgetlocal.py ready --prefix | awk -F'Partners/' '{print $2}' | awk -F"'" '{print $1}'`)
 for host in "${nodes[@]}" ; do
- echo $sessions  | grep $host
+ echo $sessions  | grep ${host},
  if [ $? -ne 0 ]; then
   echo sessions=$sessions
   needrescan=1;
