@@ -36,7 +36,9 @@ for ddisk in  "${disks[@]}"; do
 	if [ $? -ne 0 ];
 	then
 		echo $ddisk not a part in the targets
-		scsidisk=`ls -l /dev/disk/by-id/ | grep $ddisk | grep -v part | grep scsi | head -1 | awk '{print $9}'`
+		ordinary=`lsscsi -i | grep -w $ddisk | grep -v LIO | awk '{print $NF}'`
+		#scsidisk=`ls -l /dev/disk/by-id/ | grep -w $ddisk | grep -v part | grep scsi | grep -v LIO | grep -v SLS | awk '{print $9}'`
+		scsidisk=`ls -l /dev/disk/by-id/ | grep -w $ddisk | grep -v part | grep scsi-$ordinary | awk '{print $9}'`
   		targetcli backstores/block create ${ddisk}-${myhost} /dev/disk/by-id/$scsidisk
 		
 	else
