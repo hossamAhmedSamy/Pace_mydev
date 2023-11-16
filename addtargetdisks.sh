@@ -11,7 +11,9 @@ then
 else
  bootdisk=`cat $bootdiskf`
 fi
- 
+bootpart=`lsblk -o NAME,MOUNTPOINT | grep boot | awk '{print $1}'`
+bootdisk=${bootpart:2:-1}; 
+echo bootdisk is $bootdisk
 cd /pace
 etcdip=`echo $@ | awk '{print $1}'`
 myhost=`echo $@ | awk '{print $2}'`
