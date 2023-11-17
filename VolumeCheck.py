@@ -97,6 +97,7 @@ def nfs( etcds, replis, exports):
 def cifs( etcds, replis, dockers):
  global leader, leaderip, myhost, myhostip, etcdip
  dirtyset = getdirtyvols('cifs', etcds, replis, dockers)
+ print('dirty',dirtyset)
  for res in dirtyset:
    reslist=res.split('/')
    print('update',reslist[1])
