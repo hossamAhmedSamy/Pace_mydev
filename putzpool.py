@@ -115,6 +115,11 @@ def putzpool():
      snapperiod=[]
      snapperiod=[[x[0],x[1]] for x in periods if volname in x[0]]
      vdict={'fullname':volume[0],'name':volname, 'pool': b[0], 'host':myhost, 'creation':' '.join(volume[1:4]+volume[5:6]),'time':volume[4], 'used':volume[6], 'quota':volume[7], 'usedbysnapshots':volume[8], 'refcompressratio':volume[9], 'prot':volume[10],'available':volume[11], 'referenced':volume[12],'statusmount':volume[13], 'snapshots':snaplist, 'snapperiod':snapperiod}
+     if 'CIFS_' in volume[10]:
+        cmdline = 'zfs get ip:addr -H '+volume[0]
+        ipaddr=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split()[2]
+        cmdline = '/TopStor/getdomvolstatus.sh '+ipaddr
+        vdict['runtime']=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('_result')[1]
      volumelist.append(vdict)
      lvolumes.append(vdict['name'])
     elif '@' in vol and b[0] in vol:
