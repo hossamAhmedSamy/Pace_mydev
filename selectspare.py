@@ -500,16 +500,25 @@ def solvedegradedraid(raid,disksfree):
 
 def solvetheasks(needtoreplace):
     global leader, leaderip, myhost, myhostip, etcdip
+    print('###################################')
+    print('solve the asks started')
+    print('needtoreplace',needtoreplace)
     theasks = get(leaderip, 'ask/needtoreplace', '--prefix')
     for askleft,askright in theasks:
         freedisk = askright.split('/')[-2] 
         if freedisk in str(needtoreplace) and askleft.replace('ask/','') in str(needtoreplace):    ### ignore
+            print('ignore 1')
             continue
         elif freedisk in str(needtoreplace) and askleft.replace('ask/','') not in str(needtoreplace): ### reject
+            print('delete ask')
             dels(leaderip, askleft)
         elif freedisk not in str(needtoreplace):    ##### accept
+            print('put ask in needtoreplace')
             put(leaderip, askleft.replace('ask/',''), askright)
-        print(askleft,askright, freedisk)
+        print(askleft.replace('ask/',''),askright, freedisk)
+    print('solve the asks finished')
+    print('###################################')
+   
     return
   
 def spare2(*args):
@@ -530,6 +539,7 @@ def spare2(*args):
  needtoreplace = get(leaderip, 'needtoreplace', '--prefix') 
  if myhost == leader:
     solvetheasks(needtoreplace)
+ needtoreplace = get(leaderip, 'needtoreplace', '--prefix') 
  myneedtoreplace = [x for x in needtoreplace if myhost in str(x) ] 
  exception = get(etcdip,'offlinethis','--prefix')
  print('it is needtoreplace',needtoreplace)

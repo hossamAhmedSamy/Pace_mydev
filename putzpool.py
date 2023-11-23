@@ -219,9 +219,16 @@ def putzpool():
         size = '0'
     if 'OFF' not in b[1] and 'REMOVED' not in b[1] and 'UNAVAI' not in b[1] and 'FAULT' not in b[1] and 'dm-' not in b[0]:
      print('bbbbbbbbbbbbbbbbbb',b)
-     devinfo = [x.split() for x in lsscsi if devname[-20:] in x][0]
-     host = devinfo[3].split('-')[1]
-     size = devinfo[-1]
+     try:
+        devinfo = [x.split() for x in lsscsi if devname[-20:] in x][0]
+        host = devinfo[3].split('-')[1]
+        size = devinfo[-1]
+        with open('/'+zdict['name']+'/tmpsmall','w') as f:
+            f.write('hi')
+     except:
+        b[1]='UNAVAILABLE'
+        host ='UNAVAIL'
+        size = '0' 
     if 'resilvering' in str(b):
         silvering = 'yes' 
         silveringflag = 'yes'
