@@ -13,6 +13,7 @@ def putzpool():
  sitechange=0
  readyhosts=get(myip, 'ready','--prefix')
  knownpools=[f for f in listdir('/TopStordata/') if 'pdhcp' in f and 'pree' not in f ]
+ zname = ''
  cmdline='/sbin/zpool status '
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
  sty=str(result)[2:][:-3].replace('\\t','').split('\\n')
@@ -69,6 +70,7 @@ def putzpool():
    b.append(b[0])
    actualdisk=b[0]
    if any(drive in str(b[0]) for drive in drives):
+    zname = b[0]
     for lss in lsscsi:
      if any('/dev/'+b[0] in lss for drive in drives):
       b[0]='scsi-'+lss.split()[6]
@@ -234,7 +236,7 @@ def putzpool():
         silveringflag = 'yes'
         zdict['silvering'] = silvering
         
-    ddict={'name':b[0],'actualdisk':actualdisk, 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering}
+    ddict={'name':b[0],'zname':zname, 'actualdisk':actualdisk, 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering}
     rdict['silvering'] = silvering
     silvering = 'no'
     disklist.append(ddict)

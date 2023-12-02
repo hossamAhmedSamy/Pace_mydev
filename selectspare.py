@@ -493,6 +493,7 @@ def spare2(*args):
  exception = get(etcdip,'offlinethis','--prefix')
  print('it is needtoreplace',needtoreplace)
  for raidinfo in myneedtoreplace:
+      allinfo = getall(leaderip) 
       print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
       print('need to replace',raidinfo)
       poolname = raidinfo[0].split('/')[2]
@@ -503,21 +504,19 @@ def spare2(*args):
       chkstatus = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
       if 'resilvering' in chkstatus:
        continue
-      print(raidinfo[0])
       raidname = raidinfo[0].split('/')[-1]
       rmdisk = raidinfo[1].split('/')[0]
-      print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk)
+      rmdiskname = allinfo['disks'][rmdisk]['zname']
+      print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
       adiskname = raidinfo[1].split('/')[1]
       cmdline2=['/sbin/zpool', 'status',poolname]
       cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
-      print(cpoolinfo,poolname)
-      print(rmdisk)
-      if rmdisk in cpoolinfo:
-           print('will do:', poolname, raidname, rmdisk, adiskname)
+      if rmdiskname in cpoolinfo:
+           print('will do:', poolname, raidname, rmdiskname, adiskname)
            if 'mirror-temp' in raidname:
-               cmdline2=['/sbin/zpool', 'attach',poolname, rmdisk,adiskname]
+               cmdline2=['/sbin/zpool', 'attach',poolname, rmdiskname,adiskname]
            else:
-               cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdisk,adiskname]
+               cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdiskname,adiskname]
            print(cmdline2)
            forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
            print('forget',forget.returncode)
