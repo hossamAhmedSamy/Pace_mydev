@@ -104,7 +104,7 @@ def putzpool():
     cachetime='notset'
    #put('pools/'+b[0],myhost)
    poolsstatus.append(('pools/'+b[0],myhost))
-   zdict={ 'name':b[0],'changeop':b[1], 'availtype':availtype, 'status':b[1],'host':myhost, 'used':str(zfslist[0].split()[6]),'available':str(zfslist[0].split()[11]), 'alloc': str(zlist[2]), 'size': zlist[1], 'empty': zlist[3], 'dedup': zlist[7], 'compressratio': zlist2[2],'timestamp':str(cachetime), 'raidlist': raidlist ,'volumes':volumelist}
+   zdict={ 'name':b[0],'changeop':b[1], 'availtype':availtype, 'status':b[1],'host':myhost, 'used':str(zfslist[0].split()[6]),'available':str(zfslist[0].split()[11]), 'alloc': str(zlist[2]), 'size': zlist[1], 'empty': zlist[3], 'dedup': zlist[7], 'compressratio': zlist2[2],'timestamp':str(cachetime), 'raidlist': raidlist ,'volumes':volumelist, 'silvering':'no'}
    zpool.append(zdict)
    lpools.append(zdict) 
    for vol in zfslist:
@@ -232,19 +232,21 @@ def putzpool():
     if 'resilvering' in str(b):
         silvering = 'yes' 
         silveringflag = 'yes'
+        zdict['silvering'] = silvering
         
     ddict={'name':b[0],'actualdisk':actualdisk, 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering}
+    rdict['silvering'] = silvering
     silvering = 'no'
     disklist.append(ddict)
     ldisks.append(ddict)
  print('disklistpls',disklist)
  if len(freepool) > 0:
   raidlist=[]
-  zdict={ 'name':'pree','changeop':'pree', 'available':'0', 'status':'pree', 'host':myhost,'used':'0', 'alloc': '0', 'empty': '0','size':'0', 'dedup': '0', 'compressratio': '0', 'raidlist': raidlist, 'volumes':[]}
+  zdict={ 'name':'pree','changeop':'pree', 'available':'0', 'status':'pree', 'host':myhost,'used':'0', 'alloc': '0', 'empty': '0','size':'0', 'dedup': '0', 'compressratio': '0','silvering':'no', 'raidlist': raidlist, 'volumes':[]}
   zpool.append(zdict)
   lpools.append(zdict)
   disklist=[]
-  rdict={ 'name':'free', 'changeop':'free','status':'free','pool':'pree','host':myhost,'disklist':disklist, 'missingdisks':[0] }
+  rdict={ 'name':'free', 'changeop':'free','status':'free','pool':'pree','host':myhost,'disklist':disklist, 'missingdisks':[0], 'silvering':'no' }
   raidlist.append(rdict)
   lraids.append(rdict)
   for lss in freepool:
