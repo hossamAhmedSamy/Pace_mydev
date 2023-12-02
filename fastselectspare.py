@@ -601,10 +601,23 @@ def spare2(*args):
         print('raid name:\n',diskset)
         print('suggested disk combination:\n')
         bestdisks = optimizedisks(allinfo['raids'][raid], allinfo['disks'])
+        needtoreplace = ''
+        toreplace = ''
+        toplace = ''
         for disks in bestdisks:
             if diskset == set(disks[0].split(',')):
                 print('the raid',allinfo['raids'][raid]['name'],'is already optimized')
-            print('to remove', diskset - set(disks[0].split(',')),'with',set(disks[0].split(','))-diskset)
+                break
+            if 1==1:
+                torepalce = diskset - set(disks[0].split(','))
+                topalce = set(disks[0].split(',')) - diskset
+                if len(toreplace) > 2:  #### this is how many disks to replace .. will be revised for double parity, raid5...etc.
+                    toreplace = ''
+                    toplace = ''
+            if len(toreplace) > 0:
+                print('pool', allinfo['raids'][raid]['pool'])
+                break
+            #put(leaderip, 'ask/needtoreplace/'+myhost+'/'+rank[2]['pool']+'/'+rank[2]['name']+'/'+rank[0]['devname'],raiddisk['name']+'/'+raiddisk['devname']+'/'+raiddisk['actualdisk']+'/'+rank[1]['name']+'/'+rank[1]['devname'])
     continue
  exit()
 #------------------------------------------  I think below should be removed -------------------------------------
