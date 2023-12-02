@@ -141,7 +141,7 @@ def putzpool():
    missingdisks=[0]
    if 'Availability' in zdict['availtype'] and 'stripe' in b[0]: 
     b[1] = 'DEGRADED' 
-   rdict={ 'name':b[0], 'changeop':b[1],'status':b[1],'pool':zdict['name'],'host':myhost,'disklist':disklist, 'missingdisks':missingdisks }
+   rdict={ 'name':b[0], 'changeop':b[1],'status':b[1],'pool':zdict['name'],'host':myhost,'disklist':disklist,'silvering':'no', 'missingdisks':missingdisks }
    raidlist.append(rdict)
    lraids.append(rdict)
   elif any(raid in str(b) for raid in raid2):
@@ -151,7 +151,7 @@ def putzpool():
    b[1] = 'NA'
    if 'Availability' in zdict['availtype'] and raid not in availraids: 
     b[1] = 'DEGRADED' 
-   rdict={ 'name':b[0], 'changeop':b[1],'status':b[1],'pool':zdict['name'],'host':myhost,'disklist':disklist, 'missingdisks':missingdisks }
+   rdict={ 'name':b[0], 'changeop':b[1],'status':b[1],'pool':zdict['name'],'host':myhost,'disklist':disklist,'silvering':'no', 'missingdisks':missingdisks }
    raidlist.append(rdict)
    lraids.append(rdict)
     
@@ -174,7 +174,7 @@ def putzpool():
         rname='stripe-'+str(stripecount)
      stripecount+=1
          
-     rdict={ 'name':rname, 'pool':zdict['name'],'changeop':b[1],'status':b[1],'host':myhost,'disklist':disklist, 'missingdisks':[0] }
+     rdict={ 'name':rname, 'pool':zdict['name'],'changeop':b[1],'status':b[1],'host':myhost,'disklist':disklist,'silvering':'no', 'missingdisks':[0] }
      raidlist.append(rdict)
      lraids.append(rdict)
      disknotfound=1

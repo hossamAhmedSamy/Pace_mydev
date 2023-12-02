@@ -597,12 +597,14 @@ def spare2(*args):
  allinfo = getall(leaderip) 
  for raid in allinfo['raids']:
     if 'free' not in allinfo['raids'][raid]['name'] and allinfo['raids'][raid]['silvering'] == 'no':
-        print('raid name:\n',allinfo['raids'][raid]['disks'])
+        diskset = set(allinfo['raids'][raid]['disks'])
+        print('raid name:\n',diskset)
         print('suggested disk combination:\n')
         bestdisks = optimizedisks(allinfo['raids'][raid], allinfo['disks'])
-        print(type(bestdisks))
         for disks in bestdisks:
-            print('\n',disks[0],'\n')
+            if diskset == set(disks[0].split(',')):
+                print('the raid',allinfo['raids'][raid]['name'],'is already optimized')
+            print('to remove', diskset - set(disks[0].split(',')),'with',set(disks[0].split(','))-diskset)
     continue
  exit()
 #------------------------------------------  I think below should be removed -------------------------------------
