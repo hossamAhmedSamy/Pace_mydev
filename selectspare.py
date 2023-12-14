@@ -28,7 +28,24 @@ def dosync(*args):
  put(leaderip, *args)
  put(leaderip, args[0]+'/'+leader,args[1])
 
-
+def solvefaultyreplace(raid):
+    global leader, leaderip, myhost, myhostip, etcdip
+    replacedict = dict()
+    for disk in raid['disklist']:
+        if 'replac' in disk['replacingroup'] and 'replac' not in disk['name']:
+            if disk['replacingroup'] not in replacedict:
+                replacedict[disk['replacingroup']] = list()
+            replacedict[disk['replacingroup']].append(disk)
+    flag = 0 
+    for replacegroup in replacedict:
+        for disk in replacedict[replacegroup]:
+            if 'UNAVA' in disk['status']:
+                cmdline2=['/sbin/zpool', 'detach',raid['pool'], disk['actualdisk']]
+                forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print('dddddddddd',disk)
+                flag = 1
+    return flag
+    
 def mustattach(cmdline,disksallowed,raid):
    global leader, leaderip, myhost, myhostip, etcdip
    print('################################################')
@@ -105,9 +122,6 @@ def getbalance(diskA,diskB,balancetype,hostcounts,onlinedisks=[]):
  global newop
  global leader, leaderip, myhost, myhostip, etcdip
   
- print('################################################################################33')
- print('diskB', diskB)
- print('diskA', diskA)
  raidhosts=hostcounts.copy()
  w=0
  if 'free' in diskA['changeop']:
@@ -377,10 +391,6 @@ def solvestriperaids(striperaids,freedisks,allraids):
  
 def solvedegradedraid(raid,diskname):
  global leader, leaderip, myhost, myhostip, etcdip
- print('##########################################333')
- print('raid')
- print(raid)
- print('##########################################333')
  if 'dm-' in str(raid):
     return
  hosts=get(etcdip, 'ready','--prefix')
@@ -449,24 +459,15 @@ def solvedegradedraid(raid,diskname):
 
 def solvetheasks(needtoreplace):
     global leader, leaderip, myhost, myhostip, etcdip
-    print('###################################')
-    print('solve the asks started')
-    print('needtoreplace',needtoreplace)
     theasks = get(leaderip, 'ask/needtoreplace', '--prefix')
     for askleft,askright in theasks:
         freedisk = askright.split('/')[-2] 
         if freedisk in str(needtoreplace) and askleft.replace('ask/','') in str(needtoreplace):    ### ignore
-            print('ignore 1')
             continue
         elif freedisk in str(needtoreplace) and askleft.replace('ask/','') not in str(needtoreplace): ### reject
-            print('delete ask')
             dels(leaderip, askleft)
         elif freedisk not in str(needtoreplace):    ##### accept
-            print('put ask in needtoreplace')
             put(leaderip, askleft.replace('ask/',''), askright)
-        print(askleft.replace('ask/',''),askright, freedisk)
-    print('solve the asks finished')
-    print('###################################')
    
     return
   
@@ -484,7 +485,6 @@ def spare2(*args):
         #getall('init',leader, leaderip, myhost, myhostip, etcdip)
         return
 
- print('hihiihihihih',etcdip)
  needtoreplace = get(leaderip, 'needtoreplace', '--prefix') 
  if myhost == leader:
     solvetheasks(needtoreplace)
@@ -555,19 +555,20 @@ def spare2(*args):
  for raid in allinfo['raids']:
     if 'free' not in allinfo['raids'][raid]['name'] and allinfo['raids'][raid]['silvering'] == 'no':
         diskset = set(allinfo['raids'][raid]['disks'])
+        faultyreplaceflag = 0
+        faultyreplaceflag = solvefaultyreplace(allinfo['raids'][raid])
+        if faultyreplaceflag > 0:
+            continue
         bestdisks = optimizedisks(allinfo['raids'][raid], alldisks)
         needtoreplace = ''
         toreplace = ''
         toplace = ''
         for disks in bestdisks:
-            print('.................')
             if diskset == set(disks[0].split(',')):
-                print('the raid',allinfo['raids'][raid]['name'],'is already optimized')
                 break
             else:
                 toreplace = diskset - set(disks[0].split(','))
                 toplace = set(disks[0].split(',')) - diskset
-                print(toreplace)
                 if len(toreplace) > 1:  #### this is how many disks to replace .. will be revised for double parity, raid5...etc.
                     toreplace = ''
                     toplace = ''

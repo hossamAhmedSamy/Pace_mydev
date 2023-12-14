@@ -11,6 +11,8 @@ def putzpool():
  global leader, leaderip, myhost, myip
  perfmon = '0'
  sitechange=0
+ replacingroup = ''
+ replaceflag = 0
  readyhosts=get(myip, 'ready','--prefix')
  knownpools=[f for f in listdir('/TopStordata/') if 'pdhcp' in f and 'pree' not in f ]
  zname = ''
@@ -64,7 +66,6 @@ def putzpool():
  silvering = 'no'
  silveringflag = 'no'
  for a in sty:
-  #print('aaaaaa',a)
   b=a.split()
   if len(b) > 0:
    b.append(b[0])
@@ -74,10 +75,7 @@ def putzpool():
     for lss in lsscsi:
      if any('/dev/'+b[0] in lss for drive in drives):
       b[0]='scsi-'+lss.split()[6]
-   #print('b0',b[0]) 
-   #print(drives) 
    
-  #print('strb',str(b))
   if "pdhc" in str(b) and  'pool' not in str(b):
    raidlist=[]
    volumelist=[]
@@ -85,7 +83,6 @@ def putzpool():
    rdict={}
    ddict={}
    zfslist=[x for x in zfslistall if b[0] in x ]
-   #print('zfslist',b[0],zfslist)
    cmdline=['/sbin/zfs','get','avail:type',b[0], '-H']
    result=subprocess.run(cmdline,stdout=subprocess.PIPE)
    try:
@@ -160,7 +157,7 @@ def putzpool():
   elif 'scsi' in str(b) or 'disk' in str(b) or '/dev/' in str(b) or 'dm-' in str(b) or (len(b) > 0 and 'sd' in b[0] and len(b[0]) < 5) or 'UNAVA' in str(b):
     if 'dm-' in str(b) :
         missingdisks[0] += 1
-        b[1] = 'FAULT'
+        #b[1] = 'FAULT'
     diskid='_1'
     host='_1'
     size='_1' 
@@ -220,7 +217,6 @@ def putzpool():
         devname = b[0] 
         size = '0'
     if 'OFF' not in b[1] and 'REMOVED' not in b[1] and 'UNAVAI' not in b[1] and 'FAULT' not in b[1] and 'dm-' not in b[0]:
-     print('bbbbbbbbbbbbbbbbbb',b)
      try:
         devinfo = [x.split() for x in lsscsi if devname[-20:] in x][0]
         host = devinfo[3].split('-')[1]
@@ -235,13 +231,22 @@ def putzpool():
         silvering = 'yes' 
         silveringflag = 'yes'
         zdict['silvering'] = silvering
+    if 'replac' in b[0]:
+        replaceflag = 2
+        replacingroup = b[0]
+    elif replaceflag == 0:
+            replacingroup = ''
+    else:
+        replaceflag -= 1
         
-    ddict={'name':b[0],'zname':zname, 'actualdisk':actualdisk, 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering}
+    if 'dm' in b[0]:
+        zname = b[0]
+    ddict={'name':b[0],'zname':zname, 'actualdisk':actualdisk, 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering, 'replacingroup':replacingroup}
+    print('bbbbbbbbbbb',ddict)    
     rdict['silvering'] = silvering
     silvering = 'no'
     disklist.append(ddict)
     ldisks.append(ddict)
- print('disklistpls',disklist)
  if len(freepool) > 0:
   raidlist=[]
   zdict={ 'name':'pree','changeop':'pree', 'available':'0', 'status':'pree', 'host':myhost,'used':'0', 'alloc': '0', 'empty': '0','size':'0', 'dedup': '0', 'compressratio': '0','silvering':'no', 'raidlist': raidlist, 'volumes':[]}
@@ -254,7 +259,6 @@ def putzpool():
   for lss in freepool:
    z=lss.split()
    devname=z[5].replace('/dev/','')
-   #print('devname',devname)
    if devname not in drives:
     continue
    diskid=lsscsi.index(lss)
