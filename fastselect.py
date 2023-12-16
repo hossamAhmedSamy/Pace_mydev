@@ -147,6 +147,8 @@ def optimizedisks(fraid, fdisksinfo):
             mustinclude = disk['name']
         else:
             mustinclude = disk['name']+','+mustinclude
+    if 'mirror' in raid['name'] and count == 1:
+        count = 2
     disks = {'diskcount':count , 'disk': mindisksize }
     return selectdisks(disks, disksinfo)
 

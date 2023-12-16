@@ -31,19 +31,29 @@ def dosync(*args):
 def solvefaultyreplace(raid):
     global leader, leaderip, myhost, myhostip, etcdip
     replacedict = dict()
+    print('solving faulty replace')
     for disk in raid['disklist']:
         if 'replac' in disk['replacingroup'] and 'replac' not in disk['name']:
             if disk['replacingroup'] not in replacedict:
                 replacedict[disk['replacingroup']] = list()
             replacedict[disk['replacingroup']].append(disk)
     flag = 0 
+    off_disk = 0
     for replacegroup in replacedict:
         for disk in replacedict[replacegroup]:
+            if 'OFF' in disk['status'] and 'dm' in disk['name'] and off_disk == 1:
+                cmdline2=['/sbin/zpool', 'detach',raid['pool'], disk['name']]
+                forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                flag = 1
+                break 
+            if 'OFF' in disk['status'] and 'dm' in disk['name']:
+                off_disk =1
             if 'UNAVA' in disk['status']:
                 cmdline2=['/sbin/zpool', 'detach',raid['pool'], disk['actualdisk']]
                 forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print('dddddddddd',disk)
                 flag = 1
+                break
     return flag
     
 def mustattach(cmdline,disksallowed,raid):
@@ -503,10 +513,18 @@ def spare2(*args):
       dmcmd = 'zpool status '+poolname
       chkstatus = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
       if 'resilvering' in chkstatus:
+       print('this pool is in resilvering status, we should wait till it completes the resilving')
        continue
       raidname = raidinfo[0].split('/')[-1]
       rmdisk = raidinfo[1].split('/')[0]
-      rmdiskname = allinfo['disks'][rmdisk]['zname']
+      try:
+        rmdiskname = allinfo['disks'][rmdisk]['zname']
+      except:
+        dels(leaderip, 'need',rmdisk)
+        print('rmdiskname is not having a zname')
+        print(rmdisk)
+        print(allinfo['disks'])
+        continue
       print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
       adiskname = raidinfo[1].split('/')[1]
       cmdline2=['/sbin/zpool', 'status',poolname]
@@ -569,6 +587,10 @@ def spare2(*args):
             else:
                 toreplace = diskset - set(disks[0].split(','))
                 toplace = set(disks[0].split(',')) - diskset
+                print('sssssssssssssssssssssssssssssss')
+                print(toreplace, toplace)
+                print(allinfo['raids'][raid]['disklist'][0]['name'])
+                print('sssssssssssssssssssssssssssssss')
                 if len(toreplace) > 1:  #### this is how many disks to replace .. will be revised for double parity, raid5...etc.
                     toreplace = ''
                     toplace = ''
@@ -577,14 +599,18 @@ def spare2(*args):
                     toreplace = ''
                     toplace = ''
                     continue
-            if len(toreplace) > 0:
-                pool = allinfo['raids'][raid]['pool']
-                host = allinfo['raids'][raid]['host']
-                raid = allinfo['raids'][raid]['name']
-                #break
-                print(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,list(toreplace)[0]+'/'+list(toplace)[0])
-                put(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,list(toreplace)[0]+'/'+list(toplace)[0])
-                alltoreplace = alltoreplace.union(toreplace)
+                else:
+                    pool = allinfo['raids'][raid]['pool']
+                    host = allinfo['raids'][raid]['host']
+                    raid = allinfo['raids'][raid]['name']
+                    #break
+                    if len(toreplace) == 0:
+                        toreplace = allinfo['raids'][raid]['disklist'][0]['name']
+                    else:
+                        toreplace = list(toreplace)[0]
+                    print(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,toreplace+'/'+list(toplace)[0])
+                    put(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,toreplace+'/'+list(toplace)[0])
+                    alltoreplace = alltoreplace.union(toreplace)
                 
     continue
  return
