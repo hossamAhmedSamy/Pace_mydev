@@ -15,7 +15,6 @@ def putzpool():
  replaceflag = 0
  readyhosts=get(myip, 'ready','--prefix')
  knownpools=[f for f in listdir('/TopStordata/') if 'pdhcp' in f and 'pree' not in f ]
- zname = ''
  cmdline='/sbin/zpool status '
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
  sty=str(result)[2:][:-3].replace('\\t','').split('\\n')
@@ -68,10 +67,10 @@ def putzpool():
  for a in sty:
   b=a.split()
   if len(b) > 0:
+   zname = b[0]
    b.append(b[0])
    actualdisk=b[0]
    if any(drive in str(b[0]) for drive in drives):
-    zname = b[0]
     for lss in lsscsi:
      if any('/dev/'+b[0] in lss for drive in drives):
       b[0]='scsi-'+lss.split()[6]
@@ -268,7 +267,7 @@ def putzpool():
  ##### commented for not adding free disks of freepool
    lhosts.add(host)
    size=z[7]
-   ddict={'name':'scsi-'+z[6],'actualdisk':'scsi-'+z[6], 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering':'no'}
+   ddict={'name':'scsi-'+z[6],'actualdisk':'scsi-'+z[6],'zname':"", 'changeop':'free','status':'free','raid':'free','pool':'pree','id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering':'no'}
    if z[6] in str(zpool):
     continue
    disklist.append(ddict)

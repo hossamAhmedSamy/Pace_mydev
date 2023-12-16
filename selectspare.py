@@ -526,6 +526,8 @@ def spare2(*args):
         print(allinfo['disks'])
         continue
       print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
+      print(allinfo['disks'][rmdisk])
+      print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
       adiskname = raidinfo[1].split('/')[1]
       cmdline2=['/sbin/zpool', 'status',poolname]
       cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
