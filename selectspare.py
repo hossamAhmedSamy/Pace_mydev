@@ -534,7 +534,7 @@ def spare2(*args):
       if rmdiskname in cpoolinfo:
            print('will do:', poolname, raidname, rmdiskname, adiskname)
            if 'mirror-temp' in raidname:
-               cmdline2=['/sbin/zpool', 'attach',poolname, rmdiskname,adiskname]
+               cmdline2=['/sbin/zpool', 'attach','-f', poolname, rmdiskname,adiskname]
            else:
                cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdiskname,adiskname]
            print(cmdline2)

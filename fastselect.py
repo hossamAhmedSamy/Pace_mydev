@@ -106,8 +106,11 @@ def feature_calc(i, k):
     res = res + [i[4]]
     if res[0] not in combinations:
         combinations[res[0]] = res[2]
+        print('comb0',combinations[res[0]])
     else:
+        print('comb1',combinations[res[0]])
         combinations[res[0]] = combinations[res[0]]+res[2]
+        print('comb2',combinations[res[0]])
     return res   
                 
 def combine_features(column_values):
@@ -150,6 +153,13 @@ def optimizedisks(fraid, fdisksinfo):
     if 'mirror' in raid['name'] and count == 1:
         count = 2
     disks = {'diskcount':count , 'disk': mindisksize }
+    combinations = dict()
+    hosts = set()
+    #disktypes = set()
+    #disks = {}
+    #disksinfo = {}
+    #count = 0 
+    #mindisksize = 0 
     return selectdisks(disks, disksinfo)
 
 def selectdisks(fdisks,fdisksinfo):
