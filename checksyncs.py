@@ -25,7 +25,7 @@ restartetcd = wholeetcd + etcdonly
 replisyncs = ['user','group']
 syncs = etcdonly + syncanitem + special1 + wholeetcd
 
-noinit = [ 'getconfig','cversion', 'replipart' , 'evacuatehost','hostdown','namespace' , 'ipaddr']
+noinit = [ 'getconfig','cversion', 'replipart' , 'evacuatehost','hostdown','namespace' , 'ipaddr','cluip']
 ##### sync request etcdonly template: sync/Operation/ADD/Del_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with bash script: sync/Operation/commandline_oper1_oper2_../request Operation_stamp###########
 ##### sync request syncanitem with python script: sync/Operation/syncfn_commandline_oper1_oper2_../request Operation_stamp###########
