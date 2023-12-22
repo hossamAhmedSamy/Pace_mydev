@@ -161,12 +161,16 @@ def refreshall():
  replis = get(etcdip, 'replivol','--prefix')
  volumecheck(etcds, replis)
  spare2(leader, myhost)
+ sleep(4)
  putzpool()
  spare2(leader, myhost)
+ sleep(4)
  putzpool()
  spare2(leader, myhost)
+ sleep(4)
  putzpool()
  spare2(leader, myhost)
+ sleep(4)
  putzpool()
  refresh = 0 
 def selectspareproc():
