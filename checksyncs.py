@@ -16,7 +16,7 @@ from etctocron import etctocron
 from collectconfig import collectConfig
 
 dirtydic = { 'pool': 0, 'volume': 0 } 
-syncanitem = [ 'getconfig','cversion','priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','nextlead','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
+syncanitem = [ 'getconfig','cversion','priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','nextlead','cluip','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
 forReceivers = [ 'user', 'group', 'GrpChange', 'UsrChange' ]
 special1 = [ 'passwd' ]
 wholeetcd = [ 'offlinethis','localrun','known','nmspce','gateway','deens','enteepe', 'teezee','ceecee', 'pool','pools','cversion', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ports', 'offlines']
@@ -199,10 +199,10 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
  
  print('myrequests', myrequests)
  rebootflag = 0
- if 'sync/namespace' in str(myrequests) and 'sync/ipaddr' in str(myrequests):
-    if '/namespace/initial' not in str(myrequests) and '/ipaddr/initial' not in str(myrequests):
-        rebootflag = 2
-        put(leaderip,'rebootwait/'+myhost,'pls_fromnamespace')
+# if 'sync/namespace' in str(myrequests) and 'sync/ipaddr' in str(myrequests):
+#    if '/namespace/initial' not in str(myrequests) and '/ipaddr/initial' not in str(myrequests):
+#        rebootflag = 2
+#        put(leaderip,'rebootwait/'+myhost,'pls_fromnamespace')
  for syncinfo in myrequests:
   evacuateflag = 0
   flag = 1
@@ -291,11 +291,11 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
  
       else:
        print('opers_else',opers)
-       if sync in ['ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
-        if sync in [ 'namespace', 'ipaddr' ]:
-         rebootflag -=rebootflag
-         if rebootflag == 0:
-            dels(leaderip,'rebootwait/'+myhost)
+       if sync in ['cluip','ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
+#        if sync in [ 'namespace', 'ipaddr' ]:
+#         rebootflag -=rebootflag
+#         if rebootflag == 0:
+#            dels(leaderip,'rebootwait/'+myhost)
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
         print('cmdline',cmdline)
         result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
