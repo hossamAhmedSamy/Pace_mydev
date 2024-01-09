@@ -13,8 +13,8 @@ def croncall(*args):
         runthis = call[1].replace('::',' ') 
         print(runthis)
         result = subprocess.run(runthis.split(),stdout=subprocess.PIPE).stdout.decode()
-        if 'successfulwork' not in result:
-            put(leaderip, call[0], call[1])
+        #if 'successfulwork' not in result:
+        #    put(leaderip, call[0], call[1])
 if __name__=='__main__':
     leaderip = sys.argv[1]
     croncall(leaderip) 
