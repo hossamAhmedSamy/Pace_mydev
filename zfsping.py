@@ -30,6 +30,9 @@ from etcdspace import space
 os.environ['ETCDCTL_API']= '3'
 ctask = 1
 dirtydic = { 'pool': 0, 'volume': 0 } 
+croncallrun = 0
+refresh = 0
+selectsparerun = 0 
 
 def heartbeatpls():
  global leader, myhost
@@ -64,9 +67,8 @@ def iscsiwatchdogproc():
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 def croncallproc():
  global leaderip, croncallrun, leader, myhost, myhostip
- while croncallrun == 1:
-    print('sleeping croncall')
-    sleep(1)
+ if croncallrun == 1:
+    return
  print('running croncall')
  croncallrun = 1
  croncall(leaderip)    
