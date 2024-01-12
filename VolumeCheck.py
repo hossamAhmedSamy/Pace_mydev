@@ -19,6 +19,8 @@ def dosync(*args):
 def getippos(vtype):
     if ('cifs' or 'home') in vtype:
         return 7
+    elif 'nfs' in vtype:
+        return 9
     else: 
         return 0
 def getdirtyvols(vtype, etcds, replis, dockers):

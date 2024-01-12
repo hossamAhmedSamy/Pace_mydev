@@ -118,6 +118,8 @@ def putzpool():
         ipaddr=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split()[2]
         cmdline = '/TopStor/getdomvolstatus.sh '+ipaddr
         vdict['runtime']=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('_result')[1]
+     else:
+        vdict['runtime'] ='serviceok'
      volumelist.append(vdict)
      lvolumes.append(vdict['name'])
     elif '@' in vol and b[0] in vol:
