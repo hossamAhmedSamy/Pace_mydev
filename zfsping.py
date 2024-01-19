@@ -177,8 +177,8 @@ def refreshall():
  refresh = 0 
 def selectspareproc():
  global leader, myhost, selectsparerun
- while selectsparerun == 1:
-  sleep(1)
+ if selectsparerun == 1:
+    return
  selectsparerun = 1
  try:
   clsscsi = 'nothing'
@@ -199,6 +199,7 @@ def selectspareproc():
   print(' in selectspare:',e)
   with open('/root/pingerr','a') as f:
    f.write(e)
+  selectsparerun = 0 
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
  selectsparerun = 0 
 
