@@ -174,7 +174,7 @@ def cleanfailed(dockers):
         result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('_result')[1]
         if result in fails:
             cmdline = 'docker rm -f '+ dom[1]
-            result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('_result')[1]
+            result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     
 def volumecheck(etcds, replis, *args):
  global leader, leaderip, myhost, myhostip, etcdip
