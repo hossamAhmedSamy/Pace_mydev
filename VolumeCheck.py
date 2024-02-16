@@ -166,7 +166,16 @@ def iscsi(etcds, replis):
    cmdline='/TopStor/iscsi.py '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[2]+' '+reslist[3]+' ISCSI '+reslist[4]+' '+reslist[5]+' '+reslist[6]+' '+reslist[7]
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
 
-
+def cleanfailed(dockers):
+    fails = ['timeerror','ADnameerror', 'ADservererror']
+    doms = [ (doc.split('-')[-1],doc.split(' ')[0]) for doc in dockers.split('\n') if 'CIFS_' in str(doc)]
+    for dom in doms:
+        cmdline = '/TopStor/getdomvolstatus.sh '+dom[0]
+        result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('_result')[1]
+        if result in fails:
+            cmdline = 'docker rm -f '+ dom[1]
+            result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('_result')[1]
+    
 def volumecheck(etcds, replis, *args):
  global leader, leaderip, myhost, myhostip, etcdip
  if str(etcds)=='init':
@@ -191,7 +200,7 @@ def volumecheck(etcds, replis, *args):
  nfs(etcds, replis, exports)
  homes(etcds, replis, dockers)
  iscsi(etcds, replis)
-  
+ cleanfailed(dockers) 
    
 if __name__=='__main__':
   leaderip = sys.argv[1]
