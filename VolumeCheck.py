@@ -173,6 +173,7 @@ def cleanfailed(dockers):
         cmdline = '/TopStor/getdomvolstatus.sh '+dom[0]
         result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('_result')[1]
         if result in fails:
+            print('cleaning',dom[0],dom[1])
             cmdline = 'docker rm -f '+ dom[1]
             result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     
