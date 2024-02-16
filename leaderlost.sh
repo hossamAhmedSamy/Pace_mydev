@@ -12,10 +12,11 @@ clusterip=`echo $@ | awk '{print $7}'`
 losthost=`echo $@ | awk '{print $8}'`
 enpdev='enp0s8'
 
-rm -rf /etc/chrony.conf
-cp /TopStor/chrony.conf /etc/
-sed -i "s/MASTERSERVER/$nextleadip/g" /etc/chrony.conf
-systemctl restart chronyd
+
+#rm -rf /etc/chrony.conf
+#cp /TopStor/chrony.conf /etc/
+#sed -i "s/MASTERSERVER/$nextleadip/g" /etc/chrony.conf
+#systemctl restart chronyd
 echo $myhost | grep $nextlead 
 if [ $? -ne 0 ];
 then
