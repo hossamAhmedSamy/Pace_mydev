@@ -33,6 +33,9 @@ dirtydic = { 'pool': 0, 'volume': 0 }
 croncallrun = 0
 refresh = 0
 selectsparerun = 0 
+volrun = 0
+poolrun = 0
+importrun = 0 
 
 def heartbeatpls():
  global leader, myhost
@@ -68,6 +71,7 @@ def iscsiwatchdogproc():
 def croncallproc():
  global leaderip, croncallrun, leader, myhost, myhostip
  if croncallrun == 1:
+    print('bypassing croncall')
     return
  print('running croncall')
  croncallrun = 1
@@ -101,7 +105,12 @@ def addactiveproc():
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
 
 def selectimportproc():
- global leader, leaderip, myhost, myhost, myhostip, etcdip
+ global leader, leaderip, myhost, myhost, myhostip, etcdip, importrun
+ if importrun == 1:
+    print('bypassing selectimport')
+    return
+ importrun = 1
+
  try:
   allpools=get(etcdip, 'pools/','--prefix')
   selectimport(myhost,allpools,leader)
@@ -111,10 +120,15 @@ def selectimportproc():
   with open('/root/pingerr','a') as f:
    f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+ importrun = 0 
    
 
 def zpooltoimportproc():
- global leader, myhost, leaderip, myhostip, etcdip, dirtydic
+ global leader, myhost, leaderip, myhostip, etcdip, dirtydic, poolrun
+ if poolrun == 1:
+    print('bypassing poolimporting')
+    return
+ poolrun = 1
  dirtypool = int(dirtydic['pool'])
  if int(dirtydic['pool']) >= 10:
   dirtydic['pool'] = 0
@@ -130,9 +144,14 @@ def zpooltoimportproc():
   with open('/root/pingerr','a') as f:
    f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+ poolrun = 0
  
 def volumecheckproc():
- global leader, myhost, leaderip, myhostip, etcdip, dirty
+ global leader, myhost, leaderip, myhostip, etcdip, dirtydic, volrun
+ if volrun == 1:
+    print('bypassing volumeimporting')
+    return
+ volrun = 1
  dirtyvol = int(dirtydic['volume'])
  if dirtyvol > 12  :
   dirtydic['volume'] = 0
@@ -149,7 +168,7 @@ def volumecheckproc():
   with open('/root/pingerr','a') as f:
    f.write(e)
   print('EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
-
+ volrun = 0
 def refreshall():
  global leaderip, leader, myhost, myhostip, etcdip, refresh
  while refresh == 1:
@@ -179,6 +198,7 @@ def refreshall():
 def selectspareproc():
  global leader, myhost, selectsparerun
  if selectsparerun == 1:
+    print('bypassing selectspare')
     return
  selectsparerun = 1
  try:
@@ -335,6 +355,7 @@ if __name__=='__main__':
   with ProcessPoolExecutor(6) as e:
     for i in range(len(loopers)*2):
      args = loopers[i % len(loopers)]
+     print('starting a new task',i,args)
      res = e.submit(CommonTask,args)
      dirty = get(etcdip, 'dirty','--prefix')
      for dirt in dirty:

@@ -175,7 +175,7 @@ def cleanfailed(dockers):
         print('dock:',cmdline,'....',result)
         if result in fails:
             print('cleaning',dom[0],dom[1])
-            cmdline = 'docker rm -f '+ dom[1]
+            cmdline = 'docker restart '+ dom[1]
             result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
     
 def volumecheck(etcds, replis, *args):

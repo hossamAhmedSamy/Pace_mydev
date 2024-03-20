@@ -108,9 +108,9 @@ def feature_calc(i, k):
         combinations[res[0]] = res[2]
         print('comb0',combinations[res[0]])
     else:
-        print('comb1',combinations[res[0]])
+        #print('comb1',combinations[res[0]])
         combinations[res[0]] = combinations[res[0]]+res[2]
-        print('comb2',combinations[res[0]])
+        #print('comb2',combinations[res[0]])
     return res   
                 
 def combine_features(column_values):
