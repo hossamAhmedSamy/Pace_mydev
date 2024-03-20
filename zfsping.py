@@ -115,13 +115,13 @@ def selectimportproc():
 
 def zpooltoimportproc():
  global leader, myhost, leaderip, myhostip, etcdip, dirtydic
- dirty = int(dirtydic['pool'])
+ dirtypool = int(dirtydic['pool'])
  if int(dirtydic['pool']) >= 10:
   dirtydic['pool'] = 0
   return
- dirty += 1 
- put(etcdip, 'dirty/pool', str(dirty))
- dirtydic['pool'] = dirty
+ dirtypool += 1 
+ put(etcdip, 'dirty/pool', str(dirtypool))
+ dirtydic['pool'] = dirtypool
  try:
   zpooltoimport(leader, leaderip, myhost, myhostip, etcdip)
  except Exception as e:
@@ -133,13 +133,12 @@ def zpooltoimportproc():
  
 def volumecheckproc():
  global leader, myhost, leaderip, myhostip, etcdip, dirty
- dirty = int(dirtydic['volume'])
- if dirty > 12  :
-  dirty = 0
+ dirtyvol = int(dirtydic['volume'])
+ if dirtyvol > 12  :
+  dirtydic['volume'] = 0
   return
- dirty += 1 
- put(etcdip, 'dirty/volume', str(dirty))
- dirtydic['volume'] = dirty
+ dirtydic['volume'] = dirtyvol + 1 
+ put(etcdip, 'dirty/volume', str(dirtydic['volume']))
  try:
   etcds = get(etcdip, 'volumes','--prefix')
   replis = get(etcdip, 'replivol','--prefix')
