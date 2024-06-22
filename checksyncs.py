@@ -17,8 +17,8 @@ from collectconfig import collectConfig
 
 dirtydic = { 'pool': 0, 'volume': 0 } 
 syncanitem = [ 'getconfig','cversion','priv','dirty','hostdown', 'diskref', 'replipart','evacuatehost','Snapperiod', 'cron','UsrChange', 'GrpChange', 'user','group','nextlead','cluip','ipaddr', 'namespace', 'tz','ntp','gw','dns','cf' ]
-forReceivers = [ 'user', 'group', 'GrpChange', 'UsrChange' ]
 special1 = [ 'passwd' ]
+forReceivers = [ 'user', 'group', 'GrpChange', 'UsrChange' ] + special1
 wholeetcd = [ 'offlinethis','localrun','known','nmspce','gateway','deens','enteepe', 'teezee','ceecee', 'pool','pools','cversion', 'needtoreplace','Partnr', 'Snappreiod','leader', 'running','volumes','ports', 'offlines']
 etcdonly = [ 'cleanlost','balancedtype','sizevol', 'ActPool', 'alias', 'hostipsubnet', 'allowedPartners','activepool', 'poolnxt','pools', 'logged','ActivePartners','configured','ready', 'pool']
 restartetcd = wholeetcd + etcdonly
@@ -173,9 +173,11 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
  global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
  print('***************************************************************************')
  print('syncing replication data')
+ print(replirev, leader,leaderip,myhost, myhostip)
  print('***************************************************************************')
  flag=1
  pport = replirev[1]
+ print('bug',pport)
  grpfninit(leader,leaderip, myhost,myhostip,pport)
  usrfninit(leader,leaderip, myhost,myhostip,pport)
  myalias = replirev[0].split('/')[-2]
@@ -508,9 +510,6 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
   dhcps = [x[1] for x in allsyncs if 'request/dhcp' in x[0] ]
   requests = [ x[1] for x in allsyncs if 'request/dhcp' not in x[0] ]
   notrights = [ x for x in dhcps if x not in requests ]
-  print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
-  print(notrights)
-  print('ddddddddddddddddddddddddddddddddddddddddddddddddddd')
   toprunedic = dict()
   for prune in toprune:
    if prune[1] not in toprunedic and 'request' in prune[0]:
