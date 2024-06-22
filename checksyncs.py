@@ -181,7 +181,6 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
  grpfninit(leader,leaderip, myhost,myhostip,pport)
  usrfninit(leader,leaderip, myhost,myhostip,pport)
  myalias = replirev[0].split('/')[-2]
- print(myalias)
  allsyncs = getnoport(leaderip,pport,'sync','request') 
  newallsyncs = []
  for sync in allsyncs:
@@ -216,11 +215,13 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
    opers= syncleft.split('/')[2].split('_')
    print('#########################################################################')
    print('the sync',sync)
-   if sync in wholeetcd :
+   if sync in wholeetcd+special1 :
     if sync == 'Partnr':
-      synckeys(leaderip, myhostip, 'Partner', 'Partner')
+      print('iam here')
+      synckeysnoport(leaderip, pport, leaderip, 'Partner', 'Partner')
     else:
-        synckeys(leaderip,myhostip, sync,sync)
+      print('or here')
+      synckeysnoport(leaderip, pport, leaderip, sync,sync)
    if sync in etcdonly and myhost != leader:
      if opers[0] == 'Add':
       if 'Split' in opers[1]:
@@ -311,6 +312,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
    if sync in special1 :
       try:
        cmdline='/TopStor/'+opers[0]+' '+opers[1]+' '+opers[2]
+       print('replipass',cmdline)
        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
       except:
        print('in case of admin change, the reuslt is not that ok')
