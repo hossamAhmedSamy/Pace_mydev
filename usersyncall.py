@@ -28,12 +28,22 @@ def thread_add(user,syncip, tosync=''):
  userinfo=user[1].split(':')
  userid=userinfo[0]
  usergd=userinfo[1]
- userhome=userinfo[2]
- cmdline=['/TopStor/UnixAddUser_sync',leader, leaderip, myhost, myhostip, username,userhash,userid,usergd,userhome]
+ usersplit = user[1].split('/')
+ homePool = usersplit[1]
+ usergroups = usersplit[2] 
+ userpass = userhash
+ size = usersplit[3]
+ HomeAddr = usersplit[-3]
+ HomeSubnet = usersplit[-2]
+ active = usersplit[-1]
+ permissions = ",".join(usersplit[4:-3])
+ cmdline=['/TopStor/UnixAddUser',leaderip,username, homePool, usergroups,userhash, size, HomeAddr, HomeSubnet, pullsync, userid,usergd,active, permissions]
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
- put(syncip, user[0],user[1])
- put(syncip, 'usershash/'+username,userhash)
- print(' '.join(cmdline)) 
+#no need to use the below since we are using UnixAddUser now
+# put(syncip, user[0],user[1])
+# put(syncip, 'usershash/'+username,userhash)
+# print(' '.join(cmdline)) 
+#--------------------------------------------------
 
 def thread_del(username,syncip, pullsync='normal'):
  global allusers, leader ,leaderip, myhost, myhostip
