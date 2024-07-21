@@ -23,6 +23,11 @@ def thread_add(user,syncip, tosync=''):
   f.write(str(user)+' + '+str(username)+'\n')
  if 'pullsync' in tosync:
     userhash=getnoport(leaderip,pport,'usershash/'+username)[0]
+    everyone=getnoport(leaderip,pport,'usersigroup/Everyone',username)
+    if '_1' not in str(everyone):
+        everyone=',Everyone'
+    else:
+        everyone=''
  else:
     userhash=get(leaderip,'usershash/'+username)[0]
  userinfo=user[1].split(':')
@@ -37,13 +42,8 @@ def thread_add(user,syncip, tosync=''):
  HomeSubnet = usersplit[-2]
  active = usersplit[-1]
  permissions = ",".join(usersplit[4:-3])
- cmdline=['/TopStor/UnixAddUser',leaderip,username, homePool, usergroups,userhash, size, HomeAddr, HomeSubnet, tosync, userid,usergd,active, permissions,'system']
+ cmdline=['/TopStor/UnixAddUser',leaderip,username, homePool, 'groups'+usergroups+everyone,userhash, size, HomeAddr, HomeSubnet, tosync, userid,usergd,active, permissions,'system']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
-#no need to use the below since we are using UnixAddUser now
-# put(syncip, user[0],user[1])
-# put(syncip, 'usershash/'+username,userhash)
-# print(' '.join(cmdline)) 
-#--------------------------------------------------
 
 def thread_del(username,syncip, pullsync='normal'):
  global allusers, leader ,leaderip, myhost, myhostip
