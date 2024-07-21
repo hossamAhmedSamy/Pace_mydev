@@ -37,7 +37,7 @@ def thread_add(user,syncip, tosync=''):
  HomeSubnet = usersplit[-2]
  active = usersplit[-1]
  permissions = ",".join(usersplit[4:-3])
- cmdline=['/TopStor/UnixAddUser',leaderip,username, homePool, usergroups,userhash, size, HomeAddr, HomeSubnet, pullsync, userid,usergd,active, permissions]
+ cmdline=['/TopStor/UnixAddUser',leaderip,username, homePool, usergroups,userhash, size, HomeAddr, HomeSubnet, tosync, userid,usergd,active, permissions,'system']
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 #no need to use the below since we are using UnixAddUser now
 # put(syncip, user[0],user[1])
