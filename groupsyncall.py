@@ -17,7 +17,7 @@ def grpfninit(ldr,ldrip,hst,hstip,pprt='-1'):
  return
 #def thread_add(*user):
 
-def thread_add(user,syncip):
+def thread_add(user,syncip,tosync='pullavail'):
  global allusers, leader ,leaderip, myhost, myhostip
  username=user[0].replace('usersigroup/','')
  if 'Everyone' == username:
@@ -33,7 +33,7 @@ def thread_add(user,syncip):
   usergd=userigroup[1]
  except:
     return
- cmdline=['/TopStor/UnixAddGroup_sync',leader, leaderip, myhost, myhostip, username,userid,usergd,groupusers]
+ cmdline=['/TopStor/UnixAddGroup',leaderip, username, groupusers, pullsync, userid,usergd, 'system']
  put(syncip, user[0],user[1])
  result=subprocess.run(cmdline,stdout=subprocess.PIPE)
 
