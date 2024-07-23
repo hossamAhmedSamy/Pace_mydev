@@ -100,7 +100,7 @@ def syncinit(leader,leaderip, myhost,myhostip):
   put(leaderip,'sync/'+sync+'/'+'initial/request/'+myhost,sync+'_initial_'+str(stamp)) 
  return
 
-def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync='',pport='',myalias=''):
+def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync='pullavail',pport='',myalias=''):
  global syncs, syncanitem, forReceivers, etcdonly, allsyncs, noinit
  syncleft = syncinfo[0]
  stamp = syncinfo[1]
@@ -153,12 +153,12 @@ def doinitsync(leader,leaderip,myhost, myhostip, syncinfo,pullsync='',pport='',m
  return
 
 
-def syncall(leader,leaderip,myhost, myhostip):
+def syncall(leader,leaderip,myhost, myhostip,pullsync='pullavail'):
  global syncs, syncanitem, forReceivers, etcdonly, allsyncs
  allinitials = get(leaderip,'sync','initial')
  myinitials = [ x for x in allinitials if 'initial' in str(x)  and '/request/dhcp' not in str(x) ] 
  for syncinfo in myinitials:
-   doinitsync(leader,leaderip,myhost,myhostip, syncinfo)
+   doinitsync(leader,leaderip,myhost,myhostip, syncinfo,pullsync)
 
  allrequests = get(leaderip,'sync','--prefix')
  otherrequests = [ x for x in allrequests if '/request/dhcp' not in str(x) and 'initial' not in str(x) ] 
@@ -297,7 +297,9 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
         print(opers,sync)
         if 'Add' in str(' '.join(opers)):
             if 'user' in sync:
+               print('____________________________________________________________________________________________________________')
                oneusersync('Add',opers[2],'pullsync') 
+               print('____________________________________________________________________________________________________________')
             else:
                onegroupsync('Add',opers[2],'pullsync') 
         elif 'Del' in opers[0]:
@@ -328,7 +330,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
 
 
 
-def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
+def syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullavail'):
  global syncs, syncanitem, forReceivers, etcdonly,  allsyncs
  #if 'pullsync' in pullsync:
  #   print('***************************************************************************')
@@ -342,7 +344,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         clusterhost = leaderip
  else:
     etcdip = myhostip
- allsyncs = get(leaderip,pullsync+'sync','request') 
+ allsyncs = get(leaderip,'sync','request') 
  if 'pullsync' in pullsync:
     print('allsyncs',pullsync,allsyncs)
  donerequests = [ x for x in allsyncs if '/request/dhcp' in str(x) ] 
@@ -354,6 +356,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
         myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] and '/initial' not in x[0] ] 
  else:
     myrequests = [ x for x in allsyncs if x[1] not in mysyncs  and '/request/dhcp' not in x[0] and 'pullsync' not in pullsync ] 
+    print('iiiiiiiiiiiiiiiiiiiiiiiiiihere')
  if len(myrequests) > 1:
     print('multiple requests',myrequests)
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
@@ -454,10 +457,26 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync=''):
        if sync in ['cluip','ipaddr', 'namespace','tz','ntp','gw','dns', 'cf']: 
         cmdline='/TopStor/HostManualconfig'+sync.upper()+" "+" ".join([leader, leaderip, myhost, myhostip]) 
         print('cmdline',cmdline)
+        result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
        else:
-        cmdline='/TopStor/'+opers[0]+" "+" ".join(opers[1:])
-       print('cmd',cmdline)
-       result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+        print(opers,sync)
+        if 'Add' in str(' '.join(opers)):
+            if 'user' in sync:
+               print('____________________________________________________________________________________________________________')
+               oneusersync('Add',opers[2],'pullavail') 
+               print('____________________________________________________________________________________________________________')
+            else:
+               onegroupsync('Add',opers[2],'pullavail') 
+        elif 'Del' in opers[0]:
+            if 'user' in sync:
+               oneusersync('Del',opers[2],'pullavail') 
+            else:
+               onegroupsync('Del',opers[2],'pullavail') 
+        else:    #'UnixChange' in opers[0]:
+            cmdline = '/TopStor/'+opers[0]+' '+leaderip+' '+" ".join(opers[2:]) 
+            print('cmdline',cmdline)
+            result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
+
    #if sync in special1 and myhost != leader :
 
    if sync in special1 :
