@@ -491,7 +491,10 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullavail'):
     print('there is a sync that is not defined:',sync)
     return
    if flag == 1 and evacuateflag == 0:
-    put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
+    if 'sync' in pullsync:
+        put(leaderip,pullsync+syncleft+'/'+myhost, stamp)
+    else:
+        put(leaderip,syncleft+'/'+myhost, stamp)
    if myhost != leader and flag == 1 and evacuateflag == 0:
     print(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
     put(myhostip, syncleft+'/'+myhost, stamp)
