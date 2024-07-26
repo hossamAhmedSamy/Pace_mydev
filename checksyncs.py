@@ -308,7 +308,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
             else:
                onegroupsync('Del',opers[2],'pullsync') 
         elif sync in ['UsrChange', 'GrpChange']:
-            cmdline = '/TopStor/'+opers[0]+' '+leaderip+' '+" ".join(opers[2:-1]+' '+'pullsync') 
+            cmdline = '/TopStor/'+opers[0]+' '+leaderip+' '+" ".join(opers[2:-1])+' '+'pullsync' 
             print('cmdline',cmdline)
             result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
         
@@ -476,7 +476,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullavail'):
             else:
                onegroupsync('Del',opers[2],'pullavail') 
         elif sync in ['UsrChange', 'GrpChange']:
-            cmdline = '/TopStor/'+opers[0]+' '+leaderip+' '+" ".join(opers[2:-1]+' '+'pullsync') 
+            cmdline = '/TopStor/'+opers[0]+' '+leaderip+' '+" ".join(opers[2:-1])+' '+'pullsync' 
             print('cmdline',cmdline)
             result=subprocess.check_output(cmdline.split(),stderr=subprocess.STDOUT).decode('utf-8')
         else:    
