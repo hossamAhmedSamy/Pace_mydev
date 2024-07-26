@@ -60,7 +60,7 @@ def thread_del(username,syncip, pullsync='pullavail'):
  if  'NoUser' == username:
   return
  if username not in str(allusers) and 'admin' != username:
-  cmdline=['/TopStor/UnixDelUser',leaderip, username,'system']
+  cmdline=['/TopStor/UnixDelUser',leaderip, username,'system',pullsync]
   result=subprocess.run(cmdline,stdout=subprocess.PIPE)
   dels(syncip,'user',username)
 
@@ -106,11 +106,8 @@ def oneusersync(oper,usertosync,tosync='pullavail'):
         user=get(leaderip,'usersinfo', usertosync)[0]
     thread_add(user,syncip,tosync)
  else:
-   if 'pullsync' in tosync:
     user = usertosync
-   else:
-    user=user[0].replace('usersinfo/','')
-   thread_del(user,syncip,tosync)
+    thread_del(user,syncip,tosync)
  
   
 if __name__=='__main__':
