@@ -17,7 +17,7 @@ def grpfninit(ldr,ldrip,hst,hstip,pprt='-1'):
  return
 #def thread_add(*user):
 
-def thread_add(user,syncip,tosync='pullavail'):
+def thread_add(user,syncip,pullsync='pullavail'):
  global allusers, leader ,leaderip, myhost, myhostip
  username=user[0].replace('usersigroup/','')
  if 'Everyone' == username:
