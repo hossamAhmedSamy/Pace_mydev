@@ -91,7 +91,7 @@ def onegroupsync(oper,usertosync,tosync='pullavail'):
     thread_add(user,syncip)
  else:
     user = usertosync
-  thread_del(user,tosync)
+    thread_del(user,tosync)
     
  
   
