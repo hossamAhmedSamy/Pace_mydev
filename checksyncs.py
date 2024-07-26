@@ -70,7 +70,7 @@ def insync(leaderip, leader):
                 isinsync = 0
                 break
             if len(syncgroup) > 0:
-                print(syncgroup)
+                print('syncgroup:',syncgroup)
                 print("some nodes didn't sync completely")
                 isinsync = 0 
                 break
@@ -198,7 +198,7 @@ def replisyncrequest(replirev, leader,leaderip,myhost, myhostip):
  if len(myrequests) > 1:
      myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
  
- print('myrequests', myrequests)
+ print('myrequests are', myrequests)
  for syncinfo in myrequests:
   evacuateflag = 0
   flag = 1
@@ -360,7 +360,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullavail'):
  if len(myrequests) > 1:
     print('multiple requests',myrequests)
     myrequests.sort(key=lambda x: x[1].split('_')[1], reverse=False)
- print('myrequests', myrequests)
+ print('myrequests are', myrequests)
  for syncinfo in myrequests:
   evacuateflag = 0
   flag = 1
@@ -462,9 +462,7 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullavail'):
         print(opers,sync)
         if 'Add' in str(' '.join(opers)):
             if 'user' in sync:
-               print('____________________________________________________________________________________________________________')
                oneusersync('Add',opers[2],'pullavail') 
-               print('____________________________________________________________________________________________________________')
             else:
                onegroupsync('Add',opers[2],'pullavail') 
         elif 'Del' in opers[0]:
@@ -518,8 +516,10 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullavail'):
    if done[1] not in str(otherdones) and done[1] not in deleted :
     dels(myhostip, 'sync', done[1])
     deleted.add(done[1])
+  print('hihihihi-----------------------------------------')
+  print(set(get(myhostip,'sync','UsrChange')+['hi'])-set(get(leaderip,'sync','UsrChange')))
+  print('hihihihi-----------------------------------------')
  else:
-  print('hihihihi')
   actives = len(get(leaderip,'ActivePartners','--prefix')) 
   receivers = get(leaderip,'Partner','Receiver') 
   if '_1' == receivers[0]:
@@ -553,11 +553,11 @@ def syncrequest(leader,leaderip,myhost, myhostip,pullsync='pullavail'):
    if toprunedic[prune][0] > totalactives or ( len(isinreadis) > 0 and toprunedic[prune][0] > totalreadis):
     if 'initial' not in prune:
         dels(leaderip,'sync',prune) 
- replirevs = get(leaderip,'replirev','--prefix')
- print(replirevs)
- for replirev in replirevs:
+  replirevs = get(leaderip,'replirev','--prefix')
+  print(replirevs)
+  for replirev in replirevs:
      replisyncrequest(replirev,leader, leaderip, myhost, myhostip) 
- insync(leaderip, leader) 
+  insync(leaderip, leader) 
     
  return     
 
