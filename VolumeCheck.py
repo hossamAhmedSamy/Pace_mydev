@@ -127,6 +127,7 @@ def cifs( etcds, replis, dockers):
 
 def homes(etcds, replis, dockers):
  global leader, leaderip, myhost, myhostip, etcdip
+ print('----------------')
  dirtyset = getdirtyvols('home', etcds, replis, dockers)
  print('dirty',dirtyset)
  for res in dirtyset:
