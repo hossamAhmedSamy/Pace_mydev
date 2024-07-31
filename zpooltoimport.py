@@ -5,7 +5,7 @@ from logqueue import queuethis, initqueue
 from etcdput import etcdput as put
 from etcdgetpy import etcdget as get 
 from etcddel import etcddel as dels
-from poolstoimport import getpoolstoimport
+from poolstoimport import getpoolstoimport, initgetpoolstoimport
 from time import time as stamp
 from time import sleep
 from ast import literal_eval as mtuple
@@ -50,6 +50,7 @@ def zpooltoimport(*args):
      myhostip = args[4]
      etcdip = args[5]
      initqueue(leaderip, myhost) 
+     initgetpoolstoimport(leader,leaderip,myhost,myhostip)
      return
  poouids = get(etcdip,'poouids',myhost) 
  nextpools=get(leaderip, 'poolnxt', '--prefix') 
@@ -128,6 +129,8 @@ def zpooltoimport(*args):
  cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
  activepools = get(leaderip, 'ActPool','--prefix')
  notactivepools = getpoolstoimport()
+ print('the notactivaepools',len(notactivepools),'\n',notactivepools)
+ exit()
  for notpname,notpid in notactivepools:
     print(notpname)
     print(notpid)
@@ -173,6 +176,8 @@ if __name__=='__main__':
         etcdip = leaderip 
     else:
         etcdip = myhostip
+    initqueue(leaderip, myhost) 
+    initgetpoolstoimport(leader,leaderip,myhost,myhostip)
     zpooltoimport('hi')
  #cmdline='cat /pacedata/perfmon'
  #perfmon=str(subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout)
