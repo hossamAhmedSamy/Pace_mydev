@@ -17,7 +17,6 @@ def getpoolstoimport():
  cmdline='/sbin/zpool import '
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
  sty=str(result)[2:][:-3].replace('\\t','').split('\\n')
- print(sty)
  cmdline='/bin/lsscsi -is'
  result=subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout
  drives=[x.split('/dev/')[1].split(' ')[0] for x in str(result)[2:][:-3].replace('\\t','').split('\\n') if 'zd' not in x and '/sd' in x ]
@@ -60,8 +59,10 @@ def getpoolstoimport():
  lists={'pools':lpools,'disks':ldisks,'defdisks':ldefdisks,'inusedisks':linusedisks,'freedisks':lfreedisks,'sparedisks':lsparedisks,'raids':lraids,'volumes':lvolumes,'snapshots':lsnapshots, 'hosts':list(lhosts), 'phosts':list(phosts)}
  silvering = 'no'
  silveringflag = 'no'
+ poolid = ''
  for a in sty:
   b=a.split()
+  print(',,,,,,,,,b:',b)
   if len(b) > 0:
    zname = b[0]
    b.append(b[0])
@@ -70,11 +71,12 @@ def getpoolstoimport():
     for lss in lsscsi:
      if any('/dev/'+b[0] in lss for drive in drives):
       b[0]='scsi-'+lss.split()[6]
-   
-  if "pdhc" in str(b) and  'pool' not in str(b):
+  if 'id:' in str(b):
+    poolid = b[1] 
+  if "pdhcp" in str(b) and  'pool' not in str(b):
    raidlist=[]
    volumelist=[]
-   zdict={}
+   zdict = {}
    rdict={}
    ddict={}
    zfslist=[x for x in zfslistall if b[0] in x ]
@@ -96,10 +98,8 @@ def getpoolstoimport():
     cmdline='/sbin/zpool set cachefile=/TopStordata/'+b[0]+' '+b[0]
     subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
     cachetime='notset'
-   #put('pools/'+b[0],myhost)
-    print('pools/'+b[0],myhost)
    poolsstatus.append(('pools/'+b[0],myhost))
-   zdict={ 'name':b[0],'changeop':b[1], 'availtype':availtype, 'status':b[1],'host':myhost, 'timestamp':str(cachetime), 'raidlist': raidlist ,'volumes':volumelist, 'silvering':'no'}
+   zdict={ 'name':b[0],'changeop':b[1],'guid':poolid, 'availtype':availtype, 'status':b[1],'host':myhost, 'timestamp':str(cachetime), 'raidlist': raidlist ,'volumes':volumelist, 'silvering':'no'}
    zpool.append(zdict)
    lpools.append(zdict) 
   elif any(raid in str(b) for raid in raidtypes):

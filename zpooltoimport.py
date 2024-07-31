@@ -27,18 +27,15 @@ def dosync(sync, *args):
   put(leaderip, args[0]+'/'+leader,args[1])
   return 
 
-def selecthost(pool,readies,cpools):
-    selectedhost = [ 10000,'' ]
-    print('cpools',cpools)
+def selecthost(poolinfo,readies):
+    selectedhost = [ -1 ,'' ]
     for hostinfo in readies:
-        print('hostinfo',readies)
         host = hostinfo[0].split('/')[1]
-        counts = list(str(cpools)).count(host)
-        if selectedhost[0] > counts:
+        counts = list(str(poolinfo['raidlist'])).count(host)
+        if selectedhost[0] < counts:
             selectedhost =  [ counts, [ host ] ]
         elif selectedhost[0] == counts:
             selectedhost[1] = selectedhost[1] + [ host ]
-    print('select host', selectedhost)
     return selectedhost[1]
         
 def zpooltoimport(*args):
@@ -129,37 +126,29 @@ def zpooltoimport(*args):
  cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
  activepools = get(leaderip, 'ActPool','--prefix')
  notactivepools = getpoolstoimport()
- print('the notactivaepools',len(notactivepools),'\n',notactivepools)
- exit()
- for notpname,notpid in notactivepools:
-    print(notpname)
-    print(notpid)
+ for notpo in notactivepools:
+    notpname = notpo['name']
+    notpid = notpo['guid'] 
     if (notpname in str(activepools) and (notpid in str(activepools) or len(readies) == 1)) or notpname not in str(activepools): 
-        cpools = cpools + [notpname] 
+        cpools = cpools + [notpo] 
     if len(readies) == 1:
         dels(leaderip, 'ActPool/'+notpname)
  
- print('with imported pools',cpools)
  for poolinfo in cpools:
-    pool = poolinfo.split('_')[0]
+    pool = poolinfo['name']
     if pool not in str(needtoimport):
-        nxthosts=selecthost(pool,readies,cpools)
+        nxthosts=selecthost(poolinfo,readies)
+        print('nxthosts',nxthosts)
         poolnxt=get(leaderip,'poolnxt/'+pool)[0]
         if poolnxt in str(nxthosts):
             continue 
-        print('hihihih',nxthosts,pool)
-        for nxthost in nxthosts:
-            if nxthost not in str(poolinfo):
-                hostnxtpools = [ x for x in nextpools if nxthost in str(x) ]
-                print('hostnxtpools',hostnxtpools,pool)
-                if pool not in str(hostnxtpools):
-                    print('adding')
-                    dels(leaderip,'poolnxt/'+pool)
-                    put(leaderip,'poolnxt/'+pool,nxthost)
-
-                    print('sync poolnxt Add')
-                    dosync('poolnxt', 'sync/poolnxt/Add_'+pool+'_'+nxthost+'/request','poolnxt_'+str(stamp()))
-                    break
+        nxthost = nxthosts[0]
+        print('adding')
+        #dels(leaderip,'poolnxt/'+pool)
+        put(leaderip,'poolnxt/'+pool,nxthost)
+        print('sync poolnxt Add',nxthost,pool)
+        dels(leaderip,'sync/poolnxt',pool)
+        dosync('poolnxt', 'sync/poolnxt/Add_'+pool+'_'+nxthost+'/request','poolnxt_'+str(stamp()))
  return
      
        

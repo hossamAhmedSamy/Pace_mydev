@@ -562,6 +562,7 @@ def spare2(*args):
  allinfo = getall(leaderip) 
 
  alldisks = {}
+ print(allinfo)
  for disk in allinfo['disks']:
     if allinfo['disks'][disk]['changeop'] not in ['free','ONLINE']:
         if myhost == allinfo['raids'][allinfo['disks'][disk]['raid']]['host']:
