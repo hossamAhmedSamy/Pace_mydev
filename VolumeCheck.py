@@ -58,6 +58,7 @@ def getdirtyvols(vtype, etcds, replis, dockers):
                     dirtyset.add(res)
         if reslist[7] not in dockers and 'active' in reslist[-1]:
             dirtyset.add(res)
+    print('dirtyset', dirtyset)
     return dirtyset
 
 def nfs( etcds, replis, exports):
@@ -110,19 +111,16 @@ def cifs( etcds, replis, dockers):
    else:
     left='volumes/CIFS/'+myhost+'/'+'/'.join(reslist[0:2])
    put(leaderip, left,res)
+   print('tosync this',leaderip, left,res)
    dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
-   #broadcasttolocal(left,res)
    if 'DOMAIN' in str(res):
-     #cmdline='/TopStor/cifsmember.sh '+leaderip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' cifs '+' '.join(reslist[9:])
      cmdline='/TopStor/cifs.py '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' CIFS_'+reslist[9]+' '+' '.join(reslist[9:])
-     print('cmdline',cmdline)
 
-     #cmdline='/TopStor/VolumeActivateCIFSdom '+leaderip+' vol='+reslist[1]+' user=system'
    else:
-     cmdline='/TopStor/cifs.py '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' CIFS '+' '.join(reslist[9:])
-    #cmdline='/TopStor/VolumeActivateCIFS '+leaderip+' vol='+reslist[1]+' user=system'
+    cmdline='/TopStor/cifs.py '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' CIFS '+' '.join(reslist[9:])
+    print('cif cifs: '+cmdline)
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
-   print(result)
+   print('cifs result',result)
    put(etcdip,'dirty/volume','0')
 
 def homes(etcds, replis, dockers):
@@ -140,9 +138,10 @@ def homes(etcds, replis, dockers):
    dosync('sync/volumes/_'+myhost+'/request','volumes_'+str(stamp()))
    #broadcasttolocal(left,res)
    cmdline='/TopStor/cifs.py '+leader+' '+leaderip+' '+myhost+' '+myhostip+' '+etcdip+' '+reslist[0]+' '+reslist[1]+' '+reslist[7]+' '+reslist[8]+' HOMEE '+' '.join(reslist[9:])
+   print('home cifs: '+cmdline)
     #cmdline='/TopStor/VolumeActivateCIFS '+leaderip+' vol='+reslist[1]+' user=system'
    result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
-   print(result)
+   print('result',result)
    put(etcdip,'dirty/volume','0')
 
 
