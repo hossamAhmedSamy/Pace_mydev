@@ -346,7 +346,7 @@ if __name__=='__main__':
   while zload > 65:
    sleep(2)
    counter += 1
-   if counter > 10:
+   if counter > 100:
     zload = 0
    else:
     zload = getload(leaderip,myhost)
@@ -361,6 +361,16 @@ if __name__=='__main__':
      for dirt in dirty:
       dirtydic[dirt[0].split('/')[1]] = dirt[1]
      print('---------dirty------',dirty)
-    sleep(2)
+     zload = 100
+     counter = 0
+     while zload > 65:
+      counter += 1
+      if counter > 100:
+       zload = 0
+      else:
+       zload = getload(leaderip,myhost)
+       print('still load high',zload,'counter',counter)
+       sleep(2)
+      print('load ok', zload)
  exit()
 
