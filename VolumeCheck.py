@@ -17,7 +17,10 @@ def dosync(*args):
   return 
 
 def getippos(vtype):
-    if ('cifs' or 'home') in vtype:
+    print('vvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
+    print('vtype',vtype)
+    print('vvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
+    if vtype in ['cifs', 'home']:
         return 7
     elif 'nfs' in vtype:
         return 9
@@ -34,7 +37,6 @@ def getdirtyvols(vtype, etcds, replis, dockers):
     etcdactive= [ x for x in etcds if 'active' in str(x) ]
     dirtyset = set()
     ipset = set()
-    print('###############3')
     for res in result:
         reslist=res.split('/')
         ippos = getippos(vtype)
@@ -48,13 +50,19 @@ def getdirtyvols(vtype, etcds, replis, dockers):
         if reslist[1] not in str(etcds):
             dirtyset.add(res)
         for dckr in dockers.split('\n'):
+            dckrip = dckr.split(' ')[-1].split('-')[-1]
+            if dckrip != reslist[ippos]:
+                continue
             if reslist[7] in dckr and reslist[-1] =='active':
                 dckrname=dckr.split(' ')[-1]
                 cmdline = 'docker inspect '+dckrname
                 result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8')
                 print(dckrname, reslist[1],reslist)
                 if reslist[1] not in str(result):
-                    print('not in')
+                    print('gggggggggggggggggggggggggggggggggggggggggg')
+                    print('not in',ippos, reslist[ippos], dckrip)
+                    print('reslist1',reslist[1], dckrname)
+                    print('gggggggggggggggggggggggggggggggggggggggggg')
                     dirtyset.add(res)
         if reslist[7] not in dockers and 'active' in reslist[-1]:
             dirtyset.add(res)
@@ -100,7 +108,9 @@ def nfs( etcds, replis, exports):
 def cifs( etcds, replis, dockers):
  global leader, leaderip, myhost, myhostip, etcdip
  dirtyset = getdirtyvols('cifs', etcds, replis, dockers)
+ print('cccccccccccccccccccccccccccccc')
  print('dirty',dirtyset)
+ print('cccccccccccccccccccccccccccccc')
  for res in dirtyset:
    reslist=res.split('/')
    print('update',reslist[1])
@@ -127,7 +137,9 @@ def homes(etcds, replis, dockers):
  global leader, leaderip, myhost, myhostip, etcdip
  print('----------------')
  dirtyset = getdirtyvols('home', etcds, replis, dockers)
+ print('hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
  print('dirty',dirtyset)
+ print('hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
  for res in dirtyset:
    reslist=res.split('/')
    print('update',reslist[1])
@@ -152,7 +164,6 @@ def iscsi(etcds, replis):
  cmdline = '/TopStor/getvols.sh iscsi'
  result = subprocess.run(cmdline.split(),stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
  result = [x for x in result if 'pdhc' in x]
- print('###############3')
  for res in result:
   reslist=res.split('/')
   print('reslist1',reslist[1])
