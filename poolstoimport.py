@@ -99,7 +99,7 @@ def getpoolstoimport():
     subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
     cachetime='notset'
    poolsstatus.append(('pools/'+b[0],myhost))
-   zdict={ 'name':b[0],'changeop':b[1],'guid':poolid, 'availtype':availtype, 'status':b[1],'host':myhost, 'timestamp':str(cachetime), 'raidlist': raidlist ,'volumes':volumelist, 'silvering':'no'}
+   zdict={ 'name':b[0],'changeop':b[1],'guid':poolid, 'availtype':availtype, 'status':b[1],'host':myhost, 'timestamp':str(cachetime), 'raids': raidlist ,'volumes':volumelist, 'silvering':'no'}
    zpool.append(zdict)
    lpools.append(zdict) 
   elif any(raid in str(b) for raid in raidtypes):

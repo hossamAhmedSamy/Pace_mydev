@@ -371,6 +371,6 @@ if __name__=='__main__':
        zload = getload(leaderip,myhost)
        print('still load high',zload,'counter',counter,'process number',i)
        sleep(2)
-      print('load ok', zload)
+     print('load ok', zload)
  exit()
 

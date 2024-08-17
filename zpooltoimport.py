@@ -6,6 +6,7 @@ from etcdput import etcdput as put
 from etcdgetpy import etcdget as get 
 from etcddel import etcddel as dels
 from poolstoimport import getpoolstoimport, initgetpoolstoimport
+from allphysicalinfo import getall 
 from time import time as stamp
 from time import sleep
 from ast import literal_eval as mtuple
@@ -28,15 +29,20 @@ def dosync(sync, *args):
   return 
 
 def selecthost(poolinfo,readies):
-    selectedhost = [ -1 ,'' ]
+    global leader, leaderip, myhost, myhostip, etcdip, stmapi
+    mincount = 1000000000 
+    selectedhost = 'nohost'
     for hostinfo in readies:
         host = hostinfo[0].split('/')[1]
-        counts = list(str(poolinfo['raidlist'])).count(host)
-        if selectedhost[0] < counts:
-            selectedhost =  [ counts, [ host ] ]
-        elif selectedhost[0] == counts:
-            selectedhost[1] = selectedhost[1] + [ host ]
-    return selectedhost[1]
+        if myhost == host and len(readies) > 1  :
+            continue   ########  pass this since we are searching for the next host 
+        counts = list(str(poolinfo['raids'])).count(host)
+        if counts  < mincount:
+            selectedhost =  host
+            mincount = counts
+        #elif selectedhost[0] == counts:
+        #    selectedhost[1] = selectedhost[1] + [ host ]
+    return selectedhost
         
 def zpooltoimport(*args):
  global leader, leaderip, myhost, myhostip, etcdip
@@ -54,8 +60,8 @@ def zpooltoimport(*args):
  if 'not reachable' in str(nextpools):
         return
  needtoimport=[ x for x in nextpools if myhost in str(x)] 
- pools = get(leaderip, 'pools/','--prefix')
- mypools = [ x for x in pools if myhost in str(x) ]
+ pools = [v for k,v in getall(leaderip)['pools'].items()]
+ mypools = [v  for v in pools if v['host'] == myhost ]
  if 'not reachable' in str(pools):
         return
  if '_1' in str(poouids):
@@ -123,9 +129,10 @@ def zpooltoimport(*args):
  readies=get(etcdip,'ready','--prefix')
  hosts=get(leaderip,'host','/current')
  
- cpools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
+ #pools = [poolinfo[0].split('/')[1]+'_'+poolinfo[1] for poolinfo in pools ]
  activepools = get(leaderip, 'ActPool','--prefix')
  notactivepools = getpoolstoimport()
+ cpools = pools
  for notpo in notactivepools:
     notpname = notpo['name']
     notpid = notpo['guid'] 
@@ -136,13 +143,14 @@ def zpooltoimport(*args):
  
  for poolinfo in cpools:
     pool = poolinfo['name']
+    if 'pree' in pool:
+     continue
     if pool not in str(needtoimport):
-        nxthosts=selecthost(poolinfo,readies)
-        print('nxthosts',nxthosts)
+        nxthost=selecthost(poolinfo,readies)
+        print('nxthosts',nxthost)
         poolnxt=get(leaderip,'poolnxt/'+pool)[0]
-        if poolnxt in str(nxthosts):
+        if poolnxt in str(nxthost):
             continue 
-        nxthost = nxthosts[0]
         print('adding')
         #dels(leaderip,'poolnxt/'+pool)
         put(leaderip,'poolnxt/'+pool,nxthost)
