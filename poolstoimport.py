@@ -167,6 +167,11 @@ def getpoolstoimport():
      #else:
      # cmdline='/pace/hostlost.sh '+z[6]
      # subprocess.run(cmdline.split(),stdout=subprocess.PIPE)
+    try:
+        print('zdict print', zdict)
+    except: 
+        print('this pool is failing, will ignore it', b)
+        continue
     if 'Availability' in zdict['availtype'] and 'DEGRAD' in rdict['changeop'] and 'UNAVAIL' not in b[1] and 'FAULT' not in b[1] and 'OFF' not in b[1] and 'REMOVED' not in b[1]:
      b[1] = 'ONLINE' 
     changeop=b[1]
