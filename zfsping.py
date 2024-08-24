@@ -181,18 +181,9 @@ def refreshall():
  zpooltoimport(leader, myhost)
  etcds = get(etcdip,'volumes','--prefix')
  replis = get(etcdip, 'replivol','--prefix')
+ putzpool()
  volumecheck(etcds, replis)
  spare2(leader, myhost)
- sleep(4)
- putzpool()
- spare2(leader, myhost)
- sleep(4)
- putzpool()
- spare2(leader, myhost)
- sleep(4)
- putzpool()
- spare2(leader, myhost)
- sleep(4)
  putzpool()
  refresh = 0 
 def selectspareproc():
@@ -202,11 +193,8 @@ def selectspareproc():
     return
  selectsparerun = 1
  try:
+  putzpool()
   clsscsi = 'nothing'
-  spare2(leader, myhost)
-  putzpool()
-  spare2(leader, myhost)
-  putzpool()
   spare2(leader, myhost)
   putzpool()
   cmdline='lsscsi -is'
