@@ -584,13 +584,18 @@ def spare2(*args):
         needtoreplace = ''
         toreplace = ''
         toplace = ''
-        for disks in bestdisks:
-            if diskset == set(disks[0].split(',')):
-                break
-            else:
-                toreplace = diskset - set(disks[0].split(','))
-                toplace = set(disks[0].split(',')) - diskset
+        bestdiskset = set(bestdisks.split(','))
+        print(diskset)
+        if diskset == bestdiskset:
+            print('already optimized')
+            continue 
+        else:
+                print('new arrangement')
+                toreplace = diskset - bestdiskset
+                toplace = bestdiskset - diskset
                 print('sssssssssssssssssssssssssssssss')
+                print(bestdiskset)
+                print(diskset)
                 print(toreplace, toplace)
                 print(allinfo['raids'][raid]['disklist'][0]['name'])
                 print('sssssssssssssssssssssssssssssss')
