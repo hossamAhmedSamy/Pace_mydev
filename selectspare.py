@@ -590,9 +590,12 @@ def spare2(*args):
             print('already optimized')
             continue 
         else:
-                print('new arrangement')
                 toreplace = diskset - bestdiskset
                 toplace = bestdiskset - diskset
+                if 'dm' in str(toreplace)+str(toplace):
+                    print('missing disks with no replacements')
+                    continue
+                print('new arrangement')
                 print('sssssssssssssssssssssssssssssss')
                 print(bestdiskset)
                 print(diskset)
