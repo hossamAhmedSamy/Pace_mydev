@@ -109,8 +109,8 @@ def mustattach(cmdline,disksallowed,raid):
     f.write('result: '+res.stdout.decode()+'\n')
     f.write('result: '+res.stderr.decode()+'\n')
    print('result', res.stderr.decode())    
-   if int(res.stderr.decode()) == 0:
-    dels('needtoreplace', spare['name'])
+   #if int(res.stderr.decode()) == 0:
+   dels('needtoreplace', spare['name'])
    return 
  
  
@@ -455,10 +455,11 @@ def solvedegradedraid(raid,diskname):
  sleep(2)
  with open('/root/dmproblem','w') as f:
     f.write('cmdline '+ " ".join(cmdline2)+'\n')
-    f.write('result: '+forget.stdout.decode()+'\n')
-    f.write('result: '+forget.stderr.decode()+'\n')
+    f.write('result: '+forget2.stdout.decode()+'\n')
+    f.write('result: '+forget2.stderr.decode()+'\n')
+    f.write('dmstuplst[0]',str(dmstuplst[0])+'\n')
  print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
- print('returncode',forget.returncode)
+ print('returncode',forget.returncode,dmstuplst)
  if forget.returncode == 0:
     put(etcdip, dmstuplst[0][0],'inuse/'+dmstup)
  else:
@@ -541,7 +542,7 @@ def spare2(*args):
            forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
            print('forget',forget.returncode)
            print('cmdline2'," ".join(cmdline2))
-           print('thereuslt',forget.stdout.decode())
+           print('theresult',forget.stdout.decode())
            print('return code',forget.returncode)
            if forget.returncode == 0: 
             dels(leaderip,'ask/needtoreplace',raidname)
@@ -580,7 +581,7 @@ def spare2(*args):
         faultyreplaceflag = solvefaultyreplace(allinfo['raids'][raid])
         if faultyreplaceflag > 0:
             continue
-        bestdisks = optimizedisks(allinfo['raids'][raid], alldisks)
+        bestdisks = optimizedisks(leaderip, allinfo['raids'][raid], alldisks)
         needtoreplace = ''
         toreplace = ''
         toplace = ''
@@ -592,7 +593,7 @@ def spare2(*args):
         else:
                 toreplace = diskset - bestdiskset
                 toplace = bestdiskset - diskset
-                if 'dm' in str(toreplace)+str(toplace):
+                if 'dm' in str(toreplace)+str(toplace) and len(bestdiskset) == 1:
                     print('missing disks with no replacements')
                     continue
                 print('new arrangement')
@@ -624,6 +625,7 @@ def spare2(*args):
                     alltoreplace = alltoreplace.union(toreplace)
                 
     continue
+ usedfree = []
  return
  
  
