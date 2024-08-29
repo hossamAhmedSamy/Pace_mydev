@@ -524,17 +524,24 @@ def spare2(*args):
       raidname = raidinfo[0].split('/')[-1]
       rmdiskname = raidinfo[1].split('/')[0]
       adiskname = raidinfo[1].split('/')[1]
-      print('rmdisk:',rmdisk)
+      print('rmdisk:',rmdiskname)
       print('raidname:',raidname)
       if 'mirror-temp' in raidname:
          cmdline2=['/sbin/zpool', 'attach','-f', poolname, rmdiskname,adiskname]
-      elif '_1' in rmdisk:
+      elif '_1' in rmdiskname:
          print(' the remove disk is not identified') 
          continue
       else:
-        print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
-        print('rmdisk:',allinfo['disks'][rmdisk])
-        print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
+        print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk', rmdiskname)
+        try:
+            print('rmdisk:',allinfo['disks'][rmdiskname])
+        except:
+            print('rmdisk',rmdiskname,'is not available, so starting over')
+            dels(leaderip,'ask/needtoreplace',adiskname)
+            dels(leaderip,'needtoreplace',adiskname)
+            continue
+            
+        print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk', rmdiskname)
         cmdline2=['/sbin/zpool', 'status',poolname]
         cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
         if rmdiskname in cpoolinfo:
@@ -550,7 +557,7 @@ def spare2(*args):
         dels(leaderip,'ask/needtoreplace',adiskname)
         dels(leaderip,'needtoreplace',adiskname)
       dels(leaderip,'ask/needtoreplace',adiskname)
-      dels(leaderip,'needtoreplace',adisksname)
+      dels(leaderip,'needtoreplace',adiskname)
       #cmd = ['systemctl', 'restart', 'zfs-zed']
       #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       #dels(leaderip,'ask/needtoreplace',raidname)
