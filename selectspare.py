@@ -401,7 +401,7 @@ def solvestriperaids(striperaids,freedisks,allraids):
  
 def solvedegradedraid(raid,diskname):
  global leader, leaderip, myhost, myhostip, etcdip
- if 'dm-' in str(raid):
+ if 'dm-' in str(diskname):
     return
  hosts=get(etcdip, 'ready','--prefix')
  hosts=[host[0].split('/')[1] for host in hosts]
@@ -561,16 +561,23 @@ def spare2(*args):
  hosts=get(etcdip, 'ready','--prefix')
  allhosts=set()
  allinfo = getall(leaderip) 
-
  alldisks = {}
- print(allinfo)
- for disk in allinfo['disks']:
-    if allinfo['disks'][disk]['changeop'] not in ['free','ONLINE']:
-        if myhost == allinfo['raids'][allinfo['disks'][disk]['raid']]['host']:
-            solvedegradedraid(allinfo['raids'][allinfo['disks'][disk]['raid']],allinfo['disks'][disk]['name'])
+ for pool in allinfo['pools']:
+    if allinfo['pools'][pool]['host'] not in myhost:
         continue
-    else:
-        alldisks[allinfo['disks'][disk]['name']] = allinfo['disks'][disk].copy() 
+    if allinfo['pools'][pool]['changeop'] in ['ONLINE']:
+        continue
+    for raid in allinfo['pools'][pool]['raids']:
+        if allinfo['raids'][raid]['changeop'] in ['ONLINE']:
+            continue
+        for disk in allinfo['raids'][raid]['disklist']:
+            if disk['changeop'] not in ['free','ONLINE']:
+                print('iamhere',disk)
+                if 'dm-' in disk['name']:
+                    disk['host'] = myhost
+                solvedegradedraid(raid,disk['name'])
+    #else:
+    #    alldisks[allinfo['disks'][disk]['name']] = allinfo['disks'][disk].copy() 
  if myhost != leader:
     return 
  alltoreplace = set()
