@@ -587,7 +587,7 @@ def spare2(*args):
         toplace = ''
         bestdiskset = set(bestdisks.split(','))
         print(diskset)
-        if diskset == bestdiskset:
+        if diskset == bestdiskset or len(list(toplace)) == 0 :
             print('already optimized')
             continue 
         else:
@@ -598,33 +598,23 @@ def spare2(*args):
                     continue
                 print('new arrangement')
                 print('sssssssssssssssssssssssssssssss')
-                print(bestdiskset)
-                print(diskset)
-                print(toreplace, toplace)
+                print('bestdisk set',bestdiskset)
+                print('old disk set',diskset)
+                print('to replace',toreplace)
+                print ('to place',  toplace)
                 print(allinfo['raids'][raid]['disklist'][0]['name'])
                 print('sssssssssssssssssssssssssssssss')
-                if len(toreplace) > 1:  #### this is how many disks to replace .. will be revised for double parity, raid5...etc.
-                    toreplace = ''
-                    toplace = ''
-                    continue
-                elif len(toreplace)  == 1 and alltoreplace == alltoreplace.union(toreplace):
-                    toreplace = ''
-                    toplace = ''
-                    continue
+                pool = allinfo['raids'][raid]['pool']
+                host = allinfo['raids'][raid]['host']
+                raid = allinfo['raids'][raid]['name']
+                 #break
+                if len(toreplace) == 0:
+                    toreplace = allinfo['raids'][raid]['disklist'][0]['name']
                 else:
-                    pool = allinfo['raids'][raid]['pool']
-                    host = allinfo['raids'][raid]['host']
-                    raid = allinfo['raids'][raid]['name']
-                    #break
-                    if len(toreplace) == 0:
-                        toreplace = allinfo['raids'][raid]['disklist'][0]['name']
-                    else:
-                        toreplace = list(toreplace)[0]
-                    print(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,toreplace+'/'+list(toplace)[0])
-                    put(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,toreplace+'/'+list(toplace)[0])
-                    alltoreplace = alltoreplace.union(toreplace)
-                
-    continue
+                    toreplace = list(toreplace)[0]
+                print(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,toreplace+'/'+list(toplace)[0])
+                put(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,toreplace+'/'+list(toplace)[0])
+                alltoreplace = alltoreplace.union(toreplace)
  usedfree = []
  return
  

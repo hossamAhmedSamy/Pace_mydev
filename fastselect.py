@@ -13,6 +13,7 @@ disksinfo = {}
 count = 0 
 mindisksize = 0 
 diskscat = {}
+mustinclude = ''
 
 def norm(val):
  units={'B':1/1024**2,'K':1/1024, 'M': 1, 'G':1024 , 'T': 1024**2 }
@@ -299,8 +300,6 @@ def optimizedisks(leaderip, fraid, fdisksinfo):
         count = 2
     disks = {'diskcount':count , 'disk': mindisksize }
     print('mustinclude', mustinclude)
-    #with open('/TopStordata/fastselectopt','w') as f:
-    #    f.write(str(count)+' '+str(mindisksize)+' '+str(disks)+' '+str(mustinclude)+'\n')
     combinations = dict()
     hosts = set()
     #disktypes = set()
@@ -341,7 +340,7 @@ def featuring(leaderip):
                 counter +=1
             diskscat[key]['disks'].append(disk)
             diskscat[key]['diskcount'] += 1
-    
+    print('mustinclude',mustinclude)
     elements.append(feature1)
     elements.append(feature2)
     elements.append(feature3)
@@ -355,7 +354,6 @@ def selectdisks(leaderip, fdisks,fdisksinfo,addtopool=''):
         f.write('fdisks: '+str(fdisks.keys())+'\n'+str(fdisks)+'\n'+str(fdisksinfo)+'/n')
     count = disks['diskcount']
     hosts = set()
-    mustinclude = ''
     print('count',count)
     #if count ==1:
     #    count = disks['diskcount'] + 1
