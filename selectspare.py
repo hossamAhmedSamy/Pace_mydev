@@ -593,9 +593,7 @@ def spare2(*args):
  for diskname in allinfo['disks']:
     disk = allinfo['disks'][diskname]
     if disk['changeop'] in ['free']:
-       print('adding disk',disk['name'])
        alldisks[disk['name']] = disk.copy() 
- print('alldisks:', alldisks.keys()) 
  needtoreplace = ''
  for raidname in allinfo['raids']:
     raid = allinfo['raids'][raidname]
@@ -644,10 +642,14 @@ def spare2(*args):
                     put(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raidname,x[0]+'/'+x[1])
  
  if alloptimized == 'no':
+    put(leaderip,'selectspareagain/'+myhost,'yes')
     print('still not all are optimized in this node')
  else:
     print('all is optimized in this node')
+    put(leaderip,'selectspareagain/'+myhost,'no')
+ 
  usedfree = []
+ print('_alloptimized',alloptimized)
  return
  
  

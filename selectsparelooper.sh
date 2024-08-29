@@ -8,7 +8,8 @@ cd /pace
 
 while true 
 do
+ echo another round
  selectspare
- sleep 2 
+ sleep 5 
 done
 
