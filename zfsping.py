@@ -19,7 +19,9 @@ from activeusers import activeusers
 from addactive import addactive
 from selectimport import selectimport
 from zpooltoimport import zpooltoimport
-from selectspare import spare2  
+#from selectspare import spare2  
+def spare2(x,y):
+ return
 from checksyncs import syncrequest, initchecks
 from VolumeCheck import volumecheck
 from multiprocessing import Process
