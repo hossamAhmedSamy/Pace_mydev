@@ -41,12 +41,12 @@ def solvefaultyreplace(raid):
     off_disk = 0
     for replacegroup in replacedict:
         for disk in replacedict[replacegroup]:
-            if 'OFF' in disk['status'] and 'dm' in disk['name'] and off_disk == 1:
+            if 'OFF' in disk['status'] and 'dm-' in disk['name'] and off_disk == 1:
                 cmdline2=['/sbin/zpool', 'detach',raid['pool'], disk['name']]
                 forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 flag = 1
                 break 
-            if 'OFF' in disk['status'] and 'dm' in disk['name']:
+            if 'OFF' in disk['status'] and 'dm-' in disk['name']:
                 off_disk =1
             if 'UNAVA' in disk['status']:
                 cmdline2=['/sbin/zpool', 'detach',raid['pool'], disk['actualdisk']]
@@ -453,11 +453,12 @@ def solvedegradedraid(raid,diskname):
  cmdline2=['/sbin/zpool', 'detach',raid['pool'],diskuid]
  forget2=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
  sleep(2)
+
  with open('/root/dmproblem','w') as f:
     f.write('cmdline '+ " ".join(cmdline2)+'\n')
     f.write('result: '+forget2.stdout.decode()+'\n')
     f.write('result: '+forget2.stderr.decode()+'\n')
-    f.write('dmstuplst[0]',str(dmstuplst[0])+'\n')
+    f.write('dmstuplst[0]: '+str(dmstuplst)+'\n')
  print('forgetting the dead disk result by internal dm stup',forget.stderr.decode())
  print('returncode',forget.returncode,dmstuplst)
  if forget.returncode == 0:
@@ -495,8 +496,11 @@ def spare2(*args):
         initqueue(leaderip, myhost) 
         #getall('init',leader, leaderip, myhost, myhostip, etcdip)
         return
-
+ 
+ alloptimized = 'yes'
  needtoreplace = get(leaderip, 'needtoreplace', '--prefix') 
+ if len(needtoreplace) > 0:
+      alloptimized = 'no'
  if myhost == leader:
     solvetheasks(needtoreplace)
  needtoreplace = get(leaderip, 'needtoreplace', '--prefix') 
@@ -504,6 +508,7 @@ def spare2(*args):
  exception = get(etcdip,'offlinethis','--prefix')
  print('it is needtoreplace',needtoreplace)
  for raidinfo in myneedtoreplace:
+      alloptimized = 'no'
       allinfo = getall(leaderip) 
       print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
       print('need to replace',raidinfo)
@@ -562,6 +567,7 @@ def spare2(*args):
  allhosts=set()
  allinfo = getall(leaderip) 
  alldisks = {}
+ excludeddisks = ''
  for pool in allinfo['pools']:
     if allinfo['pools'][pool]['host'] not in myhost:
         continue
@@ -572,56 +578,71 @@ def spare2(*args):
             continue
         for disk in allinfo['raids'][raid]['disklist']:
             if disk['changeop'] not in ['free','ONLINE']:
-                print('iamhere',disk)
+                print('iamhere',disk['name'])
+                excludeddisks = excludeddisks+','+disk['name']
                 if 'dm-' in disk['name']:
                     disk['host'] = myhost
-                solvedegradedraid(raid,disk['name'])
-    #else:
-    #    alldisks[allinfo['disks'][disk]['name']] = allinfo['disks'][disk].copy() 
+                alloptimized = 'no'
+                solvedegradedraid(allinfo['raids'][raid],disk['name'])
  if myhost != leader:
     return 
- alltoreplace = set()
- for raid in allinfo['raids']:
-    if 'free' not in allinfo['raids'][raid]['name'] and allinfo['raids'][raid]['silvering'] == 'no':
-        diskset = set(allinfo['raids'][raid]['disks'])
+ for diskname in allinfo['disks']:
+    disk = allinfo['disks'][diskname]
+    if disk['changeop'] in ['free']:
+       print('adding disk',disk['name'])
+       alldisks[disk['name']] = disk.copy() 
+ print('alldisks:', alldisks.keys()) 
+ needtoreplace = ''
+ for raidname in allinfo['raids']:
+    raid = allinfo['raids'][raidname]
+    if 'free' not in raid['name'] and raid['silvering'] == 'no':
+        diskset = set(raid['disks'])
         faultyreplaceflag = 0
-        faultyreplaceflag = solvefaultyreplace(allinfo['raids'][raid])
+        faultyreplaceflag = solvefaultyreplace(raid)
         if faultyreplaceflag > 0:
             continue
-        bestdisks = optimizedisks(leaderip, allinfo['raids'][raid], alldisks)
-        needtoreplace = ''
+        diskwindow = alldisks.copy()
+        for disk in raid['disklist']:
+            if 'dm-' not in disk['name'] and disk['changeop'] in ['ONLINE']:
+                diskwindow[disk['name']] = disk
+        print('##################################################')
+        print('optimizing raid:',raid['name'])
+        print('its disks:',[x['name'] for x in raid['disklist']])
+        print('exclude lst:',needtoreplace)
+        bestdisks = optimizedisks(leaderip, raid, diskwindow, needtoreplace)
         toreplace = ''
         toplace = ''
         bestdiskset = set(bestdisks.split(','))
-        print(diskset)
-        if diskset == bestdiskset or len(list(toplace)) == 0 :
+        toplace = bestdiskset - diskset
+        toreplace = diskset - bestdiskset
+        print('toreplace', toreplace)
+        print('toplace', toplace)
+        if diskset == bestdiskset or len(','.join(list(toplace))) == 0 :
             print('already optimized')
             continue 
         else:
-                toreplace = diskset - bestdiskset
-                toplace = bestdiskset - diskset
-                if 'dm' in str(toreplace)+str(toplace) and len(bestdiskset) == 1:
-                    print('missing disks with no replacements')
-                    continue
+                alloptimized = 'no'
+                needtoreplace = needtoreplace+','+','.join(list(toplace))
                 print('new arrangement')
                 print('sssssssssssssssssssssssssssssss')
                 print('bestdisk set',bestdiskset)
                 print('old disk set',diskset)
                 print('to replace',toreplace)
                 print ('to place',  toplace)
-                print(allinfo['raids'][raid]['disklist'][0]['name'])
+                print(raid['disklist'][0]['name'])
                 print('sssssssssssssssssssssssssssssss')
-                pool = allinfo['raids'][raid]['pool']
-                host = allinfo['raids'][raid]['host']
-                raid = allinfo['raids'][raid]['name']
+                pool = raid['pool']
+                host = raid['host']
+                raidname = raid['name']
                  #break
-                if len(toreplace) == 0:
-                    toreplace = allinfo['raids'][raid]['disklist'][0]['name']
-                else:
-                    toreplace = list(toreplace)[0]
-                print(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,toreplace+'/'+list(toplace)[0])
-                put(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raid,toreplace+'/'+list(toplace)[0])
-                alltoreplace = alltoreplace.union(toreplace)
+                for x in zip(list(toreplace),list(toplace)):
+                    print(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raidname,x[0]+'/'+x[1])
+                    put(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raidname,x[0]+'/'+x[1])
+ 
+ if alloptimized == 'no':
+    print('still not all are optimized in this node')
+ else:
+    print('all is optimized in this node')
  usedfree = []
  return
  
