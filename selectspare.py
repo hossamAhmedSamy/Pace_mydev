@@ -505,7 +505,6 @@ def spare2(*args):
     solvetheasks(needtoreplace)
  needtoreplace = get(leaderip, 'needtoreplace', '--prefix') 
  myneedtoreplace = [x for x in needtoreplace if myhost in str(x) ] 
- myneedtoreplace = []
  exception = get(etcdip,'offlinethis','--prefix')
  print('it is needtoreplace',needtoreplace)
  for raidinfo in myneedtoreplace:
