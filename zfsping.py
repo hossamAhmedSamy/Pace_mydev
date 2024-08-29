@@ -336,14 +336,17 @@ if __name__=='__main__':
      if stopat not in range(len(loopers)):
         stopat = 0 
      zload = getload(leaderip,myhost)
-     if zload > 65:
+     if zload > 65 and counter > 0:
         print('still load high',zload,'counter',counter,'process number',i, 'stopped at',stopat)
         sleep(2)
         counter = counter +1 
         if counter < 30:
             continue
         else: 
-            counter = 1
+            counter = -len(loopers) 
+            zload = 40
+     else:
+        counter += 1
      print('fixing i to ',stopat)
      args = loopers[stopat]
      print('starting a new task',stopat,args)

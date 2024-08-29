@@ -569,11 +569,14 @@ def spare2(*args):
  alldisks = {}
  excludeddisks = ''
  for pool in allinfo['pools']:
+    if 'ree' in pool:
+        continue
     if allinfo['pools'][pool]['host'] not in myhost:
         continue
     if allinfo['pools'][pool]['changeop'] in ['ONLINE']:
         continue
     for raid in allinfo['pools'][pool]['raids']:
+        print('raid:',pool)
         if allinfo['raids'][raid]['changeop'] in ['ONLINE']:
             continue
         for disk in allinfo['raids'][raid]['disklist']:
@@ -582,6 +585,7 @@ def spare2(*args):
                 excludeddisks = excludeddisks+','+disk['name']
                 if 'dm-' in disk['name']:
                     disk['host'] = myhost
+                    continue
                 alloptimized = 'no'
                 solvedegradedraid(allinfo['raids'][raid],disk['name'])
  if myhost != leader:
