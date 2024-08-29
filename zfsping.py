@@ -20,7 +20,7 @@ from addactive import addactive
 from selectimport import selectimport
 from zpooltoimport import zpooltoimport
 #from selectspare import spare2  
-def spare2(x,y):
+def spare2(x,y,*others):
  return
 from checksyncs import syncrequest, initchecks
 from VolumeCheck import volumecheck
