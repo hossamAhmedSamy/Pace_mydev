@@ -505,6 +505,7 @@ def spare2(*args):
     solvetheasks(needtoreplace)
  needtoreplace = get(leaderip, 'needtoreplace', '--prefix') 
  myneedtoreplace = [x for x in needtoreplace if myhost in str(x) ] 
+ myneedtoreplace = []
  exception = get(etcdip,'offlinethis','--prefix')
  print('it is needtoreplace',needtoreplace)
  for raidinfo in myneedtoreplace:
@@ -522,38 +523,35 @@ def spare2(*args):
        print('this pool is in resilvering status, we should wait till it completes the resilving')
        continue
       raidname = raidinfo[0].split('/')[-1]
-      rmdisk = raidinfo[1].split('/')[0]
-      try:
-        rmdiskname = allinfo['disks'][rmdisk]['zname']
-      except:
-        dels(leaderip, 'need',rmdisk)
-        print('rmdiskname is not having a zname')
-        print(rmdisk)
-        print(allinfo['disks'])
-        continue
-      print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
-      print(allinfo['disks'][rmdisk])
-      print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
+      rmdiskname = raidinfo[1].split('/')[0]
       adiskname = raidinfo[1].split('/')[1]
-      cmdline2=['/sbin/zpool', 'status',poolname]
-      cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
-      if rmdiskname in cpoolinfo:
+      print('rmdisk:',rmdisk)
+      print('raidname:',raidname)
+      if 'mirror-temp' in raidname:
+         cmdline2=['/sbin/zpool', 'attach','-f', poolname, rmdiskname,adiskname]
+      elif '_1' in rmdisk:
+         print(' the remove disk is not identified') 
+         continue
+      else:
+        print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
+        print('rmdisk:',allinfo['disks'][rmdisk])
+        print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk',rmdisk, rmdiskname)
+        cmdline2=['/sbin/zpool', 'status',poolname]
+        cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
+        if rmdiskname in cpoolinfo:
            print('will do:', poolname, raidname, rmdiskname, adiskname)
-           if 'mirror-temp' in raidname:
-               cmdline2=['/sbin/zpool', 'attach','-f', poolname, rmdiskname,adiskname]
-           else:
-               cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdiskname,adiskname]
+           cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdiskname,adiskname]
            print(cmdline2)
-           forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-           print('forget',forget.returncode)
-           print('cmdline2'," ".join(cmdline2))
-           print('theresult',forget.stdout.decode())
-           print('return code',forget.returncode)
-           if forget.returncode == 0: 
-            dels(leaderip,'ask/needtoreplace',raidname)
-            dels(leaderip,'needtoreplace',raidname)
-      dels(leaderip,'ask/needtoreplace',raidname)
-      dels(leaderip,'needtoreplace',raidname)
+      forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      print('forget',forget.returncode)
+      print('cmdline2'," ".join(cmdline2))
+      print('theresult',forget.stdout.decode())
+      print('return code',forget.returncode)
+      if forget.returncode == 0: 
+        dels(leaderip,'ask/needtoreplace',adiskname)
+        dels(leaderip,'needtoreplace',adiskname)
+      dels(leaderip,'ask/needtoreplace',adiskname)
+      dels(leaderip,'needtoreplace',adisksname)
       #cmd = ['systemctl', 'restart', 'zfs-zed']
       #subprocess.run(cmd,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       #dels(leaderip,'ask/needtoreplace',raidname)
@@ -632,10 +630,14 @@ def spare2(*args):
                 print('to replace',toreplace)
                 print ('to place',  toplace)
                 print(raid['disklist'][0]['name'])
+                print('raidname:',raid['name'])
                 print('sssssssssssssssssssssssssssssss')
                 pool = raid['pool']
                 host = raid['host']
                 raidname = raid['name']
+                if 'mirror-temp' in raidname:
+                    toreplace = set()
+                    toreplace.add(raid['disklist'][0]['name'])
                  #break
                 for x in zip(list(toreplace),list(toplace)):
                     print(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raidname,x[0]+'/'+x[1])
