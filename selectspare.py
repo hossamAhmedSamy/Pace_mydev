@@ -444,7 +444,12 @@ def solvedegradedraid(raid,diskname):
      if diskname in fa:
       eindex = faultdisk.index(fa)
       break
-    diskuid = faultdisk[eindex-1].split(':')[1]
+    print('faultdisk',faultdisk, diskname)
+    diskuid = diskname
+    if len(faultdisk) > 0:
+        diskuid = faultdisk[eindex-1].split(':')[1]
+    
+    
  cmdline2=['/sbin/zpool', 'replace','-f',raid['pool'], diskuid,'/dev/'+dmstup]
  forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
  sleep(2)
