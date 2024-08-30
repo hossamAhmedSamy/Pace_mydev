@@ -516,9 +516,9 @@ def spare2(*args):
       print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
       print('need to replace',raidinfo)
       poolname = raidinfo[0].split('/')[2]
-      if poolname in str(exception):
-       print('this pool should not be automatically healed ')
-       continue
+      #if poolname in str(exception):
+      # print('this pool should not be automatically healed ')
+      # continue
       dmcmd = 'zpool status '+poolname
       chkstatus = subprocess.run(dmcmd.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode('utf-8')
       if 'resilvering' in chkstatus:
@@ -561,8 +561,7 @@ def spare2(*args):
       print('theresult',forget.stdout.decode())
       print('return code',forget.returncode)
       if forget.returncode == 0: 
-        dels(leaderip,'ask/needtoreplace',adiskname)
-        dels(leaderip,'needtoreplace',adiskname)
+        dels(leaderip,'offline',poolname)
       dels(leaderip,'ask/needtoreplace',adiskname)
       dels(leaderip,'needtoreplace',adiskname)
       #cmd = ['systemctl', 'restart', 'zfs-zed']
@@ -606,7 +605,7 @@ def spare2(*args):
     needhost=need[0].split('/')[1]
     if needhost not in actives:
         dels(leaderip, need[0],need[1])
- needtoreplace = ','.join(list(get(leaderip, 'needtoreplace', '--prefix') ))
+ needtoreplace = str(get(leaderip, 'needtoreplace', '--prefix') )+str(get(leaderip,'offline','--prefix'))
  for diskname in allinfo['disks']:
     disk = allinfo['disks'][diskname]
     if disk['changeop'] in ['free']:
