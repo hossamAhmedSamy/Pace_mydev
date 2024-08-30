@@ -521,11 +521,13 @@ def spare2(*args):
       if 'resilvering' in chkstatus:
        print('this pool is in resilvering status, we should wait till it completes the resilving')
        continue
+      print('hhhhhhhhhhhhhhhhhhhhhhi iam here')
       raidname = raidinfo[0].split('/')[-1]
       rmdiskname = raidinfo[1].split('/')[0]
       adiskname = raidinfo[1].split('/')[1]
       print('rmdisk:',rmdiskname)
       print('raidname:',raidname)
+      print('adiskname:',adiskname)
       if 'mirror-temp' in raidname:
          cmdline2=['/sbin/zpool', 'attach','-f', poolname, rmdiskname,adiskname]
       elif '_1' in rmdiskname:
@@ -534,20 +536,22 @@ def spare2(*args):
       else:
         print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk', rmdiskname)
         try:
-            print('rmdisk:',allinfo['disks'][rmdiskname])
+            rmdiskname = allinfo['disks'][rmdiskname]['actualdisk']
         except:
             print('rmdisk',rmdiskname,'is not available, so starting over')
             dels(leaderip,'ask/needtoreplace',adiskname)
             dels(leaderip,'needtoreplace',adiskname)
             continue
             
-        print('hhhhhhhhhhhhhhhhhhhhhhhrmdisk', rmdiskname)
-        cmdline2=['/sbin/zpool', 'status',poolname]
-        cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
-        if rmdiskname in cpoolinfo:
-           print('will do:', poolname, raidname, rmdiskname, adiskname)
-           cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdiskname,adiskname]
-           print(cmdline2)
+        print('the rmdisk is healthy', rmdiskname)
+        #cmdline2=['/sbin/zpool', 'status',poolname]
+        #cpoolinfo=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
+        #cmdline2= 'dd if=/dev/zero of=/dev/disk/by-id/'+adiskname+' count=100 bs=1M status=progress'
+        #writing=subprocess.run(cmdline2.split(),stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode()
+        #if rmdiskname in cpoolinfo:
+        print('will do:', poolname, raidname, rmdiskname, adiskname)
+        cmdline2=['/sbin/zpool', 'replace','-f',poolname, rmdiskname,adiskname]
+        print(cmdline2)
       forget=subprocess.run(cmdline2,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       print('forget',forget.returncode)
       print('cmdline2'," ".join(cmdline2))
@@ -594,11 +598,16 @@ def spare2(*args):
                 solvedegradedraid(allinfo['raids'][raid],disk['name'])
  if myhost != leader:
     return 
+ actives = str(get(leaderip, 'ready','--prefix'))
+ for need in needtoreplace:
+    needhost=need[0].split('/')[1]
+    if needhost not in actives:
+        dels(leaderip, need[0],need[1])
+ needtoreplace = ','.join(list(get(leaderip, 'needtoreplace', '--prefix') ))
  for diskname in allinfo['disks']:
     disk = allinfo['disks'][diskname]
     if disk['changeop'] in ['free']:
        alldisks[disk['name']] = disk.copy() 
- needtoreplace = ''
  for raidname in allinfo['raids']:
     raid = allinfo['raids'][raidname]
     if 'free' not in raid['name'] and raid['silvering'] == 'no':
