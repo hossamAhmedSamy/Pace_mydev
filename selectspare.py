@@ -9,6 +9,7 @@ from etcdgetpy import etcdget as get
 from etcdput import etcdput as put
 from etcddel import etcddel as dels 
 from fastselect import optimizedisks
+from putzpool import putzpool, initputzpool
 from copy import deepcopy
 #from deltolocal import deltolocal as delstolocal
 #from poolall import getall as getall
@@ -497,6 +498,8 @@ def spare2(*args):
         #getall('init',leader, leaderip, myhost, myhostip, etcdip)
         return
  
+ initputzpool(leader, leaderip, myhost, myhostip)
+ putzpool()
  alloptimized = 'yes'
  needtoreplace = get(leaderip, 'needtoreplace', '--prefix') 
  if len(needtoreplace) > 0:
