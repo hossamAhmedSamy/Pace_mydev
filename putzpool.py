@@ -249,7 +249,6 @@ def putzpool():
     if 'dm' in b[0]:
         zname = b[0]
     ddict={'name':b[0],'zname':zname, 'actualdisk':actualdisk, 'changeop':changeop,'pool':zdict['name'],'raid':rdict['name'],'status':b[1],'id': str(diskid), 'host':host, 'size':size,'devname':devname, 'silvering': silvering, 'replacingroup':replacingroup}
-    print('bbbbbbbbbbb',ddict)    
     rdict['silvering'] = silvering
     silvering = 'no'
     disklist.append(ddict)

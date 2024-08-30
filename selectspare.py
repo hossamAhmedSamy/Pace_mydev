@@ -565,8 +565,8 @@ def spare2(*args):
       print('cmdline2'," ".join(cmdline2))
       print('theresult',forget.stdout.decode())
       print('return code',forget.returncode)
-      if forget.returncode == 0: 
-        dels(leaderip,'offline',poolname)
+      #if forget.returncode == 0: 
+      #  dels(leaderip,'offline',poolname)
       dels(leaderip,'ask/needtoreplace',adiskname)
       dels(leaderip,'needtoreplace',adiskname)
       #cmd = ['systemctl', 'restart', 'zfs-zed']
@@ -666,12 +666,14 @@ def spare2(*args):
                     put(leaderip, 'needtoreplace/'+host+'/'+pool+'/'+raidname,x[0]+'/'+x[1])
  
  if alloptimized == 'no':
-    put(leaderip,'selectspareagain/'+myhost,'yes')
     print('still not all are optimized in this node')
  else:
     print('all is optimized in this node')
-    put(leaderip,'selectspareagain/'+myhost,'no')
- 
+    if len(exception) > 0 :
+        dels(leaderip,'offline','--prefix') 
+        stampit = str(stamp())
+        dosync('sync/offlinethis/add/request','offlinethis_'+stampit)
+        
  usedfree = []
  print('_alloptimized',alloptimized)
  return
